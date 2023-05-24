@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-// @author zeroknots
+// @author zeroknots | Rhinestone.wtf
 
 // Importing external dependencies.
 import "hashi/Yaho.sol";
 import "hashi/Yaru.sol";
-import {RSRegistryLib} from "./lib/RSRegistryLib.sol";
-import "forge-std/console2.sol";
+import { RSRegistryLib } from "./lib/RSRegistryLib.sol";
 
 // A registry contract for managing various types of records, including contract implementations,
 contract RSRegistry {

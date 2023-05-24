@@ -46,4 +46,3 @@ library RSRegistryLib {
 
     error InvalidCode();
 }
-
