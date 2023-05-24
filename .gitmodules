@@ -11,3 +11,7 @@
 [submodule "lib/openzeppelin"]
 	path = lib/openzeppelin
 	url = https://github.com/zeroknots/openzeppelin
+[submodule "lib/Solidity-RLP"]
+	path = lib/Solidity-RLP
+	url = https://github.com/hamdiallam/Solidity-RLP
+	branch = v2.0.8
