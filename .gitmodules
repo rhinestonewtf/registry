@@ -8,3 +8,6 @@
 [submodule "lib/hashi"]
 	path = lib/hashi
 	url = https://github.com/gnosis/hashi
+[submodule "lib/openzeppelin"]
+	path = lib/openzeppelin
+	url = https://github.com/zeroknots/openzeppelin
