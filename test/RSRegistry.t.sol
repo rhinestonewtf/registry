@@ -104,7 +104,29 @@ contract HashiTest is Test {
         _dispatchToL2(contractArtifacts);
     }
 
-    
+    function testDeployAndReRegister() public {
+        bytes memory code = type(MockContract).creationCode;
+        bytes memory params = abi.encode(dev);
+        bytes memory packd = abi.encodePacked(code, params);
+
+        address deployedContract = registryL1.deploy(code, params, 1, "");
+
+        vm.expectRevert(abi.encodeWithSelector(AlreadyRegistered.selector, deployedContract));
+        registryL1.register(deployedContract, params, "");
+    }
+
+    function testQuery() public {
+        MockContract newContractInstance = new MockContract(dev);
+        _regContract({
+            asUser: dev,
+            contractrAddr: address(newContractInstance),
+            params: abi.encode(dev)
+        });
+
+        _verifyContract({ authority: authority1, contractAddr: address(newContractInstance) });
+
+        registryL1.query(address(newContractInstance), abi.encode(dev));
+    }
 
     /*//////////////////////////////////////////////////////////////
                             Helper Function
@@ -174,11 +196,17 @@ contract HashiTest is Test {
         internal
         returns (RSRegistry.ContractArtifact memory)
     {
-        (address impl, bytes32 codeHash, address sender, bytes memory data) =
-            registryL1.contracts(contractImpl);
+        (
+            address impl,
+            bytes32 codeHash,
+            bytes32 deployParamsHash,
+            address sender,
+            bytes memory data
+        ) = registryL1.contracts(contractImpl);
         RSRegistry.ContractArtifact memory contractArtifacts = RSRegistry.ContractArtifact({
             implementation: impl,
             codeHash: codeHash,
+            deployParamsHash: deployParamsHash,
             sender: sender,
             data: data
         });

@@ -31,6 +31,7 @@ contract RSRegistry {
     struct ContractArtifact {
         address implementation;
         bytes32 codeHash;
+        bytes32 deployParamsHash;
         address sender;
         bytes data;
     }
@@ -122,24 +123,28 @@ contract RSRegistry {
     /// @param contractAddr The address of the contract to be registered.
     /// @param deployParams abi.encode() params supplied for constructor of contract
     /// @param data additonal data provided for registration
-    /// @return codeHash The code hash of the registered contract.
+    /// @return contractCodeHash The code hash of the registered contract.
     function register(
         address contractAddr,
         bytes memory deployParams,
         bytes calldata data
     )
         public
-        returns (bytes32 codeHash)
+        returns (bytes32 contractCodeHash)
     {
-        codeHash = contractAddr.getCodeHash();
-
-        contracts[contractAddr] = ContractArtifact({
-            implementation: contractAddr,
-            codeHash: codeHash,
-            sender: msg.sender,
+        contractCodeHash = contractAddr.getCodeHash();
+        if (contracts[contractAddr].implementation != address(0)) {
+            revert AlreadyRegistered(contractAddr);
+        }
+        _register({
+            contractAddr: contractAddr,
+            codeHash: contractCodeHash,
+            sender: address(0),
+            deployParams: deployParams,
             data: data
         });
-        emit Registration(contractAddr, codeHash);
+
+        emit Registration(contractAddr, contractCodeHash);
     }
 
     /// @notice Deploys a contract.
@@ -160,9 +165,33 @@ contract RSRegistry {
         bytes32 initCodeHash;
         bytes32 contractCodeHash;
         (contractAddr, initCodeHash, contractCodeHash) = code.deploy(deployParams, salt);
-        bytes32 codeHash = register(contractAddr, deployParams, data);
+        _register({
+            contractAddr: contractAddr,
+            codeHash: contractCodeHash,
+            sender: msg.sender,
+            deployParams: deployParams,
+            data: data
+        });
 
-        emit Deployment(contractAddr, codeHash);
+        emit Deployment(contractAddr, contractCodeHash);
+    }
+
+    function _register(
+        address contractAddr,
+        bytes32 codeHash,
+        address sender,
+        bytes memory deployParams,
+        bytes memory data
+    )
+        internal
+    {
+        contracts[contractAddr] = ContractArtifact({
+            implementation: contractAddr,
+            codeHash: codeHash,
+            sender: sender,
+            deployParamsHash: keccak256(deployParams),
+            data: data
+        });
     }
 
     /// @notice Queries a contract's verification status.
@@ -258,7 +287,9 @@ contract RSRegistry {
         }
         // Store the received verification record.
         verifications[contractAddr][authority] = verificationRecord;
-        contracts[contractAddr] = contractArtifact;
+        if (contracts[contractAddr].implementation == address(0)) {
+            contracts[contractAddr] = contractArtifact;
+        }
         emit Verification(contractAddr, authority, verificationRecord);
     }
 }
@@ -271,3 +302,4 @@ error InvalidCaller(address contractAddr, address yaruSender); // Emitted when t
 error InvalidVerification(address contractAddr, address authority); // Emitted when the verification is invalid.
 error InvalidCodeHash(bytes32 expected, bytes32 actual); // Emitted when the contract hash is invalid.
 error RiskTooHigh(uint8 risk); // Emitted when the risk level is too high.
+error AlreadyRegistered(address contractAddr); // Emitted when the contract is already registered.
