@@ -1,2 +1,4 @@
 hashi/=lib/hashi/packages/evm/contracts/
+@openzeppelin/contracts-upgradeable/=lib/openzeppelin/openzeppelin-contracts-upgradeable/contracts/
+@openzeppelin/contracts/=lib/openzeppelin/openzeppelin-contracts/contracts/
 
