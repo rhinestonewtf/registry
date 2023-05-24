@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
@@ -7,48 +6,13 @@ pragma solidity ^0.8.19;
 // Importing external dependencies.
 import "hashi/Yaho.sol";
 import "hashi/Yaru.sol";
+import {RSRegistryLib} from "./lib/RSRegistryLib.sol";
 import "forge-std/console2.sol";
 
-// A library that provides functions related to registry operations.
-library RSGenericRegistryLib {
-    // Gets the code hash of a contract at a given address.
-    // @param contractAddr The address of the contract.
-    // @return codeHash The hash of the contract code.
-    function getCodeHash(address contractAddr) internal view returns (bytes32 codeHash) {
-        assembly {
-            codeHash := extcodehash(contractAddr)
-        }
-    }
-
-    /// @notice Creates a new contract using CREATE2 opcode.
-    /// @dev This method uses the CREATE2 opcode to deploy a new contract with a deterministic address.
-    /// @param code The code for the contract.
-    /// @param salt The salt for creating the contract.
-    /// @return moduleAddress The address of the deployed contract.
-    function deploy(
-        bytes memory code,
-        bytes memory params,
-        uint256 salt
-    )
-        internal
-        returns (address moduleAddress, bytes32 initCodeHash, bytes32 contractCodeHash)
-    {
-        bytes memory initCode = abi.encodePacked(code, params);
-        initCodeHash = keccak256(initCode);
-
-        assembly {
-            moduleAddress := create2(0, add(initCode, 0x20), mload(initCode), salt)
-            contractCodeHash := extcodehash(moduleAddress)
-            // If the contract was not created successfully, the transaction is reverted.
-            if iszero(extcodesize(moduleAddress)) { revert(0, 0) }
-        }
-    }
-}
-
 // A registry contract for managing various types of records, including contract implementations,
-contract RSGenericRegistry {
-    using RSGenericRegistryLib for address;
-    using RSGenericRegistryLib for bytes;
+contract RSRegistry {
+    using RSRegistryLib for address;
+    using RSRegistryLib for bytes;
 
     // Struct that holds information about the verifier.
     struct VerifierInfo {
@@ -88,8 +52,6 @@ contract RSGenericRegistry {
 
     // Mapping from contract address and authority to verification record.
     mapping(address contractAddr => mapping(address authority => VerificationRecord)) verifications;
-
-    mapping(address developer => address[]) public implementationsOfDeveloper;
 
     // Event triggered when a contract is deployed.
     event Deployment(address indexed implementation, bytes32 codeHash);
@@ -159,16 +121,19 @@ contract RSGenericRegistry {
 
     /// @notice Registers a contract.
     /// @param contractAddr The address of the contract to be registered.
+    /// @param deployParams abi.encode() params supplied for constructor of contract
     /// @param data additonal data provided for registration
     /// @return codeHash The code hash of the registered contract.
     function register(
         address contractAddr,
+        bytes memory deployParams,
         bytes calldata data
     )
         public
         returns (bytes32 codeHash)
     {
         codeHash = contractAddr.getCodeHash();
+
         contracts[contractAddr] = ContractArtifact({
             implementation: contractAddr,
             codeHash: codeHash,
@@ -179,13 +144,14 @@ contract RSGenericRegistry {
     }
 
     /// @notice Deploys a contract.
-    /// @param code The code for the contract to be deployed.
+    /// @param code The creationCode for the contract to be deployed.
+    /// @param deployParams abi.encode() params supplied for constructor of contract
     /// @param salt The salt for creating the contract.
     /// @param data additonal data provided for registration
     /// @return contractAddr The address of the deployed contract.
     function deploy(
         bytes calldata code,
-        bytes calldata params,
+        bytes calldata deployParams,
         uint256 salt,
         bytes calldata data
     )
@@ -194,14 +160,8 @@ contract RSGenericRegistry {
     {
         bytes32 initCodeHash;
         bytes32 contractCodeHash;
-        (contractAddr, initCodeHash, contractCodeHash) = code.deploy(params, salt);
-        console2.log("deployed");
-        bytes32 codeHash = register(contractAddr, data);
-
-        // check if there were constructor Params in code param
-        if (initCodeHash != contractCodeHash) {
-            revert InvalidCodeHash(initCodeHash, contractCodeHash);
-        }
+        (contractAddr, initCodeHash, contractCodeHash) = code.deploy(deployParams, salt);
+        bytes32 codeHash = register(contractAddr, deployParams, data);
 
         emit Deployment(contractAddr, codeHash);
     }
@@ -312,4 +272,3 @@ error InvalidCaller(address contractAddr, address yaruSender); // Emitted when t
 error InvalidVerification(address contractAddr, address authority); // Emitted when the verification is invalid.
 error InvalidCodeHash(bytes32 expected, bytes32 actual); // Emitted when the contract hash is invalid.
 error RiskTooHigh(uint8 risk); // Emitted when the risk level is too high.
-

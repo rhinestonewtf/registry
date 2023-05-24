@@ -1,58 +1,49 @@
 <img align="right" width="150" height="150" top="100" src="./public/readme.jpg">
 
-# femplate • [![tests](https://github.com/zeroknots/femplate/actions/workflows/ci.yml/badge.svg?label=tests)](https://github.com/zeroknots/femplate/actions/workflows/ci.yml) ![license](https://img.shields.io/github/license/zeroknots/femplate?label=license) ![solidity](https://img.shields.io/badge/solidity-^0.8.17-lightgrey)
+# Rhinestone Regsitry • [![tests](https://github.com/zeroknots/femplate/actions/workflows/ci.yml/badge.svg?label=tests)](https://github.com/zeroknots/femplate/actions/workflows/ci.yml) ![license](https://img.shields.io/github/license/zeroknots/femplate?label=license) ![solidity](https://img.shields.io/badge/solidity-^0.8.17-lightgrey)
 
 Template for Foundry Projects.
 
-### Usage
+### Introduction
 
-**Building & Testing**
-
-Build the foundry project with `forge build`. Then you can run tests with `forge test`.
-
-**Deployment & Verification**
-
-Inside the [`utils/`](./utils/) directory are a few preconfigured scripts that can be used to deploy and verify contracts.
-
-Scripts take inputs from the cli, using silent mode to hide any sensitive information.
-
-_NOTE: These scripts are required to be _executable_ meaning they must be made executable by running `chmod +x ./utils/*`._
-
-_NOTE: these scripts will prompt you for the contract name and deployed addresses (when verifying). Also, they use the `-i` flag on `forge` to ask for your private key for deployment. This uses silent mode which keeps your private key from being printed to the console (and visible in logs)._
+RSGenericRegistry is a smart contract developed for the Ethereum platform, written in Solidity. It acts as a registry for managing various types of records, including contract implementations. The contract is designed with interoperability in mind and can dispatch and receive verification messages across different Ethereum chains.
 
 
-### I'm new, how do I get started?
+### Features
+1. Deployment and Registration of Contracts: The contract provides functionality for deploying and registering other smart contracts.
 
-We created a guide to get you started with: [GETTING_STARTED.md](./GETTING_STARTED.md).
+1. Verification of Contracts: This contract allows for verification of other contracts by designated authorities. The verification process includes checking the risk level associated with the contract, the confidence level in the verification, and ensuring the code hash of the contract is valid.
 
+1. Cross-Chain Communication: The contract can dispatch verification messages to other chains and receive verification messages from Layer 1 (L1) Ethereum networks.
 
-### Blueprint
+1. Authorities Management: The contract allows for the addition of authority for verification purposes. Each authority is associated with a signer's address and a URL.
 
-```txt
-lib
-├─ forge-std — https://github.com/foundry-rs/forge-std
-├─ solmate — https://github.com/transmissions11/solmate
-scripts
-├─ Deploy.s.sol — Example Contract Deployment Script
-src
-├─ Greeter — Example Contract
-test
-└─ Greeter.t — Example Contract Tests
-```
+1. Risk Assessment: The contract allows querying of a contract's verification status, including the risk level.
 
+### External Dependencies
+This contract makes use of the following external contracts:
 
-### Notable Mentions
+1. Yaho.sol and Yaru.sol from Hashi
 
-- [femplate](https://github.com/refcell/femplate)
-- [foundry](https://github.com/foundry-rs/foundry)
-- [solmate](https://github.com/Rari-Capital/solmate)
-- [forge-std](https://github.com/brockelmore/forge-std)
-- [forge-template](https://github.com/foundry-rs/forge-template)
-- [foundry-toolchain](https://github.com/foundry-rs/foundry-toolchain)
+### Smart Contract Structure
+The contract defines several important structs that help in managing data:
 
+1. VerifierInfo - Holds information about the verifier.
+1. VerificationRecord - Holds a record of a verification process.
+1. ContractArtifact - Represents a contract artifact.
+It also includes a library, RSGenericRegistryLib, that provides helper functions for contract operations such as getCodeHash and deploy.
+
+### Events
+The contract emits several events to aid in tracking the contract's activities. They are Deployment, Registration, Verification, and Propagation.
+
+### Error Handling
+The contract has defined several custom errors for better error handling like InvalidChainId, InvalidBridgeTarget, InvalidSender, InvalidCaller, InvalidVerification, InvalidCodeHash, and RiskTooHigh.
+
+### Conclusion
+This contract is a versatile registry and verification solution for smart contracts on the Ethereum platform. It emphasizes secure and validated contract interaction and promotes cross-chain communication.
+
+Note: This contract should be used by developers who are familiar with Ethereum, Solidity, and smart contract development.
 
 ### Disclaimer
+This contract has not been audited. Use at your own risk. The author is not responsible for any issues that may arise from its use. Always ensure you understand how the contract works before interacting with it.
 
-_These smart contracts are being provided as is. No guarantee, representation or warranty is being made, express or implied, as to the safety or correctness of the user interface or the smart contracts. They have not been audited and as such there can be no assurance they will work as intended, and users may experience delays, failures, errors, omissions, loss of transmitted information or loss of funds. The creators are not liable for any of the foregoing. Users should proceed with caution and use at their own risk._
-
-See [LICENSE](./LICENSE) for more details.

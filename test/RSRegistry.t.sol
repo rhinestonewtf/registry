@@ -16,7 +16,7 @@ import "hashi/adapters/AMB/IAMB.sol";
 import "hashi/adapters/AMB/AMBMessageRelayer.sol";
 import "hashi/adapters/AMB/test/MockAMB.sol";
 
-import "../../src/registry/RSGenericRegistry.sol";
+import "../src/RSRegistry.sol";
 
 contract MockContract {
     address owner;
@@ -41,8 +41,8 @@ contract HashiTest is Test {
     AMBMessageRelay ambMessageRelay;
     MockAMB amb;
 
-    RSGenericRegistry registryL1;
-    RSGenericRegistry registryL2;
+    RSRegistry registryL1;
+    RSRegistry registryL2;
 
     address signer = makeAddr("signer");
 
@@ -60,33 +60,33 @@ contract HashiTest is Test {
         ambAdapter =
             new AMBAdapter(IAMB(address(amb)), address(ambMessageRelay), bytes32(block.chainid));
 
-        registryL1 = new RSGenericRegistry(yaho, yaru, address(0));
-        registryL2 = new RSGenericRegistry(yaho, yaru, address(registryL1));
+        registryL1 = new RSRegistry(yaho, yaru, address(0));
+        registryL2 = new RSRegistry(yaho, yaru, address(registryL1));
     }
 
-    function mockRegistration() public returns (RSGenericRegistry.ContractArtifact memory) {
+    function mockRegistration() public returns (RSRegistry.ContractArtifact memory) {
         MockContract mock = new MockContract(signer);
         vm.prank(dev);
-        registryL1.register(address(mock), "");
+        registryL1.register(address(mock), "", "");
 
         vm.prank(authority1);
         registryL1.verify(
-            address(mock), 10, 10, "", RSGenericRegistryLib.getCodeHash(address(mock))
+            address(mock), 10, 10, "", RSRegistryLib.getCodeHash(address(mock))
         );
 
         return getContractArtifactsFromRegistry(registryL1, address(mock));
     }
 
     function getContractArtifactsFromRegistry(
-        RSGenericRegistry registry,
+        RSRegistry registry,
         address contractImpl
     )
         internal
-        returns (RSGenericRegistry.ContractArtifact memory)
+        returns (RSRegistry.ContractArtifact memory)
     {
         (address impl, bytes32 codeHash, address sender, bytes memory data) =
             registryL1.contracts(contractImpl);
-        RSGenericRegistry.ContractArtifact memory contractArtifacts = RSGenericRegistry
+        RSRegistry.ContractArtifact memory contractArtifacts = RSRegistry
             .ContractArtifact({ implementation: impl, codeHash: codeHash, sender: sender, data: data });
         return contractArtifacts;
     }
@@ -112,7 +112,7 @@ contract HashiTest is Test {
     }
 
     function testBridgeMessage() public {
-        RSGenericRegistry.ContractArtifact memory contractArtifacts = mockRegistration();
+        RSRegistry.ContractArtifact memory contractArtifacts = mockRegistration();
 
         Message[] memory messages;
         bytes32[] memory messageIdsBytes32;
@@ -138,7 +138,7 @@ contract HashiTest is Test {
 
         yaru.executeMessages(messages, messageIds, senders, oracleAdapter);
 
-        RSGenericRegistry.ContractArtifact memory artifactsL2 =
+        RSRegistry.ContractArtifact memory artifactsL2 =
             getContractArtifactsFromRegistry(registryL2, contractArtifacts.implementation);
 
         assertEq(artifactsL2.codeHash, contractArtifacts.codeHash);
@@ -146,4 +146,3 @@ contract HashiTest is Test {
         assertEq(artifactsL2.implementation, contractArtifacts.implementation);
     }
 }
-
