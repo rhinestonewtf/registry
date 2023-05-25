@@ -33,6 +33,16 @@ The contract defines several important structs that help in managing data:
 1. ContractArtifact - Represents a contract artifact.
 It also includes a library, RSGenericRegistryLib, that provides helper functions for contract operations such as getCodeHash and deploy.
 
+
+### ToDo:
+
+1. registration data should have classification of contract nature. 
+    - Proxy
+    - Delegatecall
+    - selfdestruct
+    - pure/view only
+
+
 ### Events
 The contract emits several events to aid in tracking the contract's activities. They are Deployment, Registration, Verification, and Propagation.
 
