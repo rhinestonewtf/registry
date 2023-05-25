@@ -86,20 +86,6 @@ contract RSRegistry {
         l1Registry = _l1Registry;
     }
 
-    // Modifier that checks the validity of the caller and sender.
-    modifier onlyHashi() {
-        if (yaru.sender() != l1Registry) revert InvalidSender(address(this), yaru.sender());
-        if (msg.sender != address(yaru)) revert InvalidCaller(address(this), msg.sender);
-        _;
-    }
-
-    /// @notice Adds an authority for verification purposes.
-    /// @dev Stores the sender's address and a URL in the VerifierInfo struct.
-    /// @param url The URL related to the verifier.
-    function addAuthority(string memory url) external {
-        authorities[msg.sender] = VerifierInfo(msg.sender, url);
-    }
-
     /// @notice Verifies a contract.
     /// @dev Stores the verification record in the verifications mapping.
     /// @param contractAddr The address of the contract to be verified.
@@ -144,6 +130,7 @@ contract RSRegistry {
         public
         returns (bytes32 contractCodeHash)
     {
+        // ensures that contract exists. Will revert if EOA or address(0) is provided
         contractCodeHash = contractAddr.codeHash();
         if (contracts[contractAddr].implementation != address(0)) {
             revert AlreadyRegistered(contractAddr);
@@ -186,24 +173,6 @@ contract RSRegistry {
         });
 
         emit Deployment(contractAddr, contractCodeHash);
-    }
-
-    function _register(
-        address contractAddr,
-        bytes32 codeHash,
-        address sender,
-        bytes memory deployParams,
-        bytes memory data
-    )
-        internal
-    {
-        contracts[contractAddr] = ContractArtifact({
-            implementation: contractAddr,
-            codeHash: codeHash,
-            sender: sender,
-            deployParamsHash: keccak256(deployParams),
-            data: data
-        });
     }
 
     /// @notice Queries a contract's verification status.
@@ -303,6 +272,41 @@ contract RSRegistry {
             contracts[contractAddr] = contractArtifact;
         }
         emit Verification(contractAddr, authority, verificationRecord);
+    }
+
+    /// @notice Adds an authority for verification purposes.
+    /// @dev Stores the sender's address and a URL in the VerifierInfo struct.
+    /// @param url The URL related to the verifier.
+    function addAuthority(string memory url) external {
+        authorities[msg.sender] = VerifierInfo(msg.sender, url);
+    }
+
+    // Modifier that checks the validity of the caller and sender.
+    modifier onlyHashi() {
+        if (yaru.sender() != l1Registry) revert InvalidSender(address(this), yaru.sender());
+        if (msg.sender != address(yaru)) revert InvalidCaller(address(this), msg.sender);
+        _;
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                              INTERAL
+    //////////////////////////////////////////////////////////////*/
+    function _register(
+        address contractAddr,
+        bytes32 codeHash,
+        address sender,
+        bytes memory deployParams,
+        bytes memory data
+    )
+        internal
+    {
+        contracts[contractAddr] = ContractArtifact({
+            implementation: contractAddr,
+            codeHash: codeHash,
+            sender: sender,
+            deployParamsHash: keccak256(deployParams),
+            data: data
+        });
     }
 }
 
