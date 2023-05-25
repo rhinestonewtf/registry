@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
@@ -123,9 +123,13 @@ contract HashiTest is Test {
             params: abi.encode(dev)
         });
 
-        _verifyContract({ authority: authority1, contractAddr: address(newContractInstance) });
+        _verifyContract({ asAuthority: authority1, contractAddr: address(newContractInstance) });
 
-        registryL1.query(address(newContractInstance), abi.encode(dev));
+        registryL1.query({
+          contractAddr: address(newContractInstance),
+          authority: authority1,
+          acceptedRisk: 128
+        });
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -179,14 +183,14 @@ contract HashiTest is Test {
 
     function _verifyContract(
         address asAuthority,
-        address contractrAddr
+        address contractAddr
     )
         internal
         returns (RSRegistry.ContractArtifact memory)
     {
         vm.prank(asAuthority);
-        registryL1.verify(contractrAddr, 10, 10, "", RSRegistryLib.getCodeHash(contractrAddr));
-        return _getArtifacts(registryL1, contractrAddr);
+        registryL1.verify(contractAddr, 10, 10, "", RSRegistryLib.codeHash(contractAddr));
+        return _getArtifacts(registryL1, contractAddr);
     }
 
     function _getArtifacts(
@@ -194,6 +198,7 @@ contract HashiTest is Test {
         address contractImpl
     )
         internal
+        view
         returns (RSRegistry.ContractArtifact memory)
     {
         (

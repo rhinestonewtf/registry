@@ -1,20 +1,26 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8.19;
 // A library that provides functions related to registry operations.
+
 library RSRegistryLib {
     // Gets the code hash of a contract at a given address.
     // @param contractAddr The address of the contract.
     // @return codeHash The hash of the contract code.
-    function getCodeHash(address contractAddr) internal view returns (bytes32 codeHash) {
+    function codeHash(address contractAddr) internal view returns (bytes32 hash) {
         assembly {
             if iszero(extcodesize(contractAddr)) { revert(0, 0) }
-            codeHash := extcodehash(contractAddr)
+            hash := extcodehash(contractAddr)
         }
     }
 
     /// @notice Creates a new contract using CREATE2 opcode.
     /// @dev This method uses the CREATE2 opcode to deploy a new contract with a deterministic address.
     /// @param createCode The creationCode for the contract.
+    /// @param params The parameters for creating the contract. If the contract has a constructor, this MUST be provided. Function will fail if params are abi.encodePacked in createCode.
     /// @param salt The salt for creating the contract.
     /// @return moduleAddress The address of the deployed contract.
+    /// @return initCodeHash packed (creationCode, constructor params)
+    /// @return contractCodeHash hash of deployed bytecode
     function deploy(
         bytes memory createCode,
         bytes memory params,

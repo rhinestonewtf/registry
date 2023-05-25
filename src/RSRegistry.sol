@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.19;
 
 // @author zeroknots | Rhinestone.wtf
@@ -104,7 +104,7 @@ contract RSRegistry {
     )
         external
     {
-        bytes32 currentCodeHash = contractAddr.getCodeHash();
+        bytes32 currentCodeHash = contractAddr.codeHash();
         if (codeHash != currentCodeHash) revert InvalidCodeHash(currentCodeHash, codeHash);
 
         VerificationRecord memory verificationRecord = VerificationRecord({
@@ -132,7 +132,7 @@ contract RSRegistry {
         public
         returns (bytes32 contractCodeHash)
     {
-        contractCodeHash = contractAddr.getCodeHash();
+        contractCodeHash = contractAddr.codeHash();
         if (contracts[contractAddr].implementation != address(0)) {
             revert AlreadyRegistered(contractAddr);
         }
@@ -162,8 +162,8 @@ contract RSRegistry {
         external
         returns (address contractAddr)
     {
-        bytes32 initCodeHash;
-        bytes32 contractCodeHash;
+        bytes32 initCodeHash; // hash packed(creationCode, deployParams)
+        bytes32 contractCodeHash; //  hash of contract bytecode
         (contractAddr, initCodeHash, contractCodeHash) = code.deploy(deployParams, salt);
         _register({
             contractAddr: contractAddr,
@@ -213,7 +213,7 @@ contract RSRegistry {
         if (verification.risk > acceptedRisk) revert RiskTooHigh(verification.risk);
 
         // check code hash
-        bytes32 currentCodeHash = contractAddr.getCodeHash();
+        bytes32 currentCodeHash = contractAddr.codeHash();
         if (currentCodeHash != verification.codeHash) {
             revert InvalidCodeHash(currentCodeHash, verification.codeHash);
         }
@@ -227,14 +227,14 @@ contract RSRegistry {
     /// @notice Dispatches a verification message to another chain.
     /// @param implementation The address of the contract implementation.
     /// @param authority The authority address responsible for the verification.
-    /// @param toChainID The chain id to dispatch the message to.
+    /// @param toChainId The chain id to dispatch the message to.
     /// @param to The address to send the message to.
     /// @return messages An array of the sent messages.
     /// @return messageIds An array of the sent message IDs.
     function dispatchVerification(
         address implementation,
         address authority,
-        uint256 toChainID,
+        uint256 toChainId,
         address to
     )
         external
@@ -247,7 +247,7 @@ contract RSRegistry {
         }
 
         // Encode the verification record into a data payload.
-        bytes memory data = abi.encodeWithSelector(
+        bytes memory callReceiveFnOnL2 = abi.encodeWithSelector(
             this.receiveL1Verification.selector,
             implementation,
             authority,
@@ -257,10 +257,10 @@ contract RSRegistry {
 
         // Prepare the message for dispatch.
         messages = new Message[](1);
-        messages[0] = Message(to, toChainID, data);
+        messages[0] = Message({ to: to, toChainId: toChainId, data: callReceiveFnOnL2 });
 
         messageIds = new bytes32[](1);
-        // Dispatch the message via the Yaho contract.
+        // Dispatch message to selected L2
         messageIds = yaho.dispatchMessages(messages);
 
         emit Propagation(implementation, authority);
@@ -281,7 +281,7 @@ contract RSRegistry {
         onlyHashi
     {
         // check if contract has the same bytecode on L2 as on L1
-        bytes32 currentCodeHash = contractAddr.getCodeHash();
+        bytes32 currentCodeHash = contractAddr.codeHash();
         if (currentCodeHash != verificationRecord.codeHash) {
             revert InvalidCodeHash(currentCodeHash, verificationRecord.codeHash);
         }
