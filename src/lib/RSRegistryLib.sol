@@ -43,6 +43,12 @@ library RSRegistryLib {
         }
     }
 
+    /// @notice Calculates the deterministic address of a contract that would be deployed using the CREATE2 opcode.
+    /// @dev The calculated address is based on the contract's code, a salt, and the address of the current contract.
+    /// * This function uses the formula specified in EIP-1014 (https://eips.ethereum.org/EIPS/eip-1014).
+    /// @param _code The contract code that would be deployed.
+    /// @param _salt A salt used for the address calculation. This must be the same salt that would be passed to the CREATE2 opcode.
+    /// @return The address that the contract would be deployed at if the CREATE2 opcode was called with the specified _code and _salt.
     function calcAddress(bytes memory _code, uint256 _salt) internal view returns (address) {
         bytes32 hash =
             keccak256(abi.encodePacked(bytes1(0xff), address(this), _salt, keccak256(_code)));

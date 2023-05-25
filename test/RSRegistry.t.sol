@@ -126,9 +126,9 @@ contract HashiTest is Test {
         _verifyContract({ asAuthority: authority1, contractAddr: address(newContractInstance) });
 
         registryL1.query({
-          contractAddr: address(newContractInstance),
-          authority: authority1,
-          acceptedRisk: 128
+            contractAddr: address(newContractInstance),
+            authority: authority1,
+            acceptedRisk: 128
         });
     }
 

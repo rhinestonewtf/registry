@@ -4,8 +4,14 @@ pragma solidity ^0.8.19;
 // @author zeroknots | Rhinestone.wtf
 
 // Importing external dependencies.
+
+// Hashi's contract to dispatch messages to L2
 import "hashi/Yaho.sol";
+
+// Hashi's contract to receive messages from L1
 import "hashi/Yaru.sol";
+
+// Helper functions for this contract
 import { RSRegistryLib } from "./lib/RSRegistryLib.sol";
 
 // A registry contract for managing various types of records, including contract implementations,
@@ -36,6 +42,9 @@ contract RSRegistry {
         bytes data;
     }
 
+    /*//////////////////////////////////////////////////////////////
+                              STORAGE
+    //////////////////////////////////////////////////////////////*/
     // Instance of Hashi's Yaho contract.
     Yaho public yaho;
     // Instance of Hashi's Yaru contract.
@@ -53,6 +62,9 @@ contract RSRegistry {
     // Mapping from contract address and authority to verification record.
     mapping(address contractAddr => mapping(address authority => VerificationRecord)) verifications;
 
+    /*//////////////////////////////////////////////////////////////
+                              EVENTS
+    //////////////////////////////////////////////////////////////*/
     // Event triggered when a contract is deployed.
     event Deployment(address indexed implementation, bytes32 codeHash);
     // Event triggered when a contract is registered.
@@ -294,7 +306,9 @@ contract RSRegistry {
     }
 }
 
-// Error definitions
+/*//////////////////////////////////////////////////////////////
+                          Errors
+//////////////////////////////////////////////////////////////*/
 error InvalidChainId(); // Emitted when the provided chain ID is invalid.
 error InvalidBridgeTarget(); // Emitted when the bridge target is invalid.
 error InvalidSender(address contractAddr, address sender); // Emitted when the sender address is invalid.
