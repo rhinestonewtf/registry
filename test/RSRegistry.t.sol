@@ -18,6 +18,8 @@ import "hashi/adapters/AMB/test/MockAMB.sol";
 
 import "../src/RSRegistry.sol";
 
+import "./mock/MockAuthority.sol";
+
 contract MockContract {
     address owner;
 
@@ -25,13 +27,13 @@ contract MockContract {
         owner = _owner;
     }
 
-    function foo() external returns (uint256) {
+    function foo() external pure returns (uint256) {
         return 1;
     }
 }
 
 library HashiTestLib {
-    function toUint256Array(bytes32[] memory array) internal returns (uint256[] memory) {
+    function toUint256Array(bytes32[] memory array) internal pure returns (uint256[] memory) {
         uint256[] memory array2 = new uint256[](array.length);
         for (uint256 i; i < array.length; ++i) {
             array2[i] = uint256(array[i]);
@@ -115,7 +117,7 @@ contract HashiTest is Test {
         registryL1.register(deployedContract, params, "");
     }
 
-    function testQuery() public {
+    function testQueryRegistry() public {
         MockContract newContractInstance = new MockContract(dev);
         _regContract({
             asUser: dev,
@@ -125,11 +127,43 @@ contract HashiTest is Test {
 
         _verifyContract({ asAuthority: authority1, contractAddr: address(newContractInstance) });
 
-        registryL1.query({
+        registryL1.queryRegistry({
             contractAddr: address(newContractInstance),
             authority: authority1,
             acceptedRisk: 128
         });
+    }
+
+    function testPollMultipleAuthorities() public {
+        MockAuthority mockAuthorityContract1 = new MockAuthority();
+        MockAuthority mockAuthorityContract2 = new MockAuthority();
+
+        MockContract newContractInstance = new MockContract(dev);
+
+        address[] memory authoritiesToQuery = new address[](2);
+        authoritiesToQuery[0] = address(mockAuthorityContract1);
+        authoritiesToQuery[1] = address(mockAuthorityContract2);
+
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SecurityAlert.selector,
+                address(newContractInstance),
+                address(mockAuthorityContract1)
+            )
+        );
+        registryL1.pollAuthorities(authoritiesToQuery, address(newContractInstance));
+
+        RSRegistry.VerificationRecord memory verification = RSRegistry.VerificationRecord({
+            risk: 1,
+            confidence: 1,
+            state: RSRegistry.VerificationState.Verified,
+            codeHash: "",
+            data: ""
+        });
+
+        mockAuthorityContract1.setVerification(address(newContractInstance), verification);
+        mockAuthorityContract2.setVerification(address(newContractInstance), verification);
+        registryL1.pollAuthorities(authoritiesToQuery, address(newContractInstance));
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -189,7 +223,14 @@ contract HashiTest is Test {
         returns (RSRegistry.ContractArtifact memory)
     {
         vm.prank(asAuthority);
-        registryL1.verify(contractAddr, 10, 10, "", RSRegistryLib.codeHash(contractAddr));
+        registryL1.verify(
+            contractAddr,
+            10,
+            10,
+            "",
+            RSRegistryLib.codeHash(contractAddr),
+            RSRegistry.VerificationState.Verified
+        );
         return _getArtifacts(registryL1, contractAddr);
     }
 

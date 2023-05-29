@@ -11,6 +11,8 @@ import "hashi/Yaho.sol";
 // Hashi's contract to receive messages from L1
 import "hashi/Yaru.sol";
 
+import { IRSAuthority } from "./interface/IRSAuthority.sol";
+
 // Helper functions for this contract
 import { RSRegistryLib } from "./lib/RSRegistryLib.sol";
 
@@ -25,10 +27,21 @@ contract RSRegistry {
         string url;
     }
 
+    enum VerificationState {
+        None,
+        Pending,
+        Rejected,
+        Revoked,
+        Compromised,
+        Verified
+    }
+
     // Struct that holds a record of a verification process.
     struct VerificationRecord {
         uint8 risk;
         uint8 confidence;
+        VerificationState state;
+        // uint32 timestamp;
         bytes32 codeHash;
         bytes data;
     }
@@ -98,7 +111,8 @@ contract RSRegistry {
         uint8 risk,
         uint8 confidence,
         bytes memory data,
-        bytes32 codeHash
+        bytes32 codeHash,
+        VerificationState state
     )
         external
     {
@@ -108,6 +122,7 @@ contract RSRegistry {
         VerificationRecord memory verificationRecord = VerificationRecord({
             risk: risk,
             confidence: confidence,
+            state: state,
             codeHash: codeHash,
             data: data
         });
@@ -175,12 +190,35 @@ contract RSRegistry {
         emit Deployment(contractAddr, contractCodeHash);
     }
 
+    function pollAuthorities(
+        address[] calldata _authority,
+        address contractAddr
+    )
+        public
+        view
+        returns (VerificationRecord[] memory verifications)
+    {
+        uint256 authorityLength = _authority.length;
+        bytes32 currentCodeHash = contractAddr.codeHash();
+        verifications = new VerificationRecord[](authorityLength);
+        for (uint256 i; i < authorityLength; ++i) {
+            verifications[i] = IRSAuthority(_authority[i]).getVerification(
+                contractAddr, msg.sender, currentCodeHash
+            );
+
+            // revert if any of the chosen authorities flagged the contract as compromised
+            if (verifications[i].state < VerificationState.Verified) {
+                revert SecurityAlert(contractAddr, _authority[i]);
+            }
+        }
+    }
+
     /// @notice Queries a contract's verification status.
     /// @param contractAddr The address of the contract to be queried.
     /// @param authority The authority conducting the verification.
     /// @param acceptedRisk The accepted risk level.
     /// @return true if the verification status is acceptable, false otherwise.
-    function query(
+    function queryRegistry(
         address contractAddr,
         address authority,
         uint8 acceptedRisk
@@ -321,3 +359,4 @@ error InvalidVerification(address contractAddr, address authority); // Emitted w
 error InvalidCodeHash(bytes32 expected, bytes32 actual); // Emitted when the contract hash is invalid.
 error RiskTooHigh(uint8 risk); // Emitted when the risk level is too high.
 error AlreadyRegistered(address contractAddr); // Emitted when the contract is already registered.
+error SecurityAlert(address contractAddr, address authority);
