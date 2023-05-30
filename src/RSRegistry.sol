@@ -41,13 +41,14 @@ contract RSRegistry {
         uint8 risk;
         uint8 confidence;
         AttestationState state;
-        // uint32 timestamp;
+        // uint32 issuedAt;
+        // uint32 validUntil;
         bytes32 codeHash;
         bytes data;
     }
 
     // Struct that represents a contract artifact.
-    struct ContractArtifact {
+    struct Module {
         address implementation;
         bytes32 codeHash;
         bytes32 deployParamsHash;
@@ -70,7 +71,7 @@ contract RSRegistry {
     mapping(address authority => VerifierInfo) public authorities;
 
     // Mapping from contract address to contract artifact.
-    mapping(address moduleAddr => ContractArtifact) public contracts;
+    mapping(address moduleAddr => Module) public modules;
 
     // Mapping from contract address and authority to attestation record.
     mapping(address moduleAddr => mapping(address authority => Attestation)) attestations;
@@ -147,11 +148,11 @@ contract RSRegistry {
     {
         // ensures that contract exists. Will revert if EOA or address(0) is provided
         contractCodeHash = moduleAddr.codeHash();
-        if (contracts[moduleAddr].implementation != address(0)) {
+        if (modules[moduleAddr].implementation != address(0)) {
             revert AlreadyRegistered(moduleAddr);
         }
         _register({
-            moduleAddr:moduleAddr,
+            moduleAddr: moduleAddr,
             codeHash: contractCodeHash,
             sender: address(0),
             deployParams: deployParams,
@@ -260,7 +261,7 @@ contract RSRegistry {
         if (currentCodeHash != attestationStor.codeHash) {
             revert InvalidCodeHash(currentCodeHash, attestationStor.codeHash);
         }
-        if (currentCodeHash != contracts[moduleAddr].codeHash) {
+        if (currentCodeHash != modules[moduleAddr].codeHash) {
             revert InvalidCodeHash(currentCodeHash, attestationStor.codeHash);
         }
 
@@ -295,7 +296,7 @@ contract RSRegistry {
             implementation,
             authority,
             attestationRecord,
-            contracts[implementation]
+            modules[implementation]
         );
 
         // Prepare the message for dispatch.
@@ -318,7 +319,7 @@ contract RSRegistry {
         address moduleAddr,
         address authority,
         Attestation calldata attestationRecord,
-        ContractArtifact calldata contractArtifact
+        Module calldata contractArtifact
     )
         external
         onlyHashi
@@ -330,8 +331,8 @@ contract RSRegistry {
         }
         // Store the received attestation record.
         attestations[moduleAddr][authority] = attestationRecord;
-        if (contracts[moduleAddr].implementation == address(0)) {
-            contracts[moduleAddr] = contractArtifact;
+        if (modules[moduleAddr].implementation == address(0)) {
+            modules[moduleAddr] = contractArtifact;
         }
         emit attestation(moduleAddr, authority, attestationRecord);
     }
@@ -362,7 +363,7 @@ contract RSRegistry {
     )
         internal
     {
-        contracts[moduleAddr] = ContractArtifact({
+        modules[moduleAddr] = Module({
             implementation: moduleAddr,
             codeHash: codeHash,
             sender: sender,
