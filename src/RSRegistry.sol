@@ -70,10 +70,10 @@ contract RSRegistry {
     mapping(address authority => VerifierInfo) public authorities;
 
     // Mapping from contract address to contract artifact.
-    mapping(address contractAddr => ContractArtifact) public contracts;
+    mapping(address moduleAddr => ContractArtifact) public contracts;
 
     // Mapping from contract address and authority to attestation record.
-    mapping(address contractAddr => mapping(address authority => Attestation)) attestations;
+    mapping(address moduleAddr => mapping(address authority => Attestation)) attestations;
 
     /*//////////////////////////////////////////////////////////////
                               EVENTS
@@ -101,13 +101,13 @@ contract RSRegistry {
 
     /// @notice Verifies a contract.
     /// @dev Stores the attestation record in the attestations mapping.
-    /// @param contractAddr The address of the contract to be verified.
+    /// @param moduleAddr The address of the contract to be verified.
     /// @param risk The risk level associated with the contract.
     /// @param confidence The confidence level in the attestation.
     /// @param data Additional data related to the attestation.
     /// @param codeHash The code hash of the contract.
     function verify(
-        address contractAddr,
+        address moduleAddr,
         uint8 risk,
         uint8 confidence,
         bytes memory data,
@@ -116,7 +116,7 @@ contract RSRegistry {
     )
         external
     {
-        bytes32 currentCodeHash = contractAddr.codeHash();
+        bytes32 currentCodeHash = moduleAddr.codeHash();
         if (codeHash != currentCodeHash) revert InvalidCodeHash(currentCodeHash, codeHash);
 
         Attestation memory attestationRecord = Attestation({
@@ -127,18 +127,18 @@ contract RSRegistry {
             data: data
         });
 
-        attestations[contractAddr][msg.sender] = attestationRecord;
+        attestations[moduleAddr][msg.sender] = attestationRecord;
 
-        emit attestation(contractAddr, msg.sender, attestationRecord);
+        emit attestation(moduleAddr, msg.sender, attestationRecord);
     }
 
     /// @notice Registers a contract.
-    /// @param contractAddr The address of the contract to be registered.
+    /// @param moduleAddr The address of the contract to be registered.
     /// @param deployParams abi.encode() params supplied for constructor of contract
     /// @param data additonal data provided for registration
     /// @return contractCodeHash The code hash of the registered contract.
     function register(
-        address contractAddr,
+        address moduleAddr,
         bytes memory deployParams,
         bytes calldata data
     )
@@ -146,19 +146,19 @@ contract RSRegistry {
         returns (bytes32 contractCodeHash)
     {
         // ensures that contract exists. Will revert if EOA or address(0) is provided
-        contractCodeHash = contractAddr.codeHash();
-        if (contracts[contractAddr].implementation != address(0)) {
-            revert AlreadyRegistered(contractAddr);
+        contractCodeHash = moduleAddr.codeHash();
+        if (contracts[moduleAddr].implementation != address(0)) {
+            revert AlreadyRegistered(moduleAddr);
         }
         _register({
-            contractAddr: contractAddr,
+            moduleAddr:moduleAddr,
             codeHash: contractCodeHash,
             sender: address(0),
             deployParams: deployParams,
             data: data
         });
 
-        emit Registration(contractAddr, contractCodeHash);
+        emit Registration(moduleAddr, contractCodeHash);
     }
 
     /// @notice Deploys a contract.
@@ -166,7 +166,7 @@ contract RSRegistry {
     /// @param deployParams abi.encode() params supplied for constructor of contract
     /// @param salt The salt for creating the contract.
     /// @param data additonal data provided for registration
-    /// @return contractAddr The address of the deployed contract.
+    /// @return moduleAddr The address of the deployed contract.
     function deploy(
         bytes calldata code,
         bytes calldata deployParams,
@@ -174,20 +174,20 @@ contract RSRegistry {
         bytes calldata data
     )
         external
-        returns (address contractAddr)
+        returns (address moduleAddr)
     {
         bytes32 initCodeHash; // hash packed(creationCode, deployParams)
         bytes32 contractCodeHash; //  hash of contract bytecode
-        (contractAddr, initCodeHash, contractCodeHash) = code.deploy(deployParams, salt);
+        (moduleAddr, initCodeHash, contractCodeHash) = code.deploy(deployParams, salt);
         _register({
-            contractAddr: contractAddr,
+            moduleAddr: moduleAddr,
             codeHash: contractCodeHash,
             sender: msg.sender,
             deployParams: deployParams,
             data: data
         });
 
-        emit Deployment(contractAddr, contractCodeHash);
+        emit Deployment(moduleAddr, contractCodeHash);
     }
 
     function getAttestationFromAuthority(
@@ -204,46 +204,46 @@ contract RSRegistry {
 
     function getAttestationFromAuthorities(
         IRSAuthority[] calldata _authority,
-        address contractAddr
+        address moduleAddr
     )
         public
         view
         returns (Attestation[] memory attestations_)
     {
         uint256 authorityLength = _authority.length;
-        bytes32 currentCodeHash = contractAddr.codeHash();
+        bytes32 currentCodeHash = moduleAddr.codeHash();
         attestations_ = new Attestation[](authorityLength);
         for (uint256 i; i < authorityLength; ++i) {
             attestations_[i] =
-                getAttestationFromAuthority(_authority[i], contractAddr, currentCodeHash);
+                getAttestationFromAuthority(_authority[i], moduleAddr, currentCodeHash);
         }
     }
 
     function fetchAttestation(
         IRSAuthority[] calldata _authority,
-        address contractAddr
+        address moduleAddr
     )
         external
         view
         returns (Attestation[] memory attestations_)
     {
-        attestations_ = getAttestationFromAuthorities(_authority, contractAddr);
+        attestations_ = getAttestationFromAuthorities(_authority, moduleAddr);
         uint256 authorityLength = _authority.length;
 
         for (uint256 i; i < authorityLength; ++i) {
             if (attestations_[i].state != AttestationState.Verified) {
-                revert SecurityAlert(contractAddr, address(_authority[i]));
+                revert SecurityAlert(moduleAddr, address(_authority[i]));
             }
         }
     }
     /// @notice Queries a contract's attestation status.
-    /// @param contractAddr The address of the contract to be queried.
+    /// @param moduleAddr The address of the contract to be queried.
     /// @param authority The authority conducting the attestation.
     /// @param acceptedRisk The accepted risk level.
     /// @return true if the attestation status is acceptable, false otherwise.
 
     function fetchAttestation(
-        address contractAddr,
+        address moduleAddr,
         address authority,
         uint8 acceptedRisk
     )
@@ -251,16 +251,16 @@ contract RSRegistry {
         view
         returns (bool)
     {
-        Attestation storage attestationStor = attestations[contractAddr][authority];
+        Attestation storage attestationStor = attestations[moduleAddr][authority];
 
         if (attestationStor.risk > acceptedRisk) revert RiskTooHigh(attestationStor.risk);
 
         // check code hash
-        bytes32 currentCodeHash = contractAddr.codeHash();
+        bytes32 currentCodeHash = moduleAddr.codeHash();
         if (currentCodeHash != attestationStor.codeHash) {
             revert InvalidCodeHash(currentCodeHash, attestationStor.codeHash);
         }
-        if (currentCodeHash != contracts[contractAddr].codeHash) {
+        if (currentCodeHash != contracts[moduleAddr].codeHash) {
             revert InvalidCodeHash(currentCodeHash, attestationStor.codeHash);
         }
 
@@ -311,11 +311,11 @@ contract RSRegistry {
 
     /// @notice Receives a attestation message from L1.
     /// @dev This function should be called only by a valid caller.
-    /// @param contractAddr The address of the contract that was verified.
+    /// @param moduleAddr The address of the contract that was verified.
     /// @param authority The authority address responsible for the attestation.
     /// @param attestationRecord The attestationRecord data.
     function receiveL1attestation(
-        address contractAddr,
+        address moduleAddr,
         address authority,
         Attestation calldata attestationRecord,
         ContractArtifact calldata contractArtifact
@@ -324,16 +324,16 @@ contract RSRegistry {
         onlyHashi
     {
         // check if contract has the same bytecode on L2 as on L1
-        bytes32 currentCodeHash = contractAddr.codeHash();
+        bytes32 currentCodeHash = moduleAddr.codeHash();
         if (currentCodeHash != attestationRecord.codeHash) {
             revert InvalidCodeHash(currentCodeHash, attestationRecord.codeHash);
         }
         // Store the received attestation record.
-        attestations[contractAddr][authority] = attestationRecord;
-        if (contracts[contractAddr].implementation == address(0)) {
-            contracts[contractAddr] = contractArtifact;
+        attestations[moduleAddr][authority] = attestationRecord;
+        if (contracts[moduleAddr].implementation == address(0)) {
+            contracts[moduleAddr] = contractArtifact;
         }
-        emit attestation(contractAddr, authority, attestationRecord);
+        emit attestation(moduleAddr, authority, attestationRecord);
     }
 
     /// @notice Adds an authority for attestation purposes.
@@ -354,7 +354,7 @@ contract RSRegistry {
                               INTERAL
     //////////////////////////////////////////////////////////////*/
     function _register(
-        address contractAddr,
+        address moduleAddr,
         bytes32 codeHash,
         address sender,
         bytes memory deployParams,
@@ -362,8 +362,8 @@ contract RSRegistry {
     )
         internal
     {
-        contracts[contractAddr] = ContractArtifact({
-            implementation: contractAddr,
+        contracts[moduleAddr] = ContractArtifact({
+            implementation: moduleAddr,
             codeHash: codeHash,
             sender: sender,
             deployParamsHash: keccak256(deployParams),
@@ -377,10 +377,10 @@ contract RSRegistry {
 //////////////////////////////////////////////////////////////*/
 error InvalidChainId(); // Emitted when the provided chain ID is invalid.
 error InvalidBridgeTarget(); // Emitted when the bridge target is invalid.
-error InvalidSender(address contractAddr, address sender); // Emitted when the sender address is invalid.
-error InvalidCaller(address contractAddr, address yaruSender); // Emitted when the caller is not the Yaru contract.
-error InvalidAttestation(address contractAddr, address authority); // Emitted when the attestation is invalid.
+error InvalidSender(address moduleAddr, address sender); // Emitted when the sender address is invalid.
+error InvalidCaller(address moduleAddr, address yaruSender); // Emitted when the caller is not the Yaru contract.
+error InvalidAttestation(address moduleAddr, address authority); // Emitted when the attestation is invalid.
 error InvalidCodeHash(bytes32 expected, bytes32 actual); // Emitted when the contract hash is invalid.
 error RiskTooHigh(uint8 risk); // Emitted when the risk level is too high.
-error AlreadyRegistered(address contractAddr); // Emitted when the contract is already registered.
-error SecurityAlert(address contractAddr, address authority);
+error AlreadyRegistered(address moduleAddr); // Emitted when the contract is already registered.
+error SecurityAlert(address moduleAddr, address authority);

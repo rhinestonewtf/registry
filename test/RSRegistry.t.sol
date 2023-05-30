@@ -126,10 +126,10 @@ contract HashiTest is Test {
             params: abi.encode(dev)
         });
 
-        _verifyContract({ asAuthority: authority1, contractAddr: address(newContractInstance) });
+        _verifyContract({ asAuthority: authority1, moduleAddr: address(newContractInstance) });
 
         registryL1.fetchAttestation({
-            contractAddr: address(newContractInstance),
+            moduleAddr: address(newContractInstance),
             authority: authority1,
             acceptedRisk: 128
         });
@@ -218,21 +218,21 @@ contract HashiTest is Test {
 
     function _verifyContract(
         address asAuthority,
-        address contractAddr
+        address moduleAddr
     )
         internal
         returns (RSRegistry.ContractArtifact memory)
     {
         vm.prank(asAuthority);
         registryL1.verify(
-            contractAddr,
+            moduleAddr,
             10,
             10,
             "",
-            RSRegistryLib.codeHash(contractAddr),
+            RSRegistryLib.codeHash(moduleAddr),
             RSRegistry.AttestationState.Verified
         );
-        return _getArtifacts(registryL1, contractAddr);
+        return _getArtifacts(registryL1, moduleAddr);
     }
 
     function _getArtifacts(
