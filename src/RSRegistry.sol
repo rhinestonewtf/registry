@@ -227,17 +227,17 @@ contract RSRegistry {
         view
         returns (bool)
     {
-        Attestation storage attestation = attestations[contractAddr][authority];
+        Attestation storage attestationStor = attestations[contractAddr][authority];
 
-        if (attestation.risk > acceptedRisk) revert RiskTooHigh(attestation.risk);
+        if (attestationStor.risk > acceptedRisk) revert RiskTooHigh(attestationStor.risk);
 
         // check code hash
         bytes32 currentCodeHash = contractAddr.codeHash();
-        if (currentCodeHash != attestation.codeHash) {
-            revert InvalidCodeHash(currentCodeHash, attestation.codeHash);
+        if (currentCodeHash != attestationStor.codeHash) {
+            revert InvalidCodeHash(currentCodeHash, attestationStor.codeHash);
         }
         if (currentCodeHash != contracts[contractAddr].codeHash) {
-            revert InvalidCodeHash(currentCodeHash, attestation.codeHash);
+            revert InvalidCodeHash(currentCodeHash, attestationStor.codeHash);
         }
 
         return true;
