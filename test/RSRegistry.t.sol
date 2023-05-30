@@ -17,6 +17,7 @@ import "hashi/adapters/AMB/AMBMessageRelayer.sol";
 import "hashi/adapters/AMB/test/MockAMB.sol";
 
 import "../src/RSRegistry.sol";
+import "../src/interface/IRSAuthority.sol";
 
 import "./mock/MockAuthority.sol";
 
@@ -127,7 +128,7 @@ contract HashiTest is Test {
 
         _verifyContract({ asAuthority: authority1, contractAddr: address(newContractInstance) });
 
-        registryL1.queryRegistry({
+        registryL1.fetchAttestation({
             contractAddr: address(newContractInstance),
             authority: authority1,
             acceptedRisk: 128
@@ -140,9 +141,9 @@ contract HashiTest is Test {
 
         MockContract newContractInstance = new MockContract(dev);
 
-        address[] memory authoritiesToQuery = new address[](2);
-        authoritiesToQuery[0] = address(mockAuthorityContract1);
-        authoritiesToQuery[1] = address(mockAuthorityContract2);
+        IRSAuthority[] memory authoritiesToQuery = new IRSAuthority[](2);
+        authoritiesToQuery[0] = IRSAuthority(address(mockAuthorityContract1));
+        authoritiesToQuery[1] = IRSAuthority(address(mockAuthorityContract2));
 
         vm.expectRevert(
             abi.encodeWithSelector(
@@ -151,9 +152,9 @@ contract HashiTest is Test {
                 address(mockAuthorityContract1)
             )
         );
-        registryL1.pollAuthorities(authoritiesToQuery, address(newContractInstance));
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
 
-        RSRegistry.Attestation memory verification = RSRegistry.Attestation ({
+        RSRegistry.Attestation memory verification = RSRegistry.Attestation({
             risk: 1,
             confidence: 1,
             state: RSRegistry.AttestationState.Verified,
@@ -163,7 +164,7 @@ contract HashiTest is Test {
 
         mockAuthorityContract1.setAttestation(address(newContractInstance), verification);
         mockAuthorityContract2.setAttestation(address(newContractInstance), verification);
-        registryL1.pollAuthorities(authoritiesToQuery, address(newContractInstance));
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
     }
 
     /*//////////////////////////////////////////////////////////////

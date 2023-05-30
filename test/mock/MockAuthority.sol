@@ -13,12 +13,7 @@ contract MockAuthority is IRSAuthority {
 
     constructor() { }
 
-    function setAttestation(
-        address contractAddr,
-        RSRegistry.Attestation memory record
-    )
-        external
-    {
+    function setAttestation(address contractAddr, RSRegistry.Attestation memory record) external {
         attestations[contractAddr] = record;
     }
 
