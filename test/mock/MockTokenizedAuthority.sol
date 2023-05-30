@@ -1,19 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "./MockAuthority.sol";
+import "../../src/interface/IRSAuthority.sol";
+import "../../src/RSRegistry.sol";
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "solmate/tokens/ERC20.sol";
 
 /// @title MockTokenizedAuthority
 /// @author zeroknots
 /// @notice ContractDescription
 
-contract MockTokenizedAuthority is MockAuthority {
+contract MockTokenizedAuthority is IRSAuthority {
+    error InvalidLicense();
+
+    mapping(address contractAddr => RSRegistry.Attestation) public attestations;
     ERC20 public license;
 
     constructor(address _license) {
         license = ERC20(_license);
+    }
+
+    function setAttestation(address contractAddr, RSRegistry.Attestation memory record) external {
+        attestations[contractAddr] = record;
     }
 
     function getAttestation(
@@ -26,7 +34,7 @@ contract MockTokenizedAuthority is MockAuthority {
         override
         returns (RSRegistry.Attestation memory)
     {
-        require(license.balanceOf(smartAccount) > 0, "License Invalid");
+        if (license.balanceOf(smartAccount) == 0) revert InvalidLicense();
         return attestations[contractAddress];
     }
 }

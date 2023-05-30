@@ -3,6 +3,8 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 
+import "solmate/test/utils/mocks/MockERC20.sol";
+
 import "hashi/Yaho.sol";
 import "hashi/Yaru.sol";
 import "hashi/Hashi.sol";
@@ -20,7 +22,7 @@ import "../src/RSRegistry.sol";
 import "../src/interface/IRSAuthority.sol";
 
 import "./mock/MockAuthority.sol";
-import "./mock/MockTokenizedAuthority.sol";
+import { MockTokenizedAuthority } from "./mock/MockTokenizedAuthority.sol";
 
 contract MockContract {
     address owner;
@@ -169,9 +171,9 @@ contract HashiTest is Test {
     }
 
     function testTokenizedAuthority() public {
+        MockERC20 erc20 = new MockERC20("foo", "FOO", 18);
 
-
-        MockTokenizedAuthority mockAuthorityContract1 = new MockTokenizedAuthority();
+        MockTokenizedAuthority mockAuthorityContract1 = new MockTokenizedAuthority(address(erc20));
         MockAuthority mockAuthorityContract2 = new MockAuthority();
 
         MockContract newContractInstance = new MockContract(dev);
@@ -179,6 +181,11 @@ contract HashiTest is Test {
         IRSAuthority[] memory authoritiesToQuery = new IRSAuthority[](2);
         authoritiesToQuery[0] = IRSAuthority(address(mockAuthorityContract1));
         authoritiesToQuery[1] = IRSAuthority(address(mockAuthorityContract2));
+
+        vm.expectRevert(abi.encodeWithSelector(MockTokenizedAuthority.InvalidLicense.selector));
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
+
+        erc20.mint(address(this), 10);
 
         RSRegistry.Attestation memory verification = RSRegistry.Attestation({
             risk: 1,
