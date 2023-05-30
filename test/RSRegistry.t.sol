@@ -153,16 +153,16 @@ contract HashiTest is Test {
         );
         registryL1.pollAuthorities(authoritiesToQuery, address(newContractInstance));
 
-        RSRegistry.VerificationRecord memory verification = RSRegistry.VerificationRecord({
+        RSRegistry.Attestation memory verification = RSRegistry.Attestation ({
             risk: 1,
             confidence: 1,
-            state: RSRegistry.VerificationState.Verified,
+            state: RSRegistry.AttestationState.Verified,
             codeHash: "",
             data: ""
         });
 
-        mockAuthorityContract1.setVerification(address(newContractInstance), verification);
-        mockAuthorityContract2.setVerification(address(newContractInstance), verification);
+        mockAuthorityContract1.setAttestation(address(newContractInstance), verification);
+        mockAuthorityContract2.setAttestation(address(newContractInstance), verification);
         registryL1.pollAuthorities(authoritiesToQuery, address(newContractInstance));
     }
 
@@ -174,7 +174,7 @@ contract HashiTest is Test {
         Message[] memory messages;
         bytes32[] memory messageIdsBytes32;
         (messages, messageIdsBytes32) = (
-            registryL1.dispatchVerification(
+            registryL1.dispatchAttestation(
                 contractArtifacts.implementation, authority1, block.chainid, address(registryL2)
             )
         );
@@ -229,7 +229,7 @@ contract HashiTest is Test {
             10,
             "",
             RSRegistryLib.codeHash(contractAddr),
-            RSRegistry.VerificationState.Verified
+            RSRegistry.AttestationState.Verified
         );
         return _getArtifacts(registryL1, contractAddr);
     }

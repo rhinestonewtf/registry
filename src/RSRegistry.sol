@@ -27,7 +27,7 @@ contract RSRegistry {
         string url;
     }
 
-    enum VerificationState {
+    enum AttestationState {
         None,
         Pending,
         Rejected,
@@ -36,11 +36,11 @@ contract RSRegistry {
         Verified
     }
 
-    // Struct that holds a record of a verification process.
-    struct VerificationRecord {
+    // Struct that holds a record of a attestation process.
+    struct Attestation {
         uint8 risk;
         uint8 confidence;
-        VerificationState state;
+        AttestationState state;
         // uint32 timestamp;
         bytes32 codeHash;
         bytes data;
@@ -72,8 +72,8 @@ contract RSRegistry {
     // Mapping from contract address to contract artifact.
     mapping(address contractAddr => ContractArtifact) public contracts;
 
-    // Mapping from contract address and authority to verification record.
-    mapping(address contractAddr => mapping(address authority => VerificationRecord)) verifications;
+    // Mapping from contract address and authority to attestation record.
+    mapping(address contractAddr => mapping(address authority => Attestation)) attestations;
 
     /*//////////////////////////////////////////////////////////////
                               EVENTS
@@ -83,8 +83,8 @@ contract RSRegistry {
     // Event triggered when a contract is registered.
     event Registration(address indexed implementation, bytes32 codeHash);
     // Event triggered when a contract is verified.
-    event Verification(
-        address indexed implementation, address indexed authority, VerificationRecord verification
+    event attestation(
+        address indexed implementation, address indexed authority, Attestation attestation
     );
     // Event triggered when a contract is propagated.
     event Propagation(address indexed implementation, address indexed authority);
@@ -100,11 +100,11 @@ contract RSRegistry {
     }
 
     /// @notice Verifies a contract.
-    /// @dev Stores the verification record in the verifications mapping.
+    /// @dev Stores the attestation record in the attestations mapping.
     /// @param contractAddr The address of the contract to be verified.
     /// @param risk The risk level associated with the contract.
-    /// @param confidence The confidence level in the verification.
-    /// @param data Additional data related to the verification.
+    /// @param confidence The confidence level in the attestation.
+    /// @param data Additional data related to the attestation.
     /// @param codeHash The code hash of the contract.
     function verify(
         address contractAddr,
@@ -112,14 +112,14 @@ contract RSRegistry {
         uint8 confidence,
         bytes memory data,
         bytes32 codeHash,
-        VerificationState state
+        AttestationState state
     )
         external
     {
         bytes32 currentCodeHash = contractAddr.codeHash();
         if (codeHash != currentCodeHash) revert InvalidCodeHash(currentCodeHash, codeHash);
 
-        VerificationRecord memory verificationRecord = VerificationRecord({
+        Attestation memory attestationRecord = Attestation({
             risk: risk,
             confidence: confidence,
             state: state,
@@ -127,9 +127,9 @@ contract RSRegistry {
             data: data
         });
 
-        verifications[contractAddr][msg.sender] = verificationRecord;
+        attestations[contractAddr][msg.sender] = attestationRecord;
 
-        emit Verification(contractAddr, msg.sender, verificationRecord);
+        emit attestation(contractAddr, msg.sender, attestationRecord);
     }
 
     /// @notice Registers a contract.
@@ -196,28 +196,28 @@ contract RSRegistry {
     )
         public
         view
-        returns (VerificationRecord[] memory verifications)
+        returns (Attestation[] memory attestations_)
     {
         uint256 authorityLength = _authority.length;
         bytes32 currentCodeHash = contractAddr.codeHash();
-        verifications = new VerificationRecord[](authorityLength);
+        attestations_ = new Attestation[](authorityLength);
         for (uint256 i; i < authorityLength; ++i) {
-            verifications[i] = IRSAuthority(_authority[i]).getVerification(
+            attestations_[i] = IRSAuthority(_authority[i]).getAttestation(
                 contractAddr, msg.sender, currentCodeHash
             );
 
             // revert if any of the chosen authorities flagged the contract as compromised
-            if (verifications[i].state < VerificationState.Verified) {
+            if (attestations_[i].state < AttestationState.Verified) {
                 revert SecurityAlert(contractAddr, _authority[i]);
             }
         }
     }
 
-    /// @notice Queries a contract's verification status.
+    /// @notice Queries a contract's attestation status.
     /// @param contractAddr The address of the contract to be queried.
-    /// @param authority The authority conducting the verification.
+    /// @param authority The authority conducting the attestation.
     /// @param acceptedRisk The accepted risk level.
-    /// @return true if the verification status is acceptable, false otherwise.
+    /// @return true if the attestation status is acceptable, false otherwise.
     function queryRegistry(
         address contractAddr,
         address authority,
@@ -227,30 +227,30 @@ contract RSRegistry {
         view
         returns (bool)
     {
-        VerificationRecord storage verification = verifications[contractAddr][authority];
+        Attestation storage attestation = attestations[contractAddr][authority];
 
-        if (verification.risk > acceptedRisk) revert RiskTooHigh(verification.risk);
+        if (attestation.risk > acceptedRisk) revert RiskTooHigh(attestation.risk);
 
         // check code hash
         bytes32 currentCodeHash = contractAddr.codeHash();
-        if (currentCodeHash != verification.codeHash) {
-            revert InvalidCodeHash(currentCodeHash, verification.codeHash);
+        if (currentCodeHash != attestation.codeHash) {
+            revert InvalidCodeHash(currentCodeHash, attestation.codeHash);
         }
         if (currentCodeHash != contracts[contractAddr].codeHash) {
-            revert InvalidCodeHash(currentCodeHash, verification.codeHash);
+            revert InvalidCodeHash(currentCodeHash, attestation.codeHash);
         }
 
         return true;
     }
 
-    /// @notice Dispatches a verification message to another chain.
+    /// @notice Dispatches a attestation message to another chain.
     /// @param implementation The address of the contract implementation.
-    /// @param authority The authority address responsible for the verification.
+    /// @param authority The authority address responsible for the attestation.
     /// @param toChainId The chain id to dispatch the message to.
     /// @param to The address to send the message to.
     /// @return messages An array of the sent messages.
     /// @return messageIds An array of the sent message IDs.
-    function dispatchVerification(
+    function dispatchAttestation(
         address implementation,
         address authority,
         uint256 toChainId,
@@ -259,18 +259,18 @@ contract RSRegistry {
         external
         returns (Message[] memory messages, bytes32[] memory messageIds)
     {
-        // Get the verification record for the contract and the authority.
-        VerificationRecord memory verificationRecord = verifications[implementation][authority];
-        if (verificationRecord.codeHash == bytes32(0)) {
-            revert InvalidVerification(implementation, authority);
+        // Get the attestation record for the contract and the authority.
+        Attestation memory attestationRecord = attestations[implementation][authority];
+        if (attestationRecord.codeHash == bytes32(0)) {
+            revert InvalidAttestation(implementation, authority);
         }
 
-        // Encode the verification record into a data payload.
+        // Encode the attestation record into a data payload.
         bytes memory callReceiveFnOnL2 = abi.encodeWithSelector(
-            this.receiveL1Verification.selector,
+            this.receiveL1attestation.selector,
             implementation,
             authority,
-            verificationRecord,
+            attestationRecord,
             contracts[implementation]
         );
 
@@ -285,15 +285,15 @@ contract RSRegistry {
         emit Propagation(implementation, authority);
     }
 
-    /// @notice Receives a verification message from L1.
+    /// @notice Receives a attestation message from L1.
     /// @dev This function should be called only by a valid caller.
     /// @param contractAddr The address of the contract that was verified.
-    /// @param authority The authority address responsible for the verification.
-    /// @param verificationRecord The VerificationRecord data.
-    function receiveL1Verification(
+    /// @param authority The authority address responsible for the attestation.
+    /// @param attestationRecord The attestationRecord data.
+    function receiveL1attestation(
         address contractAddr,
         address authority,
-        VerificationRecord calldata verificationRecord,
+        Attestation calldata attestationRecord,
         ContractArtifact calldata contractArtifact
     )
         external
@@ -301,18 +301,18 @@ contract RSRegistry {
     {
         // check if contract has the same bytecode on L2 as on L1
         bytes32 currentCodeHash = contractAddr.codeHash();
-        if (currentCodeHash != verificationRecord.codeHash) {
-            revert InvalidCodeHash(currentCodeHash, verificationRecord.codeHash);
+        if (currentCodeHash != attestationRecord.codeHash) {
+            revert InvalidCodeHash(currentCodeHash, attestationRecord.codeHash);
         }
-        // Store the received verification record.
-        verifications[contractAddr][authority] = verificationRecord;
+        // Store the received attestation record.
+        attestations[contractAddr][authority] = attestationRecord;
         if (contracts[contractAddr].implementation == address(0)) {
             contracts[contractAddr] = contractArtifact;
         }
-        emit Verification(contractAddr, authority, verificationRecord);
+        emit attestation(contractAddr, authority, attestationRecord);
     }
 
-    /// @notice Adds an authority for verification purposes.
+    /// @notice Adds an authority for attestation purposes.
     /// @dev Stores the sender's address and a URL in the VerifierInfo struct.
     /// @param url The URL related to the verifier.
     function addAuthority(string memory url) external {
@@ -355,7 +355,7 @@ error InvalidChainId(); // Emitted when the provided chain ID is invalid.
 error InvalidBridgeTarget(); // Emitted when the bridge target is invalid.
 error InvalidSender(address contractAddr, address sender); // Emitted when the sender address is invalid.
 error InvalidCaller(address contractAddr, address yaruSender); // Emitted when the caller is not the Yaru contract.
-error InvalidVerification(address contractAddr, address authority); // Emitted when the verification is invalid.
+error InvalidAttestation(address contractAddr, address authority); // Emitted when the attestation is invalid.
 error InvalidCodeHash(bytes32 expected, bytes32 actual); // Emitted when the contract hash is invalid.
 error RiskTooHigh(uint8 risk); // Emitted when the risk level is too high.
 error AlreadyRegistered(address contractAddr); // Emitted when the contract is already registered.

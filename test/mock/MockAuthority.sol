@@ -9,20 +9,20 @@ import "../../src/RSRegistry.sol";
 /// @notice
 
 contract MockAuthority is IRSAuthority {
-    mapping(address contractAddr => RSRegistry.VerificationRecord) public verifications;
+    mapping(address contractAddr => RSRegistry.Attestation) public verifications;
 
     constructor() { }
 
-    function setVerification(
+    function setAttestation(
         address contractAddr,
-        RSRegistry.VerificationRecord memory record
+        RSRegistry.Attestation memory record
     )
         external
     {
         verifications[contractAddr] = record;
     }
 
-    function getVerification(
+    function getAttestation(
         address contractAddress,
         address smartAccount,
         bytes32 codeHash
@@ -30,7 +30,7 @@ contract MockAuthority is IRSAuthority {
         external
         view
         override
-        returns (RSRegistry.VerificationRecord memory)
+        returns (RSRegistry.Attestation memory)
     {
         return verifications[contractAddress];
     }
