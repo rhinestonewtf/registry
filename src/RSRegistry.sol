@@ -190,8 +190,20 @@ contract RSRegistry {
         emit Deployment(contractAddr, contractCodeHash);
     }
 
-    function pollAuthorities(
-        address[] calldata _authority,
+    function getAttestationFromAuthority(
+        IRSAuthority authority,
+        address module,
+        bytes32 codeHash
+    )
+        public
+        view
+        returns (Attestation memory attestation_)
+    {
+        attestation_ = authority.getAttestation(module, msg.sender, codeHash);
+    }
+
+    function getAttestationFromAuthorities(
+        IRSAuthority[] calldata _authority,
         address contractAddr
     )
         public
@@ -202,23 +214,35 @@ contract RSRegistry {
         bytes32 currentCodeHash = contractAddr.codeHash();
         attestations_ = new Attestation[](authorityLength);
         for (uint256 i; i < authorityLength; ++i) {
-            attestations_[i] = IRSAuthority(_authority[i]).getAttestation(
-                contractAddr, msg.sender, currentCodeHash
-            );
-
-            // revert if any of the chosen authorities flagged the contract as compromised
-            if (attestations_[i].state < AttestationState.Verified) {
-                revert SecurityAlert(contractAddr, _authority[i]);
-            }
+            attestations_[i] =
+                getAttestationFromAuthority(_authority[i], contractAddr, currentCodeHash);
         }
     }
 
+    function fetchAttestation(
+        IRSAuthority[] calldata _authority,
+        address contractAddr
+    )
+        external
+        view
+        returns (Attestation[] memory attestations_)
+    {
+        attestations_ = getAttestationFromAuthorities(_authority, contractAddr);
+        uint256 authorityLength = _authority.length;
+
+        for (uint256 i; i < authorityLength; ++i) {
+            if (attestations_[i].state != AttestationState.Verified) {
+                revert SecurityAlert(contractAddr, address(_authority[i]));
+            }
+        }
+    }
     /// @notice Queries a contract's attestation status.
     /// @param contractAddr The address of the contract to be queried.
     /// @param authority The authority conducting the attestation.
     /// @param acceptedRisk The accepted risk level.
     /// @return true if the attestation status is acceptable, false otherwise.
-    function queryRegistry(
+
+    function fetchAttestation(
         address contractAddr,
         address authority,
         uint8 acceptedRisk
