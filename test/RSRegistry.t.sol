@@ -3,6 +3,8 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 
+import "solmate/test/utils/mocks/MockERC20.sol";
+
 import "hashi/Yaho.sol";
 import "hashi/Yaru.sol";
 import "hashi/Hashi.sol";
@@ -17,6 +19,10 @@ import "hashi/adapters/AMB/AMBMessageRelayer.sol";
 import "hashi/adapters/AMB/test/MockAMB.sol";
 
 import "../src/RSRegistry.sol";
+import "../src/interface/IRSAuthority.sol";
+
+import "./mock/MockAuthority.sol";
+import { MockTokenizedAuthority } from "./mock/MockTokenizedAuthority.sol";
 
 contract MockContract {
     address owner;
@@ -25,13 +31,13 @@ contract MockContract {
         owner = _owner;
     }
 
-    function foo() external returns (uint256) {
+    function foo() external pure returns (uint256) {
         return 1;
     }
 }
 
 library HashiTestLib {
-    function toUint256Array(bytes32[] memory array) internal returns (uint256[] memory) {
+    function toUint256Array(bytes32[] memory array) internal pure returns (uint256[] memory) {
         uint256[] memory array2 = new uint256[](array.length);
         for (uint256 i; i < array.length; ++i) {
             array2[i] = uint256(array[i]);
@@ -98,7 +104,7 @@ contract HashiTest is Test {
     function testDispatch() public {
         address newContract = testRegisterExistingContract();
         _verifyContract(authority1, newContract);
-        RSRegistry.ContractArtifact memory contractArtifacts =
+        RSRegistry.Module memory contractArtifacts =
             _getArtifacts({ registry: registryL1, contractImpl: newContract });
 
         _dispatchToL2(contractArtifacts);
@@ -115,7 +121,7 @@ contract HashiTest is Test {
         registryL1.register(deployedContract, params, "");
     }
 
-    function testQuery() public {
+    function testQueryRegistry() public {
         MockContract newContractInstance = new MockContract(dev);
         _regContract({
             asUser: dev,
@@ -123,24 +129,86 @@ contract HashiTest is Test {
             params: abi.encode(dev)
         });
 
-        _verifyContract({ asAuthority: authority1, contractAddr: address(newContractInstance) });
+        _verifyContract({ asAuthority: authority1, moduleAddr: address(newContractInstance) });
 
-        registryL1.query({
-            contractAddr: address(newContractInstance),
+        registryL1.fetchAttestation({
+            moduleAddr: address(newContractInstance),
             authority: authority1,
             acceptedRisk: 128
         });
+    }
+
+    function testPollMultipleAuthorities() public {
+        MockAuthority mockAuthorityContract1 = new MockAuthority();
+        MockAuthority mockAuthorityContract2 = new MockAuthority();
+
+        MockContract newContractInstance = new MockContract(dev);
+
+        IRSAuthority[] memory authoritiesToQuery = new IRSAuthority[](2);
+        authoritiesToQuery[0] = IRSAuthority(address(mockAuthorityContract1));
+        authoritiesToQuery[1] = IRSAuthority(address(mockAuthorityContract2));
+
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                SecurityAlert.selector,
+                address(newContractInstance),
+                address(mockAuthorityContract1)
+            )
+        );
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
+
+        RSRegistry.Attestation memory verification = RSRegistry.Attestation({
+            risk: 1,
+            confidence: 1,
+            state: RSRegistry.AttestationState.Verified,
+            codeHash: "",
+            data: ""
+        });
+
+        mockAuthorityContract1.setAttestation(address(newContractInstance), verification);
+        mockAuthorityContract2.setAttestation(address(newContractInstance), verification);
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
+    }
+
+    function testTokenizedAuthority() public {
+        MockERC20 erc20 = new MockERC20("foo", "FOO", 18);
+
+        MockTokenizedAuthority mockAuthorityContract1 = new MockTokenizedAuthority(address(erc20));
+        MockAuthority mockAuthorityContract2 = new MockAuthority();
+
+        MockContract newContractInstance = new MockContract(dev);
+
+        IRSAuthority[] memory authoritiesToQuery = new IRSAuthority[](2);
+        authoritiesToQuery[0] = IRSAuthority(address(mockAuthorityContract1));
+        authoritiesToQuery[1] = IRSAuthority(address(mockAuthorityContract2));
+
+        vm.expectRevert(abi.encodeWithSelector(MockTokenizedAuthority.InvalidLicense.selector));
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
+
+        erc20.mint(address(this), 10);
+
+        RSRegistry.Attestation memory verification = RSRegistry.Attestation({
+            risk: 1,
+            confidence: 1,
+            state: RSRegistry.AttestationState.Verified,
+            codeHash: "",
+            data: ""
+        });
+
+        mockAuthorityContract1.setAttestation(address(newContractInstance), verification);
+        mockAuthorityContract2.setAttestation(address(newContractInstance), verification);
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
     }
 
     /*//////////////////////////////////////////////////////////////
                             Helper Function
     //////////////////////////////////////////////////////////////*/
 
-    function _dispatchToL2(RSRegistry.ContractArtifact memory contractArtifacts) public {
+    function _dispatchToL2(RSRegistry.Module memory contractArtifacts) public {
         Message[] memory messages;
         bytes32[] memory messageIdsBytes32;
         (messages, messageIdsBytes32) = (
-            registryL1.dispatchVerification(
+            registryL1.dispatchAttestation(
                 contractArtifacts.implementation, authority1, block.chainid, address(registryL2)
             )
         );
@@ -161,7 +229,7 @@ contract HashiTest is Test {
 
         yaru.executeMessages(messages, messageIds, senders, oracleAdapter);
 
-        RSRegistry.ContractArtifact memory artifactsL2 =
+        RSRegistry.Module memory artifactsL2 =
             _getArtifacts(registryL2, contractArtifacts.implementation);
 
         assertEq(artifactsL2.codeHash, contractArtifacts.codeHash);
@@ -183,14 +251,21 @@ contract HashiTest is Test {
 
     function _verifyContract(
         address asAuthority,
-        address contractAddr
+        address moduleAddr
     )
         internal
-        returns (RSRegistry.ContractArtifact memory)
+        returns (RSRegistry.Module memory)
     {
         vm.prank(asAuthority);
-        registryL1.verify(contractAddr, 10, 10, "", RSRegistryLib.codeHash(contractAddr));
-        return _getArtifacts(registryL1, contractAddr);
+        registryL1.verify(
+            moduleAddr,
+            10,
+            10,
+            "",
+            RSRegistryLib.codeHash(moduleAddr),
+            RSRegistry.AttestationState.Verified
+        );
+        return _getArtifacts(registryL1, moduleAddr);
     }
 
     function _getArtifacts(
@@ -199,7 +274,7 @@ contract HashiTest is Test {
     )
         internal
         view
-        returns (RSRegistry.ContractArtifact memory)
+        returns (RSRegistry.Module memory)
     {
         (
             address impl,
@@ -207,8 +282,8 @@ contract HashiTest is Test {
             bytes32 deployParamsHash,
             address sender,
             bytes memory data
-        ) = registryL1.contracts(contractImpl);
-        RSRegistry.ContractArtifact memory contractArtifacts = RSRegistry.ContractArtifact({
+        ) = registryL1.modules(contractImpl);
+        RSRegistry.Module memory contractArtifacts = RSRegistry.Module({
             implementation: impl,
             codeHash: codeHash,
             deployParamsHash: deployParamsHash,
