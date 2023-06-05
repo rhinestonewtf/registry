@@ -67,7 +67,7 @@ contract HashiTest is Test {
     address dev = makeAddr("dev");
     address authority1 = makeAddr("authority1");
 
-    function setUp() public {
+    function setUp() public virtual{
         hashi = new Hashi();
         giriGiriBashi = new GiriGiriBashi(signer, address(hashi));
         yaho = new Yaho();
