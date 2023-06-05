@@ -16,10 +16,13 @@ import { IRSAuthority } from "./interface/IRSAuthority.sol";
 // Helper functions for this contract
 import { RSRegistryLib } from "./lib/RSRegistryLib.sol";
 
+import "forge-std/console2.sol";
+
 // A registry contract for managing various types of records, including contract implementations,
 contract RSRegistry {
     using RSRegistryLib for address;
     using RSRegistryLib for bytes;
+    using RSRegistryLib for IRSAuthority;
 
     // Struct that holds information about the verifier.
     struct VerifierInfo {
@@ -191,52 +194,56 @@ contract RSRegistry {
         emit Deployment(moduleAddr, contractCodeHash);
     }
 
-    function getAttestationFromAuthority(
+    function _tryPullAttestation(
         IRSAuthority authority,
         address module,
         bytes32 codeHash
     )
-        public
+        internal
         view
         returns (Attestation memory attestation_)
     {
-        attestation_ = authority.getAttestation(module, msg.sender, codeHash);
-    }
+        (, bytes memory returnData) = address(authority).staticcall(
+            abi.encodePacked(
+                IRSAuthority.getAttestation.selector, abi.encode(module, msg.sender, codeHash)
+            )
+        );
 
-    function getAttestationFromAuthorities(
-        IRSAuthority[] calldata _authority,
-        address moduleAddr
-    )
-        public
-        view
-        returns (Attestation[] memory attestations_)
-    {
-        uint256 authorityLength = _authority.length;
-        bytes32 currentCodeHash = moduleAddr.codeHash();
-        attestations_ = new Attestation[](authorityLength);
-        for (uint256 i; i < authorityLength; ++i) {
-            attestations_[i] =
-                getAttestationFromAuthority(_authority[i], moduleAddr, currentCodeHash);
+        if (returnData.length > 0) {
+            attestation_ = abi.decode(returnData, (Attestation));
+        } else {
+            attestation_ = Attestation({
+                risk: 0,
+                confidence: 0,
+                state: AttestationState.None,
+                codeHash: codeHash,
+                data: ""
+            });
         }
     }
 
     function fetchAttestation(
         IRSAuthority[] calldata _authority,
-        address moduleAddr
+        address moduleAddr,
+        uint8 threshold
     )
         external
         view
         returns (Attestation[] memory attestations_)
     {
-        attestations_ = getAttestationFromAuthorities(_authority, moduleAddr);
         uint256 authorityLength = _authority.length;
+        bytes32 currentCodeHash = moduleAddr.codeHash();
+        if (threshold > authorityLength || threshold == 0) threshold = uint8(authorityLength);
+        attestations_ = new Attestation[](authorityLength);
 
         for (uint256 i; i < authorityLength; ++i) {
-            if (attestations_[i].state != AttestationState.Verified) {
-                revert SecurityAlert(moduleAddr, address(_authority[i]));
-            }
+            attestations_[i] = _tryPullAttestation(_authority[i], moduleAddr, currentCodeHash);
+            if (attestations_[i].state == AttestationState.Verified) --threshold;
+            if (threshold == 0) break;
         }
+        if (threshold != 0) revert ThresholdNotReached(threshold, moduleAddr);
     }
+
     /// @notice Queries a contract's attestation status.
     /// @param moduleAddr The address of the contract to be queried.
     /// @param authority The authority conducting the attestation.
@@ -385,3 +392,4 @@ error InvalidCodeHash(bytes32 expected, bytes32 actual); // Emitted when the con
 error RiskTooHigh(uint8 risk); // Emitted when the risk level is too high.
 error AlreadyRegistered(address moduleAddr); // Emitted when the contract is already registered.
 error SecurityAlert(address moduleAddr, address authority);
+error ThresholdNotReached(uint256 threshold, address moduleAddr);

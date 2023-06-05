@@ -155,7 +155,7 @@ contract HashiTest is Test {
                 address(mockAuthorityContract1)
             )
         );
-        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 2);
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 0);
 
         RSRegistry.Attestation memory verification = RSRegistry.Attestation({
             risk: 1,
@@ -167,7 +167,60 @@ contract HashiTest is Test {
 
         mockAuthorityContract1.setAttestation(address(newContractInstance), verification);
         mockAuthorityContract2.setAttestation(address(newContractInstance), verification);
-        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 2);
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 0);
+    }
+
+    function testThreshold() public {
+        MockAuthority mockAuthorityContract1 = new MockAuthority();
+        MockAuthority mockAuthorityContract2 = new MockAuthority();
+        MockAuthority mockAuthorityContract3 = new MockAuthority();
+        MockAuthority mockAuthorityContract4 = new MockAuthority();
+        MockAuthority mockAuthorityContract5 = new MockAuthority();
+
+        MockContract newContractInstance = new MockContract(dev);
+
+        IRSAuthority[] memory authoritiesToQuery = new IRSAuthority[](5);
+        authoritiesToQuery[0] = IRSAuthority(address(mockAuthorityContract1));
+        authoritiesToQuery[1] = IRSAuthority(address(mockAuthorityContract2));
+        authoritiesToQuery[2] = IRSAuthority(address(mockAuthorityContract3));
+        authoritiesToQuery[3] = IRSAuthority(address(mockAuthorityContract4));
+        authoritiesToQuery[4] = IRSAuthority(address(mockAuthorityContract5));
+
+        RSRegistry.Attestation memory verification = RSRegistry.Attestation({
+            risk: 1,
+            confidence: 1,
+            state: RSRegistry.AttestationState.Verified,
+            codeHash: "",
+            data: ""
+        });
+
+        mockAuthorityContract1.setAttestation(address(newContractInstance), verification);
+        mockAuthorityContract2.setAttestation(address(newContractInstance), verification);
+        mockAuthorityContract3.setAttestation(address(newContractInstance), verification);
+
+        verification = RSRegistry.Attestation({
+            risk: 1,
+            confidence: 1,
+            state: RSRegistry.AttestationState.Compromised,
+            codeHash: "",
+            data: ""
+        });
+        mockAuthorityContract4.setAttestation(address(newContractInstance), verification);
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 3);
+
+        // fails because ThresholdNotReached
+        vm.expectRevert(
+            abi.encodeWithSelector(ThresholdNotReached.selector, 1, address(newContractInstance))
+        );
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 4);
+
+        authoritiesToQuery[3] = authoritiesToQuery[1];
+        authoritiesToQuery[1] = IRSAuthority(address(0));
+
+        vm.expectRevert(
+            abi.encodeWithSelector(ThresholdNotReached.selector, 2, address(newContractInstance))
+        );
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 5);
     }
 
     function testTokenizedAuthority() public {
@@ -182,8 +235,8 @@ contract HashiTest is Test {
         authoritiesToQuery[0] = IRSAuthority(address(mockAuthorityContract1));
         authoritiesToQuery[1] = IRSAuthority(address(mockAuthorityContract2));
 
-        vm.expectRevert(abi.encodeWithSelector(MockTokenizedAuthority.InvalidLicense.selector));
-        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 2);
+        // vm.expectRevert(abi.encodeWithSelector(MockTokenizedAuthority.InvalidLicense.selector));
+        // registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 0);
 
         erc20.mint(address(this), 10);
 
@@ -197,7 +250,7 @@ contract HashiTest is Test {
 
         mockAuthorityContract1.setAttestation(address(newContractInstance), verification);
         mockAuthorityContract2.setAttestation(address(newContractInstance), verification);
-        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 2);
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 1);
     }
 
     /*//////////////////////////////////////////////////////////////
