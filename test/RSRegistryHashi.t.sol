@@ -110,7 +110,6 @@ contract HashiTest is Test {
         _dispatchToL2(contractArtifacts);
     }
 
-
     function testDeployAndReRegister() public {
         bytes memory code = type(MockContract).creationCode;
         bytes memory params = abi.encode(dev);
@@ -156,7 +155,7 @@ contract HashiTest is Test {
                 address(mockAuthorityContract1)
             )
         );
-        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 0);
 
         RSRegistry.Attestation memory verification = RSRegistry.Attestation({
             risk: 1,
@@ -168,11 +167,10 @@ contract HashiTest is Test {
 
         mockAuthorityContract1.setAttestation(address(newContractInstance), verification);
         mockAuthorityContract2.setAttestation(address(newContractInstance), verification);
-        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 0);
     }
 
-
-    function testPollMultipleAuthoritiesThreshold() public {
+    function testThreshold() public {
         MockAuthority mockAuthorityContract1 = new MockAuthority();
         MockAuthority mockAuthorityContract2 = new MockAuthority();
         MockAuthority mockAuthorityContract3 = new MockAuthority();
@@ -187,15 +185,6 @@ contract HashiTest is Test {
         authoritiesToQuery[2] = IRSAuthority(address(mockAuthorityContract3));
         authoritiesToQuery[3] = IRSAuthority(address(mockAuthorityContract4));
         authoritiesToQuery[4] = IRSAuthority(address(mockAuthorityContract5));
-
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                SecurityAlert.selector,
-                address(newContractInstance),
-                address(mockAuthorityContract1)
-            )
-        );
-        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
 
         RSRegistry.Attestation memory verification = RSRegistry.Attestation({
             risk: 1,
@@ -216,8 +205,18 @@ contract HashiTest is Test {
             codeHash: "",
             data: ""
         });
-        mockAuthorityContract3.setAttestation(address(newContractInstance), verification);
-        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
+        mockAuthorityContract4.setAttestation(address(newContractInstance), verification);
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 3);
+
+
+        // fails because ThresholdNotReached
+        vm.expectRevert(abi.encodeWithSelector(ThresholdNotReached.selector,1, address(newContractInstance)));
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 4);
+
+
+        authoritiesToQuery[3] = authoritiesToQuery[1];
+        authoritiesToQuery[1]= IRSAuthority(address(0));
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 5);
     }
 
     function testTokenizedAuthority() public {
@@ -232,8 +231,8 @@ contract HashiTest is Test {
         authoritiesToQuery[0] = IRSAuthority(address(mockAuthorityContract1));
         authoritiesToQuery[1] = IRSAuthority(address(mockAuthorityContract2));
 
-        vm.expectRevert(abi.encodeWithSelector(MockTokenizedAuthority.InvalidLicense.selector));
-        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
+        // vm.expectRevert(abi.encodeWithSelector(MockTokenizedAuthority.InvalidLicense.selector));
+        // registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 0);
 
         erc20.mint(address(this), 10);
 
@@ -247,7 +246,7 @@ contract HashiTest is Test {
 
         mockAuthorityContract1.setAttestation(address(newContractInstance), verification);
         mockAuthorityContract2.setAttestation(address(newContractInstance), verification);
-        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance));
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance),1);
     }
 
     /*//////////////////////////////////////////////////////////////

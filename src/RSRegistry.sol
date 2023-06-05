@@ -191,7 +191,7 @@ contract RSRegistry {
         emit Deployment(moduleAddr, contractCodeHash);
     }
 
-    function getAttestationFromAuthority(
+    function pullAttestationFromAuthority(
         IRSAuthority authority,
         address module,
         bytes32 codeHash
@@ -205,32 +205,16 @@ contract RSRegistry {
         ) {
             attestation_ = _attestation;
         } catch {
-            attestation_ = Attestation({
-                risk: 0,
-                confidence: 0,
-                state: AttestationState.None,
-                codeHash: "",
-                data: ""
-            });
+          attestation_ = Attestation({
+              risk: 0,
+              confidence: 0,
+              state: AttestationState.None,
+              codeHash: codeHash,
+              data: ""
+          });
         }
     }
 
-    function getAttestationFromAuthorities(
-        IRSAuthority[] calldata _authority,
-        address moduleAddr
-    )
-        public
-        view
-        returns (Attestation[] memory attestations_)
-    {
-        uint256 authorityLength = _authority.length;
-        bytes32 currentCodeHash = moduleAddr.codeHash();
-        attestations_ = new Attestation[](authorityLength);
-        for (uint256 i; i < authorityLength; ++i) {
-            attestations_[i] =
-                getAttestationFromAuthority(_authority[i], moduleAddr, currentCodeHash);
-        }
-    }
 
     function fetchAttestation(
         IRSAuthority[] calldata _authority,
@@ -243,34 +227,18 @@ contract RSRegistry {
     {
         uint256 authorityLength = _authority.length;
         bytes32 currentCodeHash = moduleAddr.codeHash();
-        if (authorityLength > threshold) revert();
+        if (threshold > authorityLength || threshold == 0) threshold = uint8(authorityLength);
         attestations_ = new Attestation[](authorityLength);
 
         for (uint256 i; i < authorityLength; ++i) {
             attestations_[i] =
-                getAttestationFromAuthority(_authority[i], moduleAddr, currentCodeHash);
-            if (attestations_[i].state == AttestationState.Verified) threshold--;
+                pullAttestationFromAuthority(_authority[i], moduleAddr, currentCodeHash);
+            if (attestations_[i].state == AttestationState.Verified) --threshold;
             if (threshold == 0) break;
         }
+        if (threshold != 0) revert ThresholdNotReached(threshold, moduleAddr);
     }
 
-    function fetchAttestation(
-        IRSAuthority[] calldata _authority,
-        address moduleAddr
-    )
-        external
-        view
-        returns (Attestation[] memory attestations_)
-    {
-        attestations_ = getAttestationFromAuthorities(_authority, moduleAddr);
-        uint256 authorityLength = _authority.length;
-
-        for (uint256 i; i < authorityLength; ++i) {
-            if (attestations_[i].state != AttestationState.Verified) {
-                revert SecurityAlert(moduleAddr, address(_authority[i]));
-            }
-        }
-    }
     /// @notice Queries a contract's attestation status.
     /// @param moduleAddr The address of the contract to be queried.
     /// @param authority The authority conducting the attestation.
@@ -419,3 +387,4 @@ error InvalidCodeHash(bytes32 expected, bytes32 actual); // Emitted when the con
 error RiskTooHigh(uint8 risk); // Emitted when the risk level is too high.
 error AlreadyRegistered(address moduleAddr); // Emitted when the contract is already registered.
 error SecurityAlert(address moduleAddr, address authority);
+error ThresholdNotReached(uint256 threshold, address moduleAddr);
