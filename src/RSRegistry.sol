@@ -16,10 +16,13 @@ import { IRSAuthority } from "./interface/IRSAuthority.sol";
 // Helper functions for this contract
 import { RSRegistryLib } from "./lib/RSRegistryLib.sol";
 
+import "forge-std/console2.sol";
+
 // A registry contract for managing various types of records, including contract implementations,
 contract RSRegistry {
     using RSRegistryLib for address;
     using RSRegistryLib for bytes;
+    using RSRegistryLib for IRSAuthority;
 
     // Struct that holds information about the verifier.
     struct VerifierInfo {
@@ -191,30 +194,34 @@ contract RSRegistry {
         emit Deployment(moduleAddr, contractCodeHash);
     }
 
-    function pullAttestationFromAuthority(
+    function _tryPullAttestation(
         IRSAuthority authority,
         address module,
         bytes32 codeHash
     )
-        public
+        internal
         view
         returns (Attestation memory attestation_)
     {
-        try authority.getAttestation(module, msg.sender, codeHash) returns (
-            Attestation memory _attestation
-        ) {
-            attestation_ = _attestation;
-        } catch {
-          attestation_ = Attestation({
-              risk: 0,
-              confidence: 0,
-              state: AttestationState.None,
-              codeHash: codeHash,
-              data: ""
-          });
+        (, bytes memory returnData) = address(authority).staticcall( // This creates a low level call to the token
+            abi.encodePacked( // This encodes the function to call and the parameters to pass to that function
+                IRSAuthority.getAttestation.selector, // This is the function identifier of the function we want to call
+                abi.encode(module, msg.sender, codeHash) // This encodes the parameter we want to pass to the function
+            )
+        );
+
+        if (returnData.length > 0) {
+            attestation_ = abi.decode(returnData, (Attestation));
+        } else {
+            attestation_ = Attestation({
+                risk: 0,
+                confidence: 0,
+                state: AttestationState.None,
+                codeHash: codeHash,
+                data: ""
+            });
         }
     }
-
 
     function fetchAttestation(
         IRSAuthority[] calldata _authority,
@@ -231,8 +238,7 @@ contract RSRegistry {
         attestations_ = new Attestation[](authorityLength);
 
         for (uint256 i; i < authorityLength; ++i) {
-            attestations_[i] =
-                pullAttestationFromAuthority(_authority[i], moduleAddr, currentCodeHash);
+            attestations_[i] = _tryPullAttestation(_authority[i], moduleAddr, currentCodeHash);
             if (attestations_[i].state == AttestationState.Verified) --threshold;
             if (threshold == 0) break;
         }

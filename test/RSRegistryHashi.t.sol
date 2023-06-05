@@ -208,14 +208,18 @@ contract HashiTest is Test {
         mockAuthorityContract4.setAttestation(address(newContractInstance), verification);
         registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 3);
 
-
         // fails because ThresholdNotReached
-        vm.expectRevert(abi.encodeWithSelector(ThresholdNotReached.selector,1, address(newContractInstance)));
+        vm.expectRevert(
+            abi.encodeWithSelector(ThresholdNotReached.selector, 1, address(newContractInstance))
+        );
         registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 4);
 
-
         authoritiesToQuery[3] = authoritiesToQuery[1];
-        authoritiesToQuery[1]= IRSAuthority(address(0));
+        authoritiesToQuery[1] = IRSAuthority(address(0));
+
+        vm.expectRevert(
+            abi.encodeWithSelector(ThresholdNotReached.selector, 2, address(newContractInstance))
+        );
         registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 5);
     }
 
@@ -246,7 +250,7 @@ contract HashiTest is Test {
 
         mockAuthorityContract1.setAttestation(address(newContractInstance), verification);
         mockAuthorityContract2.setAttestation(address(newContractInstance), verification);
-        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance),1);
+        registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 1);
     }
 
     /*//////////////////////////////////////////////////////////////
