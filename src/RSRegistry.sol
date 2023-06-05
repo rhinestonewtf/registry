@@ -200,7 +200,19 @@ contract RSRegistry {
         view
         returns (Attestation memory attestation_)
     {
-        attestation_ = authority.getAttestation(module, msg.sender, codeHash);
+        try authority.getAttestation(module, msg.sender, codeHash) returns (
+            Attestation memory _attestation
+        ) {
+            attestation_ = _attestation;
+        } catch {
+            attestation_ = Attestation({
+                risk: 0,
+                confidence: 0,
+                state: AttestationState.None,
+                codeHash: "",
+                data: ""
+            });
+        }
     }
 
     function getAttestationFromAuthorities(
@@ -217,6 +229,28 @@ contract RSRegistry {
         for (uint256 i; i < authorityLength; ++i) {
             attestations_[i] =
                 getAttestationFromAuthority(_authority[i], moduleAddr, currentCodeHash);
+        }
+    }
+
+    function fetchAttestation(
+        IRSAuthority[] calldata _authority,
+        address moduleAddr,
+        uint8 threshold
+    )
+        external
+        view
+        returns (Attestation[] memory attestations_)
+    {
+        uint256 authorityLength = _authority.length;
+        bytes32 currentCodeHash = moduleAddr.codeHash();
+        if (authorityLength > threshold) revert();
+        attestations_ = new Attestation[](authorityLength);
+
+        for (uint256 i; i < authorityLength; ++i) {
+            attestations_[i] =
+                getAttestationFromAuthority(_authority[i], moduleAddr, currentCodeHash);
+            if (attestations_[i].state == AttestationState.Verified) threshold--;
+            if (threshold == 0) break;
         }
     }
 
