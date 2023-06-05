@@ -203,10 +203,9 @@ contract RSRegistry {
         view
         returns (Attestation memory attestation_)
     {
-        (, bytes memory returnData) = address(authority).staticcall( // This creates a low level call to the token
-            abi.encodePacked( // This encodes the function to call and the parameters to pass to that function
-                IRSAuthority.getAttestation.selector, // This is the function identifier of the function we want to call
-                abi.encode(module, msg.sender, codeHash) // This encodes the parameter we want to pass to the function
+        (, bytes memory returnData) = address(authority).staticcall(
+            abi.encodePacked(
+                IRSAuthority.getAttestation.selector, abi.encode(module, msg.sender, codeHash)
             )
         );
 
