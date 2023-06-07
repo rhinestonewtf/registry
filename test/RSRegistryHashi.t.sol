@@ -149,11 +149,7 @@ contract HashiTest is Test {
         authoritiesToQuery[1] = IRSAuthority(address(mockAuthorityContract2));
 
         vm.expectRevert(
-            abi.encodeWithSelector(
-                SecurityAlert.selector,
-                address(newContractInstance),
-                address(mockAuthorityContract1)
-            )
+            abi.encodeWithSelector(ThresholdNotReached.selector, 2, address(newContractInstance))
         );
         registryL1.fetchAttestation(authoritiesToQuery, address(newContractInstance), 0);
 
