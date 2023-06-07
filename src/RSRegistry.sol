@@ -222,6 +222,17 @@ contract RSRegistry {
         }
     }
 
+    /// @notice This function does not alter any state variables, and it's marked as view. It does
+    /// however make external calls that could potentially revert, so the function itself could still
+    /// revert for reasons other than the view status.
+    /// @dev Fetch attestation data for a given module from the list of authorities.
+    /// It requires a certain threshold of verifications to succeed.
+    /// @param _authority An array of IRSAuthority contracts from which the attestation data should be fetched.
+    /// @param moduleAddr The address of the module for which attestation data should be fetched.
+    /// @param threshold The minimum number of valid attestations required for the function to successfully return.
+    /// @return attestations_ An array of attestation data fetched from the provided IRSAuthority contracts.
+    /// This array might be shorter than the input array of authorities, if the function was able to find enough
+    /// valid attestations before going through the whole list.
     function fetchAttestation(
         IRSAuthority[] calldata _authority,
         address moduleAddr,
@@ -249,7 +260,6 @@ contract RSRegistry {
     /// @param authority The authority conducting the attestation.
     /// @param acceptedRisk The accepted risk level.
     /// @return true if the attestation status is acceptable, false otherwise.
-
     function fetchAttestation(
         address moduleAddr,
         address authority,
