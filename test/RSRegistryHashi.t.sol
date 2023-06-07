@@ -19,6 +19,7 @@ import "hashi/adapters/AMB/AMBMessageRelayer.sol";
 import "hashi/adapters/AMB/test/MockAMB.sol";
 
 import "../src/RSRegistry.sol";
+import "../src/lib/RSRegistryLib.sol";
 import "../src/interface/IRSAuthority.sol";
 
 import "./mock/MockAuthority.sol";
@@ -67,7 +68,7 @@ contract HashiTest is Test {
     address dev = makeAddr("dev");
     address authority1 = makeAddr("authority1");
 
-    function setUp() virtual public {
+    function setUp() public virtual {
         hashi = new Hashi();
         giriGiriBashi = new GiriGiriBashi(signer, address(hashi));
         yaho = new Yaho();
