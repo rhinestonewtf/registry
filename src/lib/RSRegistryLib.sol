@@ -32,7 +32,9 @@ library RSRegistryLib {
         bytes memory initCode = abi.encodePacked(createCode, params);
         // this enforces, that constructor params were supplied via params argument
         // if params were abi.encodePacked in createCode, this will revert
-        if (calcAddress(initCode, salt) == calcAddress(createCode, salt)) revert InvalidCode();
+        if (calcAddress(initCode, salt) == calcAddress(createCode, salt)) {
+            revert InvalidDeployment();
+        }
         initCodeHash = keccak256(initCode);
 
         assembly {
@@ -56,5 +58,5 @@ library RSRegistryLib {
         return address(uint160(uint256(hash)));
     }
 
-    error InvalidCode();
+    error InvalidDeployment();
 }
