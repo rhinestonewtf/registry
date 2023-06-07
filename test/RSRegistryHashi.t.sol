@@ -102,6 +102,16 @@ contract HashiTest is Test {
         address deployment2 = registryL1.deploy(code, params2, 1, "");
     }
 
+    function testDeployPacked() public {
+        bytes memory code = type(MockContract).creationCode;
+        bytes memory params = abi.encode(dev);
+
+        bytes memory packed = abi.encodePacked(code, params);
+        // deploy MUST fail when constructor params are packed to the bytecode
+        vm.expectRevert(abi.encodeWithSelector(RSRegistryLib.InvalidDeployment.selector));
+        address deployment = registryL1.deploy(packed, "", 1, "");
+    }
+
     function testDispatch() public {
         address newContract = testRegisterExistingContract();
         _verifyContract(authority1, newContract);
