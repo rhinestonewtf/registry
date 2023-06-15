@@ -13,6 +13,7 @@ contract RSRegistryEASTest is EASTest, EIP712 {
     RSRegistryEAS registry;
 
     address module = makeAddr("module1");
+
     constructor() EIP712("EAS", "0.28") { }
 
     function setUp() public override {
@@ -55,7 +56,7 @@ contract RSRegistryEASTest is EASTest, EIP712 {
         attestationId = registry.attest(module, attData, signature);
     }
 
-    function testChainAttestation() public returns(bytes32 attestationId){
+    function testChainAttestation() public returns (bytes32 attestationId) {
         (bytes32 schemaUid, bytes32 originalAttestation) = testRegistryAttest();
 
         uint256 authority2Priv = 2;
@@ -77,16 +78,14 @@ contract RSRegistryEASTest is EASTest, EIP712 {
         });
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(authority2Priv, digest);
         EIP712Signature memory signature = EIP712Signature({ v: v, r: r, s: s });
-        
+
         vm.prank(authority2);
         attestationId = registry.attest(module, attData, signature);
     }
 
-    function testValidate() public{
+    function testValidate() public {
+        bytes32 chainedAttId = testChainAttestation();
 
-      bytes32 chainedAttId = testChainAttestation();
-
-      registry.validate(module, chainedAttId);
-
+        registry.validate(module, chainedAttId);
     }
 }

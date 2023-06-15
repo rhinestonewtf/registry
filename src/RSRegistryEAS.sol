@@ -7,7 +7,6 @@ import "@eas/IEAS.sol";
 import "@eas/ISchemaRegistry.sol";
 
 import { RSRegistryLib } from "./lib/RSRegistryLib.sol";
-import "forge-std/console2.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract RSRegistryEAS {
@@ -83,6 +82,7 @@ contract RSRegistryEAS {
         address attester
     )
         public
+        view
         returns (bytes32 digest)
     {
         bytes32 ATTEST_TYPEHASH = eas.getAttestTypeHash();
@@ -129,6 +129,7 @@ contract RSRegistryEAS {
         require(attestation.recipient == _moduleAddr, "Invalid recipient");
         require(attestation.revocationTime == 0, "Attestation revoked");
 
+        // recursion is a bit ugly, but it might be a good way to validate the attestation chain
         if (attestation.refUID != EMPTY_UID) {
             validate(_moduleAddr, attestation.refUID);
         }
