@@ -116,6 +116,21 @@ contract RSRegistryEAS {
 
     function validate(
         address _moduleAddr,
+        address[] memory _attesters
+    )
+        public
+        view
+        returns (Attestation[] memory attestations)
+    {
+        uint256 length = _attesters.length;
+        attestations = new Attestation[](length);
+        for (uint256 i; i < length; ++i) {
+            attestations[i] = validate(_moduleAddr, _attesters[i]);
+        }
+    }
+
+    function validate(
+        address _moduleAddr,
         bytes32 _attestationId
     )
         public
