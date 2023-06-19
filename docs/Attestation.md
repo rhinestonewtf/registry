@@ -30,3 +30,21 @@ to allow for complex attestation verifiction models, attestors may utilize the r
 Chaining of attestations can allow for complex trust delegation models.
 
 
+### Attestation Incentives
+- Monetization can be implemented in Resolvers
+
+## Verifiction of Attestations
+the registry exposes a function that allows smart accounts or end users to query security attestations for a selected module.
+this functionality can be called during module installation or execution.
+
+## Challenges
+
+different smart accounts will have different querying needs:
+- threshold of n/m authorities
+- chained attestations
+- revert vs return false
+
+
+
+
+

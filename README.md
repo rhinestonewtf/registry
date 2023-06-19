@@ -1,6 +1,6 @@
 <img align="right" width="150" height="150" top="100" src="./public/readme.jpg">
 
-# Rhinestone Regsitry • [![tests](https://github.com/rhinestonewtf/registry/actions/workflows/ci.yml/badge.svg?label=tests)](https://github.com/rhinestonewtf/registry/actions/workflows/ci.yml) ![license](https://img.shields.io/github/license/rhinestonewtf/registry?label=license) ![solidity](https://img.shields.io/badge/solidity-^0.8.17-lightgrey)
+# Rhinestone Regsitry •  ![license](https://img.shields.io/github/license/rhinestonewtf/registry?label=license) ![solidity](https://img.shields.io/badge/solidity-^0.8.17-lightgrey)
 
 This Contract is in active development. Do not use this in Prod!
 
@@ -9,10 +9,23 @@ This Contract is in active development. Do not use this in Prod!
 
 RSRegistry allows developers to deploy modules / components for smart accounts. RSRegistry is a permissionless 
 
-#### Security Attestations
-The RhinestoneRegistry allows Authorities to conduct comprehensive security assessments of third-party modules or other 
+#### Modules
+
+Modules are smart contracts that act as modular components that can be added to smart accounts.
+The registry is agnostic towards smart account or module implementations.
+
+#### Authorities 
+The RhinestoneRegistry allows [Authorities](./docs/Authorities.md) to conduct comprehensive security assessments of third-party modules or other 
 contracts before their integration. Authorities can check for potential vulnerabilities, adherence to best security practices, 
 and code quality, ensuring that these modules don't introduce security risks to users or an integrated product (i.e. Smart Account).
+
+#### Attestation Schemas
+[Schemas](./docs/Schemas.md) are ABIs that define the data fields needed for attestations. 
+
+#### Attestations
+[Attestations](./docs/Attestation.md) are digital records of cryptographically signed artifacs that attest to security / safety of a module. 
+Since different authorities may have different needs of data fields in these artifacts, a 
+
 
 #### Transparency and Trust
 By openly verifying and validating third-party modules, Authorities build trust with the ecosystem and their user base. 
@@ -40,12 +53,6 @@ where entities can share, validate, and verify smart contracts across chains.
 
 ![Architecture](./public/docs/architecture.png)
 
-
-
-
-
-### Attestation Incentives
-- Monetization can be implemented in Resolvers
 
 
 ### Limitations
