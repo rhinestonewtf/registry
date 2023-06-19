@@ -39,7 +39,7 @@ vulnerabilities. Authorities can ensure that only the latest and safest versions
 enhancing the overall security and functionality. Authorities may also chose to revoke attestations made in the past.
 
 #### Cross-Chain Consistency
-If your product operates ![across multiple Ethereum](./docs/L2Propagation.md) chains, the RhinestoneRegistry can ensure the consistency of modules across these chains. 
+If your product operates [across multiple Ethereum](./docs/L2Propagation.md) chains, the RhinestoneRegistry can ensure the consistency of modules across these chains. 
 This feature will prevent versioning issues, guaranteeing that users experience the same level of security and functionality, 
 irrespective of the chain they're on.
 
