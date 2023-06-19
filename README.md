@@ -13,6 +13,7 @@ RSRegistry allows developers to deploy modules / components for smart accounts. 
 
 Modules are smart contracts that act as modular components that can be added to smart accounts.
 The registry is agnostic towards smart account or module implementations.
+Modules addresses and deployment metadata are ![stored](./docs/ModuleRegistration.md) on the registry.
 
 #### Authorities 
 The RhinestoneRegistry allows Authorities to conduct comprehensive security assessments of third-party modules or other 
