@@ -1,6 +1,6 @@
 <img align="right" width="150" height="150" top="100" src="./public/readme.jpg">
 
-# Rhinestone Regsitry •  ![license](https://img.shields.io/github/license/rhinestonewtf/registry?label=license) ![solidity](https://img.shields.io/badge/solidity-^0.8.17-lightgrey)
+# Rhinestone Registry • RSRegistry ![license](https://img.shields.io/github/license/rhinestonewtf/registry?label=license) ![solidity](https://img.shields.io/badge/solidity-^0.8.17-lightgrey)
 
 This Contract is in active development. Do not use this in Prod!
 
@@ -13,7 +13,7 @@ RSRegistry allows developers to deploy modules / components for smart accounts. 
 
 Modules are smart contracts that act as modular components that can be added to smart accounts.
 The registry is agnostic towards smart account or module implementations.
-Modules addresses and deployment metadata are ![stored](./docs/ModuleRegistration.md) on the registry.
+Modules addresses and deployment metadata are [stored](./docs/ModuleRegistration.md) on the registry.
 
 #### Authorities 
 The RhinestoneRegistry allows Authorities to conduct comprehensive security assessments of third-party modules or other 
@@ -25,7 +25,6 @@ and code quality, ensuring that these modules don't introduce security risks to 
 
 #### Attestations
 [Attestations](./docs/Attestation.md) are digital records of cryptographically signed artifacs that attest to security / safety of a module. 
-Since different authorities may have different needs of data fields in these artifacts, a 
 
 
 #### Transparency and Trust
