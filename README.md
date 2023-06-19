@@ -5,7 +5,41 @@
 This Contract is in active development. Do not use this in Prod!
 
 
-RSRegistry is a Solidity contract that serves as a registry for managing various types of records, including contract implementations, attestations, and verifiers. It provides functionality for deploying, registering, and verifying contracts, as well as dispatching and receiving attestation messages between different chains.
+### Intro
+- registry allows devs to register components/modules
+- authorities can attest to security assumptions to modules
+- registry supports multiple atteastation schemas
+
+
+### Schemas
+- ABI based schema specificationta
+- Ethereum Attestation Service Style Schemas 
+- Resolvers can implement arbitraty checks if authorities issue new attestations for a schema
+- Each module can support one schema
+- anyone can register new schemas
+
+
+### Attestation
+- reference one schema
+- utilize ABI encoded data fields according to schema
+- additionally, data fields like: time, expirationTime, revocationTime, refUID, recipient, attester can be saved
+- Attestattions can reference other Attestations, which makes it possible to chain related attestations, and break the chain of attestations should one be revoked
+- Attestations are save in the Regsitry contract
+- Attestations can be propagated to L2s where contract bytecode is identical to source chain
+
+
+
+
+### Attestation Monetization
+- Monetization can happen within 
+
+
+### Limitations
+- EAS does not support ERC1721, could make sense to fork EAS and add support
+- who select bridged for propagation
+    could let schema owner select bridges required
+
+
 
 ### Prerequisites
 - Solidity version 0.8.19 or later
