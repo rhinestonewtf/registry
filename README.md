@@ -15,7 +15,7 @@ Modules are smart contracts that act as modular components that can be added to 
 The registry is agnostic towards smart account or module implementations.
 
 #### Authorities 
-The RhinestoneRegistry allows [Authorities](./docs/Authorities.md) to conduct comprehensive security assessments of third-party modules or other 
+The RhinestoneRegistry allows Authorities to conduct comprehensive security assessments of third-party modules or other 
 contracts before their integration. Authorities can check for potential vulnerabilities, adherence to best security practices, 
 and code quality, ensuring that these modules don't introduce security risks to users or an integrated product (i.e. Smart Account).
 
@@ -56,7 +56,7 @@ where entities can share, validate, and verify smart contracts across chains.
 
 
 ### Limitations
-- EAS does not support ERC1721, could make sense to fork EAS and add support
+- EAS does not support ERC1721, could make sense to fork EAS and add support. Added [PR](https://github.com/ethereum-attestation-service/eas-contracts/pull/65) to EAS
 - who select bridged for propagation
     could let schema owner select bridges required
 
