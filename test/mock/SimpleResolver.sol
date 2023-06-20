@@ -1,18 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { SchemaResolver } from "@eas/resolver/SchemaResolver.sol";
-
-import { IEAS, Attestation } from "@eas/IEAS.sol";
-
 import "forge-std/console2.sol";
+import { SchemaResolver } from "../../src/resolver/SchemaResolver.sol";
+import { Attestation } from "../../src/Common.sol";
 
 /// @title SimpleResolver
 /// @author zeroknots
 /// @notice ContractDescription
 
 contract SimpleResolver is SchemaResolver {
-    constructor(IEAS eas) SchemaResolver(eas) { }
+    constructor(address rs) SchemaResolver(rs) { }
 
     function onAttest(
         Attestation calldata attestation,
@@ -25,11 +23,6 @@ contract SimpleResolver is SchemaResolver {
     {
         console2.log(attestation.attester);
 
-        bytes32 refUID = attestation.refUID;
-        if (refUID != "") {
-            Attestation memory originalAttestation = _eas.getAttestation(refUID);
-            console2.log("original attestation attester: %s", originalAttestation.attester);
-        }
         return true;
     }
 
