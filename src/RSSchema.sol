@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.19;
 
-import { EMPTY_UID } from "./Common.sol";
+import { EMPTY_UID, AccessDenied } from "./Common.sol";
 import { IRSSchema, SchemaRecord } from "./IRSSchema.sol";
 
 import { ISchemaResolver } from "./resolver/ISchemaResolver.sol";
@@ -34,7 +34,9 @@ contract RSSchema is IRSSchema {
             uid: EMPTY_UID,
             schema: schema,
             resolver: resolver,
-            revocable: revocable
+            revocable: revocable,
+            schemaOwner: msg.sender,
+            bridges: new address[](0)
         });
 
         bytes32 uid = _getUID(schemaRecord);
@@ -48,6 +50,14 @@ contract RSSchema is IRSSchema {
         emit Registered(uid, msg.sender);
 
         return uid;
+    }
+
+    function setBridges(bytes32 uid, address[] calldata bridges) external {
+        SchemaRecord storage schemaRecord = _schemas[uid];
+        if (schemaRecord.schemaOwner != msg.sender) {
+            revert AccessDenied();
+        }
+        schemaRecord.bridges = bridges;
     }
 
     /**

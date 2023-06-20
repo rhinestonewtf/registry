@@ -5,6 +5,15 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import "./eip712/EIP712Verifier.sol";
 import "./IRSAttestation.sol";
 import "./RSSchema.sol";
+import "./RSModuleRegistry.sol";
+
+import { RSRegistryLib } from "./lib/RSRegistryLib.sol";
+
+// Hashi's contract to dispatch messages to L2
+import "hashi/Yaho.sol";
+
+// Hashi's contract to receive messages from L1
+import "hashi/Yaru.sol";
 
 import {
     AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
@@ -18,16 +27,26 @@ struct AttestationsResult {
 /// @author zeroknots
 /// @notice ContractDescription
 
-contract RSAttestation is RSSchema, EIP712Verifier {
+contract RSAttestation is RSSchema, IRSAttestation, RSModuleRegistry, EIP712Verifier {
     using Address for address payable;
+    using RSRegistryLib for address;
 
     mapping(bytes32 uid => Attestation attestation) private _attestations;
+
+    // Instance of Hashi's Yaho contract.
+    Yaho public yaho;
+    // Instance of Hashi's Yaru contract.
+    Yaru public yaru;
+
+    // address of L1 registry
+    address public l1Registry;
 
     error AlreadyRevoked();
     error AlreadyRevokedOffchain();
     error AlreadyTimestamped();
     error InsufficientValue();
     error InvalidAttestation();
+    error InvalidPropagation();
     error InvalidAttestations();
     error InvalidExpirationTime();
     error InvalidOffset();
@@ -39,8 +58,20 @@ contract RSAttestation is RSSchema, EIP712Verifier {
     error Irrevocable();
     error NotPayable();
     error WrongSchema();
+    error InvalidSender(address moduleAddr, address sender); // Emitted when the sender address is invalid.
+    error InvalidCaller(address moduleAddr, address yaruSender); // Emitted when the caller is not the Yaru contract.
 
-    constructor() EIP712Verifier("RSAttestaton", "1.0") { }
+    constructor(
+        Yaho _yaho,
+        Yaru _yaru,
+        address _l1Registry
+    )
+        EIP712Verifier("RSAttestaton", "1.0")
+    {
+        yaho = _yaho;
+        yaru = _yaru;
+        l1Registry = _l1Registry;
+    }
 
     function attest(DelegatedAttestationRequest calldata delegatedRequest)
         external
@@ -127,9 +158,55 @@ contract RSAttestation is RSSchema, EIP712Verifier {
         return _mergeUIDs(totalUids, totalUidsCount);
     }
 
-    function propagateAttest() external { }
+    function propagateAttest(
+        address to,
+        uint256 toChainId,
+        bytes32 attestationId,
+        address moduleOnL2
+    )
+        external
+        returns (Message[] memory messages, bytes32[] memory messageIds)
+    {
+        // Get the attestation record for the contract and the authority.
+        Attestation memory attestationRecord = _attestations[attestationId];
+        Module memory module = _modules[attestationRecord.recipient];
+        bytes32 codeHash = module.implementation.codeHash();
 
-    function attestByPropagation() external { }
+        if (attestationRecord.propagateable == false) {
+            revert InvalidAttestation();
+        }
+
+        // Encode the attestation record into a data payload.
+        bytes memory callReceiveFnOnL2 = abi.encodeWithSelector(
+            this.attestByPropagation.selector, attestationRecord, codeHash, moduleOnL2
+        );
+
+        // Prepare the message for dispatch.
+        messages = new Message[](1);
+        messages[0] = Message({ to: to, toChainId: toChainId, data: callReceiveFnOnL2 });
+
+        messageIds = new bytes32[](1);
+        // Dispatch message to selected L2
+        messageIds = yaho.dispatchMessages(messages);
+    }
+
+    function attestByPropagation(
+        Attestation calldata attestation,
+        bytes32 codeHash,
+        address moduleAddress
+    )
+        external
+        onlyHashi
+    {
+        if (codeHash != moduleAddress.codeHash()) {
+            revert InvalidAttestation();
+        }
+
+        _attestations[attestation.uid] = attestation;
+        emit Attested(
+            attestation.recipient, attestation.attester, attestation.uid, attestation.schema
+        );
+    }
 
     function revoke(DelegatedRevocationRequest calldata request) external payable {
         _verifyRevoke(request);
@@ -142,7 +219,55 @@ contract RSAttestation is RSSchema, EIP712Verifier {
 
     function multiRevoke(MultiDelegatedRevocationRequest[] calldata multiDelegatedRequests)
         external
-    { }
+        payable
+    {
+        // We are keeping track of the total available ETH amount that can be sent to resolvers and will keep deducting
+        // from it to verify that there isn't any attempt to send too much ETH to resolvers. Please note that unless
+        // some ETH was stuck in the contract by accident (which shouldn't happen in normal conditions), it won't be
+        // possible to send too much ETH anyway.
+        uint256 availableValue = msg.value;
+        uint256 length = multiDelegatedRequests.length;
+
+        for (uint256 i; i < length; i = uncheckedInc(i)) {
+            // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there
+            // is a remainder - it will be refunded back to the attester (something that we can only verify during the
+            // last and final batch).
+            bool last;
+            unchecked {
+                last = i == length - 1;
+            }
+
+            MultiDelegatedRevocationRequest memory multiDelegatedRequest = multiDelegatedRequests[i];
+            RevocationRequestData[] memory data = multiDelegatedRequest.data;
+            uint256 dataLength = data.length;
+
+            // Ensure that no inputs are missing.
+            if (dataLength == 0 || dataLength != multiDelegatedRequest.signatures.length) {
+                revert InvalidLength();
+            }
+
+            // Verify EIP712 signatures. Please note that the signatures are assumed to be signed with increasing nonces.
+            for (uint256 j; j < dataLength; j = uncheckedInc(j)) {
+                _verifyRevoke(
+                    DelegatedRevocationRequest({
+                        schema: multiDelegatedRequest.schema,
+                        data: data[j],
+                        signature: multiDelegatedRequest.signatures[j],
+                        revoker: multiDelegatedRequest.revoker
+                    })
+                );
+            }
+
+            // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
+            availableValue -= _revoke(
+                multiDelegatedRequest.schema,
+                data,
+                multiDelegatedRequest.revoker,
+                availableValue,
+                last
+            );
+        }
+    }
 
     /**
      * @dev Attests to a specific schema.
@@ -192,6 +317,11 @@ contract RSAttestation is RSSchema, EIP712Verifier {
                 revert Irrevocable();
             }
 
+            // Ensure that attestation is for module that was registered.
+            if(_modules[request.recipient].implementation == address(0)) {
+                revert InvalidAttestation();
+            }
+
             Attestation memory attestation = Attestation({
                 uid: EMPTY_UID,
                 schema: schema,
@@ -202,6 +332,7 @@ contract RSAttestation is RSSchema, EIP712Verifier {
                 recipient: request.recipient,
                 attester: attester,
                 revocable: request.revocable,
+                propagateable: request.propagateable,
                 data: request.data
             });
 
@@ -538,5 +669,12 @@ contract RSAttestation is RSSchema, EIP712Verifier {
 
     function isAttestationValid(bytes32 uid) public view returns (bool) {
         return _attestations[uid].uid != 0;
+    }
+
+    // Modifier that checks the validity of the caller and sender.
+    modifier onlyHashi() {
+        if (yaru.sender() != l1Registry) revert InvalidSender(address(this), yaru.sender());
+        if (msg.sender != address(yaru)) revert InvalidCaller(address(this), msg.sender);
+        _;
     }
 }

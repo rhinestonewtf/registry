@@ -11,6 +11,7 @@ struct AttestationRequestData {
     address recipient; // The recipient of the attestation.
     uint64 expirationTime; // The time when the attestation expires (Unix timestamp).
     bool revocable; // Whether the attestation is revocable.
+    bool propagateable; // Whether the attestation is propagateable to L2s.
     bytes32 refUID; // The UID of the related attestation.
     bytes data; // Custom attestation data.
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
@@ -94,4 +95,65 @@ struct MultiDelegatedRevocationRequest {
     RevocationRequestData[] data; // The arguments of the revocation requests.
     EIP712Signature[] signatures; // The EIP712 signatures data. Please note that the signatures are assumed to be signed with increasing nonces.
     address revoker; // The revoking account.
+}
+
+interface IRSAttestation {
+    /**
+     * @dev Emitted when an attestation has been made.
+     *
+     * @param recipient The recipient of the attestation.
+     * @param attester The attesting account.
+     * @param uid The UID the revoked attestation.
+     * @param schema The UID of the schema.
+     */
+    event Attested(
+        address indexed recipient, address indexed attester, bytes32 uid, bytes32 indexed schema
+    );
+
+    /**
+     * @dev Emitted when an attestation has been revoked.
+     *
+     * @param recipient The recipient of the attestation.
+     * @param attester The attesting account.
+     * @param schema The UID of the schema.
+     * @param uid The UID the revoked attestation.
+     */
+    event Revoked(
+        address indexed recipient, address indexed attester, bytes32 uid, bytes32 indexed schema
+    );
+
+    /**
+     * @dev Emitted when a data has been timestamped.
+     *
+     * @param data The data.
+     * @param timestamp The timestamp.
+     */
+    event Timestamped(bytes32 indexed data, uint64 indexed timestamp);
+
+
+
+    /**
+     * @dev Emitted when a data has been revoked.
+     *
+     * @param revoker The address of the revoker.
+     * @param data The data.
+     * @param timestamp The timestamp.
+     */
+    event RevokedOffchain(address indexed revoker, bytes32 indexed data, uint64 indexed timestamp);
+
+    function multiAttest(MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests)
+        external
+        payable
+        returns (bytes32[] memory attestationIds);
+
+    function attest(DelegatedAttestationRequest calldata delegatedRequest)
+        external
+        payable
+        returns (bytes32 attestationId);
+
+    function revoke(DelegatedRevocationRequest calldata request) external payable;
+
+    function multiRevoke(MultiDelegatedRevocationRequest[] calldata multiDelegatedRequests)
+        external
+        payable;
 }

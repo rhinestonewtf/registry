@@ -36,6 +36,7 @@ struct Attestation {
     address recipient; // The recipient of the attestation.
     address attester; // The attester/sender of the attestation.
     bool revocable; // Whether the attestation is revocable.
+    bool propagateable; // Whether the attestation is propagateable to L2s.
     bytes data; // Custom attestation data.
 }
 

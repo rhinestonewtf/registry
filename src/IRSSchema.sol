@@ -12,6 +12,8 @@ struct SchemaRecord {
     ISchemaResolver resolver; // Optional schema resolver.
     bool revocable; // Whether the schema allows revocations explicitly.
     string schema; // Custom specification of the schema (e.g., an ABI).
+    address schemaOwner; // The address of the account used to register the schema.
+    address[] bridges; // bridges that must be used for L2 propagation
 }
 
 /**
