@@ -551,7 +551,7 @@ contract RSAttestation is RSSchema, IRSAttestation, RSModuleRegistry, EIP712Veri
             return 0;
         }
 
-        uint256 totalUsedValue = 0;
+        uint256 totalUsedValue;
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
             uint256 value = values[i];
