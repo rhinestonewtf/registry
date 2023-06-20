@@ -130,8 +130,6 @@ interface IRSAttestation {
      */
     event Timestamped(bytes32 indexed data, uint64 indexed timestamp);
 
-
-
     /**
      * @dev Emitted when a data has been revoked.
      *
@@ -156,4 +154,13 @@ interface IRSAttestation {
     function multiRevoke(MultiDelegatedRevocationRequest[] calldata multiDelegatedRequests)
         external
         payable;
+
+    function getAttestationDigest(
+        AttestationRequestData memory attData,
+        bytes32 schemaUid,
+        address attester
+    )
+        external
+        view
+        returns (bytes32 digest);
 }

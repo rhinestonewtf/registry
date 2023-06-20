@@ -27,11 +27,13 @@ struct AttestationsResult {
 /// @author zeroknots
 /// @notice ContractDescription
 
-contract RSAttestation is RSSchema, IRSAttestation, RSModuleRegistry, EIP712Verifier {
+contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
     using Address for address payable;
     using RSRegistryLib for address;
 
-    mapping(bytes32 uid => Attestation attestation) private _attestations;
+    mapping(bytes32 uid => Attestation attestation) internal _attestations;
+    mapping(address module => mapping(address authority => bytes32 attestationId)) internal
+        _moduleToAuthorityToAttestations;
 
     // Instance of Hashi's Yaho contract.
     Yaho public yaho;
@@ -53,7 +55,6 @@ contract RSAttestation is RSSchema, IRSAttestation, RSModuleRegistry, EIP712Veri
     error InvalidRegistry();
     error InvalidRevocation();
     error InvalidRevocations();
-    error InvalidSchema();
     error InvalidVerifier();
     error Irrevocable();
     error NotPayable();
@@ -269,6 +270,32 @@ contract RSAttestation is RSSchema, IRSAttestation, RSModuleRegistry, EIP712Veri
         }
     }
 
+    function getAttestationDigest(
+        AttestationRequestData memory attData,
+        bytes32 schemaUid,
+        address attester
+    )
+        public
+        view
+        returns (bytes32 digest)
+    {
+        bytes32 ATTEST_TYPEHASH = getAttestTypeHash();
+        uint256 nonce = getNonce(attester);
+        bytes32 structHash = keccak256(
+            abi.encode(
+                ATTEST_TYPEHASH,
+                schemaUid,
+                attData.recipient,
+                attData.expirationTime,
+                attData.revocable,
+                attData.refUID,
+                keccak256(attData.data),
+                nonce
+            )
+        );
+        digest = ECDSA.toTypedDataHash(getDomainSeparator(), structHash);
+    }
+
     /**
      * @dev Attests to a specific schema.
      *
@@ -318,7 +345,7 @@ contract RSAttestation is RSSchema, IRSAttestation, RSModuleRegistry, EIP712Veri
             }
 
             // Ensure that attestation is for module that was registered.
-            if(_modules[request.recipient].implementation == address(0)) {
+            if (_modules[request.recipient].implementation == address(0)) {
                 revert InvalidAttestation();
             }
 
@@ -338,20 +365,26 @@ contract RSAttestation is RSSchema, IRSAttestation, RSModuleRegistry, EIP712Veri
 
             // Look for the first non-existing UID (and use a bump seed/nonce in the rare case of a conflict).
             bytes32 uid;
-            uint32 bump = 0;
-            while (true) {
-                uid = _getUID(attestation, bump);
-                if (_attestations[uid].uid == EMPTY_UID) {
-                    break;
-                }
 
-                unchecked {
-                    ++bump;
+            // creating scope to avoid stack too deep
+            {
+                uint32 bump;
+                while (true) {
+                    uid = _getUID(attestation, bump);
+                    if (_attestations[uid].uid == EMPTY_UID) {
+                        break;
+                    }
+
+                    unchecked {
+                        ++bump;
+                    }
                 }
             }
             attestation.uid = uid;
 
+            // saving into contract storage
             _attestations[uid] = attestation;
+            _moduleToAuthorityToAttestations[request.recipient][attester] = uid;
 
             if (request.refUID != 0) {
                 // Ensure that we aren't trying to attest to a non-existing referenced UID.
@@ -365,7 +398,7 @@ contract RSAttestation is RSSchema, IRSAttestation, RSModuleRegistry, EIP712Veri
 
             res.uids[i] = uid;
 
-            // emit Attested(request.recipient, attester, uid, schema);
+            emit Attested(request.recipient, attester, uid, schema);
         }
 
         res.usedValue =
@@ -440,7 +473,7 @@ contract RSAttestation is RSSchema, IRSAttestation, RSModuleRegistry, EIP712Veri
             attestations[i] = attestation;
             values[i] = request.value;
 
-            // emit Revoked(attestation.recipient, revoker, request.uid, attestation.schema);
+            emit Revoked(attestation.recipient, revoker, request.uid, attestation.schema);
         }
 
         return _resolveAttestations(schemaRecord, attestations, values, true, availableValue, last);

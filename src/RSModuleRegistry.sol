@@ -2,8 +2,11 @@
 pragma solidity ^0.8.19;
 
 import { IRSModuleRegistry, Module } from "./IRSModuleRegistry.sol";
+import { InvalidSchema } from "./Common.sol";
+import { IRSSchema, SchemaRecord } from "./IRSSchema.sol";
+import { RSSchema } from "./RSSchema.sol";
 
-contract RSModuleRegistry is IRSModuleRegistry {
+abstract contract RSModuleRegistry is IRSModuleRegistry, RSSchema {
     mapping(address moduleAddress => Module) internal _modules;
 
     /// @notice Deploys a contract.
@@ -16,44 +19,27 @@ contract RSModuleRegistry is IRSModuleRegistry {
         bytes calldata code,
         bytes calldata deployParams,
         uint256 salt,
-        bytes calldata data
+        bytes calldata data,
+        bytes32 schemaId
     )
         external
         returns (address moduleAddr)
     {
+        // ensure provided schemaId exists
+        if (schemaId != getSchema(schemaId).uid) revert InvalidSchema();
         bytes32 initCodeHash; // hash packed(creationCode, deployParams)
         bytes32 contractCodeHash; //  hash of contract bytecode
         (moduleAddr, initCodeHash, contractCodeHash) = _deploy(code, deployParams, salt);
-        _register({
-            moduleAddr: moduleAddr,
+        _modules[moduleAddr] = Module({
+            implementation: moduleAddr,
             codeHash: contractCodeHash,
+            schemaId: schemaId,
             sender: msg.sender,
-            deployParams: deployParams,
+            deployParamsHash: keccak256(deployParams),
             data: data
         });
 
         emit Deployment(moduleAddr, contractCodeHash);
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                              INTERAL
-    //////////////////////////////////////////////////////////////*/
-    function _register(
-        address moduleAddr,
-        bytes32 codeHash,
-        address sender,
-        bytes memory deployParams,
-        bytes memory data
-    )
-        internal
-    {
-        _modules[moduleAddr] = Module({
-            implementation: moduleAddr,
-            codeHash: codeHash,
-            sender: sender,
-            deployParamsHash: keccak256(deployParams),
-            data: data
-        });
     }
 
     /// @notice Creates a new contract using CREATE2 opcode.

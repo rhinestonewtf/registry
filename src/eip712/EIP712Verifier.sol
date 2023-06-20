@@ -49,7 +49,7 @@ abstract contract EIP712Verifier is EIP712 {
     /**
      * @dev Returns the domain separator used in the encoding of the signatures for attest, and revoke.
      */
-    function getDomainSeparator() external view returns (bytes32) {
+    function getDomainSeparator() public view returns (bytes32) {
         return _domainSeparatorV4();
     }
 
@@ -60,28 +60,28 @@ abstract contract EIP712Verifier is EIP712 {
      *
      * @return The current nonce.
      */
-    function getNonce(address account) external view returns (uint256) {
+    function getNonce(address account) public view returns (uint256) {
         return _nonces[account];
     }
 
     /**
      * Returns the EIP712 type hash for the attest function.
      */
-    function getAttestTypeHash() external pure returns (bytes32) {
+    function getAttestTypeHash() public pure returns (bytes32) {
         return ATTEST_TYPEHASH;
     }
 
     /**
      * Returns the EIP712 type hash for the revoke function.
      */
-    function getRevokeTypeHash() external pure returns (bytes32) {
+    function getRevokeTypeHash() public pure returns (bytes32) {
         return REVOKE_TYPEHASH;
     }
 
     /**
      * Returns the EIP712 name.
      */
-    function getName() external view returns (string memory) {
+    function getName() public view returns (string memory) {
         return _name;
     }
 

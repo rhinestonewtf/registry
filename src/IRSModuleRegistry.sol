@@ -6,6 +6,7 @@ struct Module {
     address implementation;
     bytes32 codeHash;
     bytes32 deployParamsHash;
+    bytes32 schemaId;
     address sender;
     bytes data;
 }
@@ -18,7 +19,8 @@ interface IRSModuleRegistry {
         bytes calldata code,
         bytes calldata deployParams,
         uint256 salt,
-        bytes calldata data
+        bytes calldata data,
+        bytes32 schemaId
     )
         external
         returns (address moduleAddr);

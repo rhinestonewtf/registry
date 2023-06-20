@@ -9,7 +9,7 @@ bytes32 constant EMPTY_UID = 0;
 uint64 constant NO_EXPIRATION_TIME = 0;
 
 error AccessDenied();
-error InvalidEAS();
+error InvalidSchema();
 error InvalidLength();
 error InvalidSignature();
 error NotFound();
@@ -33,7 +33,7 @@ struct Attestation {
     uint64 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint64 revocationTime; // The time when the attestation was revoked (Unix timestamp).
     bytes32 refUID; // The UID of the related attestation.
-    address recipient; // The recipient of the attestation.
+    address recipient; // The recipient of the attestation i.e. module
     address attester; // The attester/sender of the attestation.
     bool revocable; // Whether the attestation is revocable.
     bool propagateable; // Whether the attestation is propagateable to L2s.
