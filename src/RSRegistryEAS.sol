@@ -6,11 +6,18 @@ import "@eas/Common.sol";
 import "@eas/IEAS.sol";
 import "@eas/ISchemaRegistry.sol";
 
+// Hashi's contract to dispatch messages to L2
+import "hashi/Yaho.sol";
+
+// Hashi's contract to receive messages from L1
+import "hashi/Yaru.sol";
+
 import { RSRegistryLib } from "./lib/RSRegistryLib.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract RSRegistryEAS {
     using RSRegistryLib for bytes;
+    using RSRegistryLib for address;
 
     EAS eas;
     ISchemaRegistry schemaRegistry;
@@ -149,4 +156,36 @@ contract RSRegistryEAS {
             validate(_moduleAddr, attestation.refUID);
         }
     }
+
+    function dispatchAttestastion(
+        address module,
+        address authority,
+        address to,
+        uint256 toChainId
+    )
+        external
+        returns (Message[] memory messages, bytes32[] memory messageIds)
+    {
+        bytes32 attestationId = moduleDB[module].attestations[authority];
+        Attestation memory attestation = eas.getAttestation(attestationId);
+
+        bytes memory propagationCalldata = abi.encodeWithSelector(
+            this.receiveAttestation.selector, module, authority, module.codeHash(), attestation
+        );
+
+        messages = new Message[](1);
+        messages[0] = Message({ to: to, toChainId: toChainId, data: propagationCalldata });
+
+        messageIds = new bytes32[](1);
+        // Dispatch message to selected L2
+    }
+
+    function receiveAttestation(
+        address moduleAddr,
+        address authority,
+        bytes32 codeHash,
+        Attestation calldata attestation
+    )
+        external
+    { }
 }

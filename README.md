@@ -59,6 +59,7 @@ where entities can share, validate, and verify smart contracts across chains.
 - EAS does not support ERC1721, could make sense to fork EAS and add support. Added [PR](https://github.com/ethereum-attestation-service/eas-contracts/pull/65) to EAS
 - who select bridged for propagation
     could let schema owner select bridges required
+- can a authority make multiple attestation on the same module
 
 
 ### Prerequisites
