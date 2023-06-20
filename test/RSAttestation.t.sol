@@ -88,7 +88,7 @@ contract RSAttestationTest is RSModuleRegistryTest {
             recipient: moduleAddr,
             expirationTime: uint48(0),
             revocable: true,
-            propagateable: true, 
+            propagateable: true,
             refUID: attestationUid, //  <-- here is the reference
             data: abi.encode(true),
             value: 0
