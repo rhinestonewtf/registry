@@ -6,15 +6,17 @@ import { InvalidSchema } from "./Common.sol";
 import { IRSSchema, SchemaRecord } from "./IRSSchema.sol";
 import { RSSchema } from "./RSSchema.sol";
 
-abstract contract RSModuleRegistry is IRSModuleRegistry, RSSchema {
+contract RSModuleRegistry is IRSModuleRegistry, RSSchema {
     mapping(address moduleAddress => Module) internal _modules;
 
+    error InvalidDeployment();
     /// @notice Deploys a contract.
     /// @param code The creationCode for the contract to be deployed.
     /// @param deployParams abi.encode() params supplied for constructor of contract
     /// @param salt The salt for creating the contract.
     /// @param data additonal data provided for registration
     /// @return moduleAddr The address of the deployed contract.
+
     function deploy(
         bytes calldata code,
         bytes calldata deployParams,
@@ -80,12 +82,10 @@ abstract contract RSModuleRegistry is IRSModuleRegistry, RSSchema {
     /// @param _code The contract code that would be deployed.
     /// @param _salt A salt used for the address calculation. This must be the same salt that would be passed to the CREATE2 opcode.
     /// @return The address that the contract would be deployed at if the CREATE2 opcode was called with the specified _code and _salt.
-    function _calcAddress(bytes memory _code, uint256 _salt) internal view returns (address) {
+    function _calcAddress(bytes memory _code, uint256 _salt) public view returns (address) {
         bytes32 hash =
             keccak256(abi.encodePacked(bytes1(0xff), address(this), _salt, keccak256(_code)));
         // NOTE: cast last 20 bytes of hash to address
         return address(uint160(uint256(hash)));
     }
-
-    error InvalidDeployment();
 }

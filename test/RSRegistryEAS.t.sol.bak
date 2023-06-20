@@ -52,6 +52,10 @@ contract RSRegistryEASTest is EASTest, EIP712 {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(authority1Priv, digest);
         EIP712Signature memory signature = EIP712Signature({ v: v, r: r, s: s });
 
+        DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
+
+        });
+
         vm.prank(authority1);
         attestationId = registry.attest(module, attData, signature);
     }

@@ -19,6 +19,8 @@ import {
     AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
 } from "./Common.sol";
 
+import "forge-std/console2.sol";
+
 struct AttestationsResult {
     uint256 usedValue; // Total ETH amount that was sent to resolvers.
     bytes32[] uids; // UIDs of the new attestations.
@@ -80,6 +82,7 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         returns (bytes32 attestationId)
     {
         _verifyAttest(delegatedRequest);
+        console2.log("Verified");
 
         AttestationRequestData[] memory data = new AttestationRequestData[](1);
         data[0] = delegatedRequest.data;

@@ -6,13 +6,15 @@ import "../src/RSSchema.sol";
 import "../src/resolver/ISchemaResolver.sol";
 import { SimpleResolver } from "./mock/SimpleResolver.sol";
 
+import { AccessDenied } from "../src/Common.sol";
+
 /// @title RSSchemaTest
 /// @author zeroknots
 contract RSSchemaTest is Test {
     RSSchema schema;
     SimpleResolver simpleResolver;
 
-    function setUp() public {
+    function setUp() public virtual {
         schema = new RSSchema();
         simpleResolver = new SimpleResolver(address(schema));
     }
@@ -24,6 +26,18 @@ contract RSSchemaTest is Test {
     )
         public
         returns (bytes32)
+    {
+        return (registerSchema(schema, abi, resolver, revocable));
+    }
+
+    function registerSchema(
+        RSSchema registry,
+        string memory abi,
+        ISchemaResolver resolver,
+        bool revocable
+    )
+        internal
+        returns (bytes32 schemaId)
     {
         return schema.register(abi, resolver, revocable);
     }
@@ -38,6 +52,22 @@ contract RSSchemaTest is Test {
         bridges[0] = address(1);
         bridges[1] = address(2);
 
+        schema.setBridges(schemaId, bridges);
+    }
+
+    function testFailUnauthorizedUpdateBridges() public {
+        string memory abi = "test";
+        ISchemaResolver resolver = simpleResolver;
+
+        bytes32 schemaId = testRegisterSchema({ abi: abi, resolver: resolver, revocable: true });
+
+        address[] memory bridges = new address[](2);
+        bridges[0] = address(1);
+        bridges[1] = address(2);
+
+        address bob = address(0x1234);
+
+        vm.prank(bob);
         schema.setBridges(schemaId, bridges);
     }
 }
