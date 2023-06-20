@@ -9,7 +9,7 @@ import { Attestation, EIP712Signature } from "./Common.sol";
  */
 struct AttestationRequestData {
     address recipient; // The recipient of the attestation.
-    uint64 expirationTime; // The time when the attestation expires (Unix timestamp).
+    uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     bool revocable; // Whether the attestation is revocable.
     bool propagateable; // Whether the attestation is propagateable to L2s.
     bytes32 refUID; // The UID of the related attestation.

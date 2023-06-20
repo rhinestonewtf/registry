@@ -29,12 +29,12 @@ struct EIP712Signature {
 struct Attestation {
     bytes32 uid; // A unique identifier of the attestation.
     bytes32 schema; // The unique identifier of the schema.
-    uint64 time; // The time when the attestation was created (Unix timestamp).
-    uint64 expirationTime; // The time when the attestation expires (Unix timestamp).
-    uint64 revocationTime; // The time when the attestation was revoked (Unix timestamp).
     bytes32 refUID; // The UID of the related attestation.
     address recipient; // The recipient of the attestation i.e. module
     address attester; // The attester/sender of the attestation.
+    uint48 time; // The time when the attestation was created (Unix timestamp).
+    uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
+    uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
     bool revocable; // Whether the attestation is revocable.
     bool propagateable; // Whether the attestation is propagateable to L2s.
     bytes data; // Custom attestation data.

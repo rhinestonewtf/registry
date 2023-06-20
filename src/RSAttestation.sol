@@ -663,8 +663,8 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
      * @dev Returns the current's block timestamp. This method is overridden during tests and used to simulate the
      * current block time.
      */
-    function _time() internal view virtual returns (uint64) {
-        return uint64(block.timestamp);
+    function _time() internal view virtual returns (uint48) {
+        return uint48(block.timestamp);
     }
 
     /**
