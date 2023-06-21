@@ -9,7 +9,7 @@ import "./RSAttestation.sol";
 /// @title RSRegistry
 /// @author zeroknots
 /// @notice The global attestation registry.
-contract RSRegistry is RSAttestation {
+contract RSRegistry is RSModuleRegistry, RSAttestation {
     error RevokedAttestation(bytes32 attestationId);
 
     constructor(

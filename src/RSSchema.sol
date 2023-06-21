@@ -96,14 +96,14 @@ contract RSSchema is IRSSchema {
     /**
      * @inheritdoc IRSSchema
      */
-    function getSchema(bytes32 uid) public view returns (SchemaRecord memory) {
+    function getSchema(bytes32 uid) public view override returns (SchemaRecord memory) {
         return _schemas[uid];
     }
 
     /**
      * @inheritdoc IRSSchema
      */
-    function getBridges(bytes32 uid) public view returns (address[] memory) {
+    function getBridges(bytes32 uid) public view override returns (address[] memory) {
         return _schemas[uid].bridges;
     }
 
