@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { IRSModuleRegistry, Module } from "./IRSModuleRegistry.sol";
+import { IRSModuleRegistry, Module } from "./interface/IRSModuleRegistry.sol";
 import { InvalidSchema } from "./Common.sol";
-import { IRSSchema, SchemaRecord } from "./IRSSchema.sol";
+import { IRSSchema, SchemaRecord } from "./interface/IRSSchema.sol";
 import { RSSchema } from "./RSSchema.sol";
 
 /**

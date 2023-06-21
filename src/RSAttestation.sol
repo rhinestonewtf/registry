@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import "./eip712/EIP712Verifier.sol";
-import "./IRSAttestation.sol";
+import "./interface/IRSAttestation.sol";
 import "./RSSchema.sol";
 import "./RSModuleRegistry.sol";
 
@@ -707,7 +707,7 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         bytes32[] memory uids = new bytes32[](uidsCount);
 
         uint256 currentIndex = 0;
-        uint256 uidListsLength = uidList.length;
+        uint256 uidListsLength = uidLists.length;
         for (uint256 i; i < uidListsLength; i = uncheckedInc(i)) {
             bytes32[] memory currentUids = uidLists[i];
             uint256 currentUidsLength = currentUids.length;

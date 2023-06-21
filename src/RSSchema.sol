@@ -3,7 +3,7 @@
 pragma solidity 0.8.19;
 
 import { EMPTY_UID, AccessDenied } from "./Common.sol";
-import { IRSSchema, SchemaRecord } from "./IRSSchema.sol";
+import { IRSSchema, SchemaRecord } from "./interface/IRSSchema.sol";
 
 import { ISchemaResolver } from "./resolver/ISchemaResolver.sol";
 

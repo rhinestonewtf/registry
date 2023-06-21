@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import "../src/RSModuleRegistry.sol";
 
-import { IRSSchema, SchemaRecord } from "../src/IRSSchema.sol";
+import { IRSSchema, SchemaRecord } from "../src/interface/IRSSchema.sol";
 import { ISchemaResolver } from "../src/resolver/ISchemaResolver.sol";
 import { InvalidSchema } from "../src/Common.sol";
 
