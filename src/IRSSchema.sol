@@ -28,6 +28,8 @@ interface IRSSchema {
      */
     event Registered(bytes32 indexed uid, address registerer);
 
+    event NewResolver(bytes32 indexed uid, address resolver);
+
     /**
      * @dev Submits and reserves a new schema
      *
@@ -37,7 +39,7 @@ interface IRSSchema {
      *
      * @return The UID of the new schema.
      */
-    function register(
+    function registerSchema(
         string calldata schema,
         ISchemaResolver resolver,
         bool revocable

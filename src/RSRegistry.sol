@@ -38,12 +38,32 @@ contract RSRegistry is RSAttestation {
             if (uid != EMPTY_UID) {
                 --threshold;
                 if (threshold == 0) return true;
-
-                Attestation storage attestation = _attestations[uid];
-                if (attestation.revocationTime != 0) revert RevokedAttestation(uid);
+                _verifyAttestation(uid);
             }
         }
         return false;
+    }
+
+    function verifyWithRevert(
+        address module,
+        bytes32[] memory authorityIds,
+        uint256 threshold
+    )
+        external
+        view
+        returns (bool verified)
+    {
+        uint256 length = authorityIds.length;
+        if (length < threshold || threshold == 0) threshold = length;
+
+        // TOOD - Impl
+    }
+
+    function _verifyAttestation(bytes32 attestationId) internal view {
+        Attestation storage attestation = _attestations[attestationId];
+        bytes32 refUID = attestation.refUID;
+        if (attestation.revocationTime != 0) revert RevokedAttestation(attestationId);
+        if (refUID != EMPTY_UID) _verifyAttestation(refUID); // @TODO security issue?
     }
 
     function _findAttestation(address module, address authority) internal view returns (bytes32) {

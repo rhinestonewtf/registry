@@ -6,6 +6,8 @@ import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { IERC1271 } from "@openzeppelin/contracts/interfaces/IERC1271.sol";
 
+import "forge-std/console2.sol";
+
 // prettier-ignore
 import {
     AttestationRequest,
@@ -88,6 +90,44 @@ abstract contract EIP712Verifier is EIP712 {
         return _name;
     }
 
+    function getAttestationDigest(
+        AttestationRequestData memory attData,
+        bytes32 schemaUid,
+        address attester
+    )
+        public
+        view
+        returns (bytes32 digest)
+    {
+        uint256 nonce = getNonce(attester) + 1;
+        digest = _attestationDigest(attData, schemaUid, nonce);
+    }
+
+    function _attestationDigest(
+        AttestationRequestData memory data,
+        bytes32 schemaUid,
+        uint256 nonce
+    )
+        private
+        view
+        returns (bytes32 digest)
+    {
+        digest = _hashTypedDataV4(
+            keccak256(
+                abi.encode(
+                    ATTEST_TYPEHASH,
+                    schemaUid,
+                    data.recipient,
+                    data.expirationTime,
+                    data.revocable,
+                    data.refUID,
+                    keccak256(data.data),
+                    nonce
+                )
+            )
+        );
+    }
+
     /**
      * @dev Verifies delegated attestation request.
      *
@@ -99,24 +139,37 @@ abstract contract EIP712Verifier is EIP712 {
 
         uint256 nonce;
         unchecked {
-            nonce = _nonces[request.attester]++;
+            nonce = ++_nonces[request.attester];
         }
 
-        bytes32 digest = _hashTypedDataV4(
-            keccak256(
-                abi.encode(
-                    ATTEST_TYPEHASH,
-                    request.schema,
-                    data.recipient,
-                    data.expirationTime,
-                    data.revocable,
-                    data.refUID,
-                    keccak256(data.data),
-                    nonce
-                )
-            )
-        );
+        bytes32 digest = _attestationDigest(data, request.schema, nonce);
         _verifySignature(digest, signature, request.attester);
+    }
+
+    function getRevocationDigest(
+        RevocationRequestData memory revData,
+        bytes32 schemaUid,
+        address revoker
+    )
+        public
+        view
+        returns (bytes32 digest)
+    {
+        uint256 nonce = getNonce(revoker);
+        digest = _revocationDigest(schemaUid, revData.uid, nonce);
+    }
+
+    function _revocationDigest(
+        bytes32 schemaUid,
+        bytes32 revocationId,
+        uint256 nonce
+    )
+        private
+        view
+        returns (bytes32 digest)
+    {
+        digest =
+            _hashTypedDataV4(keccak256(abi.encode(REVOKE_TYPEHASH, schemaUid, revocationId, nonce)));
     }
 
     /**
@@ -133,9 +186,10 @@ abstract contract EIP712Verifier is EIP712 {
             nonce = _nonces[request.revoker]++;
         }
 
-        bytes32 digest = _hashTypedDataV4(
-            keccak256(abi.encode(REVOKE_TYPEHASH, request.schema, data.uid, nonce))
-        );
+        // bytes32 digest = _hashTypedDataV4(
+        //     keccak256(abi.encode(REVOKE_TYPEHASH, request.schema, data.uid, nonce))
+        // );
+        bytes32 digest = _revocationDigest(request.schema, data.uid, nonce);
         _verifySignature(digest, signature, request.revoker);
     }
 

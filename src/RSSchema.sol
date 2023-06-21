@@ -22,7 +22,7 @@ contract RSSchema is IRSSchema {
     /**
      * @inheritdoc IRSSchema
      */
-    function register(
+    function registerSchema(
         string calldata schema,
         ISchemaResolver resolver,
         bool revocable
@@ -52,12 +52,15 @@ contract RSSchema is IRSSchema {
         return uid;
     }
 
-    function setBridges(bytes32 uid, address[] calldata bridges) external {
+    function setBridges(bytes32 uid, address[] calldata bridges) external onlySchemaOwner(uid) {
         SchemaRecord storage schemaRecord = _schemas[uid];
-        if (schemaRecord.schemaOwner != msg.sender) {
-            revert AccessDenied();
-        }
         schemaRecord.bridges = bridges;
+    }
+
+    function setResolver(bytes32 uid, ISchemaResolver resolver) external onlySchemaOwner(uid) {
+        SchemaRecord storage schemaRecord = _schemas[uid];
+        schemaRecord.resolver = resolver;
+        emit NewResolver(uid, address(resolver));
     }
 
     /**
@@ -78,5 +81,16 @@ contract RSSchema is IRSSchema {
         return keccak256(
             abi.encodePacked(schemaRecord.schema, schemaRecord.resolver, schemaRecord.revocable)
         );
+    }
+
+    function _onlySchemaOwner(bytes32 uid) private {
+        if (_schemas[uid].schemaOwner != msg.sender) {
+            revert AccessDenied();
+        }
+    }
+
+    modifier onlySchemaOwner(bytes32 uid) {
+        _onlySchemaOwner(uid);
+        _;
     }
 }

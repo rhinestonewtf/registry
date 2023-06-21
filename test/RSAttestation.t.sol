@@ -22,7 +22,7 @@ contract RSAttestationTest is RSModuleRegistryTest {
     address auth2;
     uint256 auth2k;
 
-    function setUp() public override {
+    function setUp() public virtual override {
         super.setUp();
         attestation = new RSAttestation(
         Yaho(address(0)),
@@ -81,15 +81,53 @@ contract RSAttestationTest is RSModuleRegistryTest {
         assertTrue(attestationUid != bytes32(0));
     }
 
-    function testCreateChainedAttestation() public {
+    function revokeFn(
+        bytes32 attestationUid,
+        bytes32 schemaId,
+        address attester,
+        uint256 attesterPk
+    )
+        public
+    {
+        RevocationRequestData memory revoke =
+            RevocationRequestData({ uid: attestationUid, value: 0 });
+
+        bytes32 digest = attestation.getRevocationDigest(revoke, schemaId, attester);
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(attesterPk, digest);
+        EIP712Signature memory signature = EIP712Signature({ v: v, r: r, s: s });
+
+        DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
+            schema: schemaId,
+            data: revoke,
+            signature: signature,
+            revoker: attester
+        });
+        attestation.revoke(req);
+    }
+
+    function testRevokeAttestation(bytes32 attestationUid) public {
         (bytes32 schemaId, address moduleAddr, bytes32 attestationUid) = testCreateAttestation();
+        revokeFn(attestationUid, schemaId, auth1, auth1k);
+    }
+
+    function testCreateChainedAttestation()
+        public
+        returns (
+            bytes32 schemaId,
+            address moduleAddr,
+            bytes32 attestationUid1,
+            bytes32 attestationUid2
+        )
+    {
+        (schemaId, moduleAddr, attestationUid1) = testCreateAttestation();
 
         AttestationRequestData memory attData = AttestationRequestData({
             recipient: moduleAddr,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,
-            refUID: attestationUid, //  <-- here is the reference
+            refUID: attestationUid1, //  <-- here is the reference
             data: abi.encode(true),
             value: 0
         });
@@ -110,7 +148,12 @@ contract RSAttestationTest is RSModuleRegistryTest {
             attester: auth2
         });
 
-        attestationUid = attestation.attest(req);
-        assertTrue(attestationUid != bytes32(0));
+        attestationUid2 = attestation.attest(req);
+        assertTrue(attestationUid2 != bytes32(0));
+    }
+
+    function testBrokenChainAttestation() public {
+        (bytes32 schemaId,, bytes32 attestationUid,) = testCreateChainedAttestation();
+        revokeFn(attestationUid, schemaId, auth1, auth1k);
     }
 }

@@ -39,7 +39,7 @@ contract RSSchemaTest is Test {
         internal
         returns (bytes32 schemaId)
     {
-        return schema.register(abi, resolver, revocable);
+        return schema.registerSchema(abi, resolver, revocable);
     }
 
     function testUpdateBridges() public {

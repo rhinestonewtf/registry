@@ -273,31 +273,31 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         }
     }
 
-    function getAttestationDigest(
-        AttestationRequestData memory attData,
-        bytes32 schemaUid,
-        address attester
-    )
-        public
-        view
-        returns (bytes32 digest)
-    {
-        bytes32 ATTEST_TYPEHASH = getAttestTypeHash();
-        uint256 nonce = getNonce(attester);
-        bytes32 structHash = keccak256(
-            abi.encode(
-                ATTEST_TYPEHASH,
-                schemaUid,
-                attData.recipient,
-                attData.expirationTime,
-                attData.revocable,
-                attData.refUID,
-                keccak256(attData.data),
-                nonce
-            )
-        );
-        digest = ECDSA.toTypedDataHash(getDomainSeparator(), structHash);
-    }
+    // function getAttestationDigest(
+    //     AttestationRequestData memory attData,
+    //     bytes32 schemaUid,
+    //     address attester
+    // )
+    //     public
+    //     view
+    //     returns (bytes32 digest)
+    // {
+    //     bytes32 ATTEST_TYPEHASH = getAttestTypeHash();
+    //     uint256 nonce = getNonce(attester);
+    //     bytes32 structHash = keccak256(
+    //         abi.encode(
+    //             ATTEST_TYPEHASH,
+    //             schemaUid,
+    //             attData.recipient,
+    //             attData.expirationTime,
+    //             attData.revocable,
+    //             attData.refUID,
+    //             keccak256(attData.data),
+    //             nonce
+    //         )
+    //     );
+    //     digest = ECDSA.toTypedDataHash(getDomainSeparator(), structHash);
+    // }
 
     /**
      * @dev Attests to a specific schema.
