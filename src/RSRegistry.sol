@@ -6,6 +6,7 @@ import {
 } from "./Common.sol";
 import "./RSAttestation.sol";
 
+
 /// @title RSRegistry
 /// @author zeroknots
 /// @notice The global attestation registry.
@@ -36,9 +37,9 @@ contract RSRegistry is RSAttestation {
             address authority = authorities[i];
             bytes32 uid = _findAttestation(module, authority);
             if (uid != EMPTY_UID) {
-                --threshold;
                 if (threshold == 0) return true;
                 _verifyAttestation(uid);
+                --threshold;
             }
         }
         return false;
@@ -46,14 +47,14 @@ contract RSRegistry is RSAttestation {
 
     function verifyWithRevert(
         address module,
-        bytes32[] memory authorityIds,
+        bytes32[] memory attestationIds,
         uint256 threshold
     )
         external
         view
         returns (bool verified)
     {
-        uint256 length = authorityIds.length;
+        uint256 length = attestationIds.length;
         if (length < threshold || threshold == 0) threshold = length;
 
         // TOOD - Impl

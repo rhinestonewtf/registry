@@ -28,4 +28,40 @@ contract RSRegistryTest is RSAttestationTest {
 
         registry.findAttestation(moduleAddr, auth1);
     }
+
+    function testQueryChainedAttestation() public {
+        (bytes32 schemaId, address moduleAddr, bytes32 attestationUid1, bytes32 attestationUid2) =
+            testCreateChainedAttestation();
+
+        Attestation memory attestation1 = registry.findAttestation(moduleAddr, auth1);
+        assertEq(attestation1.uid, attestationUid1);
+        Attestation memory attestation2 = registry.findAttestation(moduleAddr, auth2);
+        assertEq(attestation2.uid, attestationUid2);
+
+        address[] memory authorities = new address[](2);
+        authorities[0] = auth1;
+        authorities[1] = auth2;
+
+        bool valid = registry.verifyWithRevert(moduleAddr, authorities, 2);
+        assertTrue(valid);
+    }
+
+    function testQueryBrokenChainedAttestation() public {
+        (bytes32 schemaId, address moduleAddr, bytes32 attestationUid1, bytes32 attestationUid2) =
+            testCreateChainedAttestation();
+        revokeFn(attestationUid1, schemaId, auth1, auth1k);
+
+        Attestation memory attestation1 = registry.findAttestation(moduleAddr, auth1);
+        assertEq(attestation1.uid, attestationUid1);
+        Attestation memory attestation2 = registry.findAttestation(moduleAddr, auth2);
+        assertEq(attestation2.uid, attestationUid2);
+
+        address[] memory authorities = new address[](1);
+        authorities[0] = auth2;
+
+        vm.expectRevert(
+            abi.encodeWithSelector(RSRegistry.RevokedAttestation.selector, attestation1.uid)
+        );
+        bool valid = registry.verifyWithRevert(moduleAddr, authorities, 1);
+    }
 }
