@@ -15,6 +15,3 @@
 	path = lib/Solidity-RLP
 	url = https://github.com/hamdiallam/Solidity-RLP
 	branch = v2.0.8
-[submodule "lib/eas-contracts"]
-	path = lib/eas-contracts
-	url = https://github.com/zeroknots/eas-contracts
