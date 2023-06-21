@@ -27,7 +27,7 @@ struct AttestationsResult {
 }
 /// @title RSAttestation
 /// @author zeroknots
-/// @notice ContractDescription
+/// @notice ContractDescription TODO
 
 contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
     using Address for address payable;
