@@ -166,7 +166,8 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         address to,
         uint256 toChainId,
         bytes32 attestationId,
-        address moduleOnL2
+        address moduleOnL2,
+        address[] calldata destinationAdapters
     )
         external
         returns (Message[] memory messages, bytes32[] memory messageIds)
@@ -192,6 +193,10 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         messageIds = new bytes32[](1);
         // Dispatch message to selected L2
         messageIds = yaho.dispatchMessages(messages);
+
+        uint256[] memory messageIdsInt = _toUint256Array(messageIds);
+        address[] memory adapters = getBridges(_attestations[attestationId].uid);
+        yaho.relayMessagesToAdapters(messageIdsInt, adapters, destinationAdapters);
     }
 
     function attestByPropagation(
@@ -646,6 +651,14 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
                 bump
             )
         );
+    }
+
+    function _toUint256Array(bytes32[] memory array) internal pure returns (uint256[] memory) {
+        uint256[] memory array2 = new uint256[](array.length);
+        for (uint256 i; i < array.length; ++i) {
+            array2[i] = uint256(array[i]);
+        }
+        return array2;
     }
 
     /**

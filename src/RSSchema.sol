@@ -89,6 +89,10 @@ contract RSSchema is IRSSchema {
         }
     }
 
+    function getBridges(bytes32 uid) public view returns (address[] memory) {
+        return _schemas[uid].bridges;
+    }
+
     modifier onlySchemaOwner(bytes32 uid) {
         _onlySchemaOwner(uid);
         _;

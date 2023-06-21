@@ -11,7 +11,7 @@ import { RSRegistry } from "../src/RSRegistry.sol";
 contract RSRegistryTest is RSAttestationTest {
     RSRegistry registry;
 
-    function setUp() public override {
+    function setUp() public virtual override {
         super.setUp();
         registry = new RSRegistry(
           Yaho(address(0)),
