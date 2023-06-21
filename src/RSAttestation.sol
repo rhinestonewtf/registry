@@ -76,6 +76,9 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         l1Registry = _l1Registry;
     }
 
+    /**
+     * @inheritdoc IRSAttestation
+     */
     function attest(DelegatedAttestationRequest calldata delegatedRequest)
         external
         payable
@@ -91,6 +94,9 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
             .uids[0];
     }
 
+    /**
+     * @inheritdoc IRSAttestation
+     */
     function multiAttest(MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests)
         external
         payable
@@ -162,6 +168,9 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         return _mergeUIDs(totalUids, totalUidsCount);
     }
 
+    /**
+     * @inheritdoc IRSAttestation
+     */
     function propagateAttest(
         address to,
         uint256 toChainId,
@@ -199,6 +208,9 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         yaho.relayMessagesToAdapters(messageIdsInt, adapters, destinationAdapters);
     }
 
+    /**
+     * @inheritdoc IRSAttestation
+     */
     function attestByPropagation(
         Attestation calldata attestation,
         bytes32 codeHash,
@@ -207,16 +219,23 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         external
         onlyHashi
     {
+        // Check if the code hash from sending chain matches the hash of the module address
+        // if codeHash does not match, the attestation is invalid
         if (codeHash != moduleAddress.codeHash()) {
             revert InvalidAttestation();
         }
 
+        // Store the attestation
         _attestations[attestation.uid] = attestation;
+        // Emit an event for the attestation
         emit Attested(
             attestation.recipient, attestation.attester, attestation.uid, attestation.schema
         );
     }
 
+    /**
+     * @inheritdoc IRSAttestation
+     */
     function revoke(DelegatedRevocationRequest calldata request) external payable {
         _verifyRevoke(request);
 
@@ -226,6 +245,9 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         _revoke(request.schema, data, request.revoker, msg.value, true);
     }
 
+    /**
+     * @inheritdoc IRSAttestation
+     */
     function multiRevoke(MultiDelegatedRevocationRequest[] calldata multiDelegatedRequests)
         external
         payable
@@ -277,32 +299,6 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
             );
         }
     }
-
-    // function getAttestationDigest(
-    //     AttestationRequestData memory attData,
-    //     bytes32 schemaUid,
-    //     address attester
-    // )
-    //     public
-    //     view
-    //     returns (bytes32 digest)
-    // {
-    //     bytes32 ATTEST_TYPEHASH = getAttestTypeHash();
-    //     uint256 nonce = getNonce(attester);
-    //     bytes32 structHash = keccak256(
-    //         abi.encode(
-    //             ATTEST_TYPEHASH,
-    //             schemaUid,
-    //             attData.recipient,
-    //             attData.expirationTime,
-    //             attData.revocable,
-    //             attData.refUID,
-    //             keccak256(attData.data),
-    //             nonce
-    //         )
-    //     );
-    //     digest = ECDSA.toTypedDataHash(getDomainSeparator(), structHash);
-    // }
 
     /**
      * @dev Attests to a specific schema.
@@ -653,6 +649,15 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         );
     }
 
+    /**
+     * @notice Converts an array of bytes32 to an array of uint256
+     *
+     * @dev Iterates over the input array and converts each bytes32 to uint256
+     *
+     * @param array The array of bytes32 to convert
+     *
+     * @return array2 The converted array of uint256
+     */
     function _toUint256Array(bytes32[] memory array) internal pure returns (uint256[] memory) {
         uint256[] memory array2 = new uint256[](array.length);
         for (uint256 i; i < array.length; ++i) {
@@ -702,9 +707,11 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         bytes32[] memory uids = new bytes32[](uidsCount);
 
         uint256 currentIndex = 0;
-        for (uint256 i = 0; i < uidLists.length; i = uncheckedInc(i)) {
+        uint256 uidListsLength = uidList.length;
+        for (uint256 i; i < uidListsLength; i = uncheckedInc(i)) {
             bytes32[] memory currentUids = uidLists[i];
-            for (uint256 j = 0; j < currentUids.length; j = uncheckedInc(j)) {
+            uint256 currentUidsLength = currentUids.length;
+            for (uint256 j; j < currentUidsLength; j = uncheckedInc(j)) {
                 uids[currentIndex] = currentUids[j];
 
                 unchecked {

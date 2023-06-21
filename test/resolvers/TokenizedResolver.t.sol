@@ -13,7 +13,7 @@ contract TokenizedResolverTest is RSRegistryTest {
         super.setUp();
         token = new MockERC20("test", "test", 8);
         resolver = new TokenizedResolver(address(registry), address(token));
-        token.mint(auth2, 10000);
+        token.mint(auth2, 10_000);
     }
 
     function testTokenizedResolver() public {
@@ -45,7 +45,6 @@ contract TokenizedResolverTest is RSRegistryTest {
             signature: signature,
             attester: auth2
         });
-
 
         vm.expectRevert();
         attestationUid = attestation.attest(req);

@@ -20,14 +20,23 @@ struct SchemaRecord {
  * @title The global schema registry interface.
  */
 interface IRSSchema {
+    // Error to throw if the SchemaID already exists
+    error AlreadyExists();
     /**
      * @dev Emitted when a new schema has been registered
      *
      * @param uid The schema UID.
      * @param registerer The address of the account used to register the schema.
      */
+
     event Registered(bytes32 indexed uid, address registerer);
 
+    /**
+     * @dev Emitted when a new schema resolver
+     *
+     * @param uid The schema UID.
+     * @param resolver The address of the resolver.
+     */
     event NewResolver(bytes32 indexed uid, address resolver);
 
     /**
@@ -46,6 +55,31 @@ interface IRSSchema {
     )
         external
         returns (bytes32);
+
+    /**
+     * @dev Sets the bridges for a schema
+     *
+     * @param uid The schema UID.
+     * @param bridges An array of bridge addresses.
+     */
+    function setBridges(bytes32 uid, address[] calldata bridges) external;
+
+    /**
+     * @dev Returns the bridges for a schema
+     *
+     * @param uid The schema UID.
+     *
+     * @return An array of bridge addresses.
+     */
+    function getBridges(bytes32 uid) external view returns (address[] memory);
+
+    /**
+     * @dev Sets a resolver for a schema
+     *
+     * @param uid The schema UID.
+     * @param resolver The new resolver address.
+     */
+    function setResolver(bytes32 uid, ISchemaResolver resolver) external;
 
     /**
      * @dev Returns an existing schema by UID
