@@ -39,7 +39,6 @@ abstract contract SchemaResolver is ISchemaResolver {
      */
     modifier onlyRS() {
         _onlyRSRegistry();
-
         _;
     }
 

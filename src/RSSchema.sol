@@ -14,7 +14,7 @@ contract RSSchema is IRSSchema {
     error AlreadyExists();
 
     // The version of the contract.
-    string public constant VERSION = "0.28";
+    string public constant VERSION = "0.1";
 
     // The global mapping between schema records and their IDs.
     mapping(bytes32 uid => SchemaRecord schemaRecord) private _schemas;
