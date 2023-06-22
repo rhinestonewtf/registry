@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 
 import { IRSModule, Module } from "../interface/IRSModule.sol";
 import { InvalidSchema } from "../Common.sol";
+import { RSModuleDeploymentLib } from "../lib/RSModuleDeploymentLib.sol";
 import { IRSSchema, SchemaRecord } from "../interface/IRSSchema.sol";
 import { RSSchema } from "./RSSchema.sol";
 
@@ -33,7 +34,7 @@ import { RSSchema } from "./RSSchema.sol";
  */
 abstract contract RSModule is IRSModule {
     mapping(address moduleAddress => Module) internal _modules;
-
+    using RSModuleDeploymentLib for bytes;
     /**
      * @inheritdoc IRSModule
      */
@@ -52,7 +53,7 @@ abstract contract RSModule is IRSModule {
 
         bytes32 initCodeHash; // Hash of the contract creation code and deployment parameters
         bytes32 contractCodeHash; //  Hash of contract bytecode
-        (moduleAddr, initCodeHash, contractCodeHash) = _deploy(code, deployParams, salt);
+        (moduleAddr, initCodeHash, contractCodeHash) = code.deploy(deployParams, salt);
 
         // Store module data in _modules mapping
         _modules[moduleAddr] = Module({
@@ -65,55 +66,6 @@ abstract contract RSModule is IRSModule {
         });
 
         emit Deployment(moduleAddr, contractCodeHash); // Emit a deployment event
-    }
-
-    /**
-     * @dev Deploys a contract using the CREATE2 opcode.
-     *
-     * @param createCode The creationCode for the contract.
-     * @param params The parameters for creating the contract. If the contract has a constructor, this MUST be provided.
-     * @param salt The salt for creating the contract.
-     * @return moduleAddress The address of the deployed contract.
-     * @return initCodeHash Hash of the contract creation code and deployment parameters.
-     * @return contractCodeHash hash of deployed bytecode.
-     */
-    function _deploy(
-        bytes memory createCode,
-        bytes memory params,
-        uint256 salt
-    )
-        internal
-        returns (address moduleAddress, bytes32 initCodeHash, bytes32 contractCodeHash)
-    {
-        bytes memory initCode = abi.encodePacked(createCode, params);
-        // Check if the provided constructor parameters are part of initCode or just packed in createCode
-        // this enforces, that constructor params were supplied via params argument
-        // if (_calcAddress(initCode, salt) == _calcAddress(createCode, salt)) {
-        //     revert InvalidDeployment();
-        // }
-        initCodeHash = keccak256(initCode);
-
-        // Create the contract using the CREATE2 opcode
-        assembly {
-            moduleAddress := create2(0, add(initCode, 0x20), mload(initCode), salt)
-            contractCodeHash := extcodehash(moduleAddress)
-            // If the contract was not created successfully, the transaction is reverted.
-            if iszero(extcodesize(moduleAddress)) { revert(0, 0) }
-        }
-    }
-
-    /**
-     * @dev Calculates the deterministic address of a contract that would be deployed using the CREATE2 opcode.
-     *
-     * @param _code The contract code that would be deployed.
-     * @param _salt A salt used for the address calculation.
-     * @return The address that the contract would be deployed at if the CREATE2 opcode was called with the specified _code and _salt.
-     */
-    function _calcAddress(bytes memory _code, uint256 _salt) public view returns (address) {
-        bytes32 hash =
-            keccak256(abi.encodePacked(bytes1(0xff), address(this), _salt, keccak256(_code)));
-        // NOTE: cast last 20 bytes of hash to address
-        return address(uint160(uint256(hash)));
     }
 
     function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory);

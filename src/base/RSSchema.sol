@@ -115,9 +115,7 @@ abstract contract RSSchema is IRSSchema {
      * @return schema UID.
      */
     function _getUID(SchemaRecord memory schemaRecord) private pure returns (bytes32) {
-        return keccak256(
-            abi.encodePacked(schemaRecord.schema, schemaRecord.revocable)
-        );
+        return keccak256(abi.encodePacked(schemaRecord.schema, schemaRecord.revocable));
     }
 
     /**

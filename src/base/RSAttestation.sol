@@ -7,7 +7,7 @@ import "../interface/IRSAttestation.sol";
 import "./RSSchema.sol";
 import "./RSModule.sol";
 
-import { RSRegistryLib } from "../lib/RSRegistryLib.sol";
+import { RSModuleDeploymentLib } from "../lib/RSModuleDeploymentLib.sol";
 
 // Hashi's contract to dispatch messages to L2
 import "hashi/Yaho.sol";
@@ -19,7 +19,6 @@ import {
     AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
 } from "../Common.sol";
 
-
 struct AttestationsResult {
     uint256 usedValue; // Total ETH amount that was sent to resolvers.
     bytes32[] uids; // UIDs of the new attestations.
@@ -30,7 +29,7 @@ struct AttestationsResult {
 
 abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     using Address for address payable;
-    using RSRegistryLib for address;
+    using RSModuleDeploymentLib for address;
 
     mapping(bytes32 uid => Attestation attestation) internal _attestations;
     mapping(address module => mapping(address authority => bytes32 attestationId)) internal
@@ -352,6 +351,11 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
 
             // Ensure that attestation is for module that was registered.
             if (_getModule(request.recipient).implementation == address(0)) {
+                revert InvalidAttestation();
+            }
+
+            // Ensure that attestation for a module is using the modules schemaId
+            if (_getModule(request.recipient).schemaId != schema) {
                 revert InvalidAttestation();
             }
 
