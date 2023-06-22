@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import "../src/RSAttestation.sol";
+import "../src/base/RSAttestation.sol";
 
 import "./utils/BaseTest.t.sol";
 

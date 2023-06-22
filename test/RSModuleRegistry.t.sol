@@ -15,14 +15,25 @@ contract RSModuleTest is BaseTest {
         super.setUp();
     }
 
-    function testDeploy() public returns (bytes32 schemaId, address moduleAddr) {
+    function testDeployWithArgs() public returns (bytes32 schemaId, address moduleAddr) {
         schemaId = instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)), true);
 
         bytes memory bytecode = type(MockModuleWithArgs).creationCode;
         moduleAddr = instancel1.deployAndRegister({
             schemaId: schemaId,
             bytecode: bytecode,
-            constructorArgs: abi.encode(313131)
+            constructorArgs: abi.encode(313_131)
+        });
+    }
+
+    function testDeployNoArgs() public returns (bytes32 schemaId, address moduleAddr) {
+        schemaId = instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)), true);
+
+        bytes memory bytecode = type(MockModule).creationCode;
+        moduleAddr = instancel1.deployAndRegister({
+            schemaId: schemaId,
+            bytecode: bytecode,
+            constructorArgs: bytes("")
         });
     }
 }

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "./RSSchema.sol";
-import "./RSAttestation.sol";
-import "./RSModule.sol";
-import "./RSQuery.sol";
+import "./base/RSSchema.sol";
+import "./base/RSAttestation.sol";
+import "./base/RSModule.sol";
+import "./base/RSQuery.sol";
 
 contract RhinestoneRegistry is RSSchema, RSQuery, RSAttestation, RSModule {
     constructor(
@@ -16,6 +16,10 @@ contract RhinestoneRegistry is RSSchema, RSQuery, RSAttestation, RSModule {
     )
         RSAttestation(_yaho, _yaru, _l1registry, name, version)
     { }
+
+    /*//////////////////////////////////////////////////////////////
+                            Helper Functions
+    //////////////////////////////////////////////////////////////*/
 
     function getBridges(bytes32 uid)
         public

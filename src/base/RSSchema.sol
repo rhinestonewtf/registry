@@ -1,11 +1,11 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MITTest ABI
 
 pragma solidity 0.8.19;
 
-import { EMPTY_UID, AccessDenied } from "./Common.sol";
-import { IRSSchema, SchemaRecord } from "./interface/IRSSchema.sol";
+import { EMPTY_UID, AccessDenied } from "../Common.sol";
+import { IRSSchema, SchemaRecord } from "../interface/IRSSchema.sol";
 
-import { ISchemaResolver } from "./resolver/ISchemaResolver.sol";
+import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
 
 /**
  * @title RSSchema
@@ -115,7 +115,9 @@ abstract contract RSSchema is IRSSchema {
      * @return schema UID.
      */
     function _getUID(SchemaRecord memory schemaRecord) private pure returns (bytes32) {
-        return keccak256(abi.encodePacked(schemaRecord.schema, schemaRecord.revocable));
+        return keccak256(
+            abi.encodePacked(schemaRecord.schema, schemaRecord.revocable)
+        );
     }
 
     /**

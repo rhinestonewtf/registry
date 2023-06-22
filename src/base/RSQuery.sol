@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import {
     AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
-} from "./Common.sol";
+} from "../Common.sol";
 import "./RSAttestation.sol";
 
 /// @title RSRegistry

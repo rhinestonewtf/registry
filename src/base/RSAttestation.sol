@@ -2,12 +2,12 @@
 pragma solidity ^0.8.19;
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
-import "./eip712/EIP712Verifier.sol";
-import "./interface/IRSAttestation.sol";
+import "../eip712/EIP712Verifier.sol";
+import "../interface/IRSAttestation.sol";
 import "./RSSchema.sol";
 import "./RSModule.sol";
 
-import { RSRegistryLib } from "./lib/RSRegistryLib.sol";
+import { RSRegistryLib } from "../lib/RSRegistryLib.sol";
 
 // Hashi's contract to dispatch messages to L2
 import "hashi/Yaho.sol";
@@ -17,9 +17,8 @@ import "hashi/Yaru.sol";
 
 import {
     AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
-} from "./Common.sol";
+} from "../Common.sol";
 
-import "forge-std/console2.sol";
 
 struct AttestationsResult {
     uint256 usedValue; // Total ETH amount that was sent to resolvers.

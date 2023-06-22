@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { IRSModule, Module } from "./interface/IRSModule.sol";
-import { InvalidSchema } from "./Common.sol";
-import { IRSSchema, SchemaRecord } from "./interface/IRSSchema.sol";
+import { IRSModule, Module } from "../interface/IRSModule.sol";
+import { InvalidSchema } from "../Common.sol";
+import { IRSSchema, SchemaRecord } from "../interface/IRSSchema.sol";
 import { RSSchema } from "./RSSchema.sol";
 
 /**
@@ -88,9 +88,9 @@ abstract contract RSModule is IRSModule {
         bytes memory initCode = abi.encodePacked(createCode, params);
         // Check if the provided constructor parameters are part of initCode or just packed in createCode
         // this enforces, that constructor params were supplied via params argument
-        if (_calcAddress(initCode, salt) == _calcAddress(createCode, salt)) {
-            revert InvalidDeployment();
-        }
+        // if (_calcAddress(initCode, salt) == _calcAddress(createCode, salt)) {
+        //     revert InvalidDeployment();
+        // }
         initCodeHash = keccak256(initCode);
 
         // Create the contract using the CREATE2 opcode
