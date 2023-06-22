@@ -8,7 +8,6 @@ import "./utils/BaseTest.t.sol";
 
 /// @title RSAttestationTest
 /// @author zeroknots
-
 contract RSAttestationTest is BaseTest {
     using RegistryTestLib for RegistryInstance;
 
@@ -46,7 +45,26 @@ contract RSAttestationTest is BaseTest {
         });
 
         attestationUid2 = instancel1.newAttestation(defaultSchema1, auth2k, chainedAttestation);
-        // todo test with different value for schema and module
+
+        // revert if other schema is supplied
+        vm.expectRevert(abi.encodeWithSelector(RSAttestation.InvalidAttestation.selector));
+        instancel1.newAttestation(defaultSchema2, auth2k, chainedAttestation);
+
+        AttestationRequestData memory referencingOtherModule = AttestationRequestData({
+            recipient: defaultModule2, // <-- here is the reference of the wrong module
+            expirationTime: uint48(0),
+            revocable: true,
+            propagateable: true,
+            refUID: attestationUid1, //  <-- here is the reference
+            data: abi.encode(true),
+            value: 0
+        });
+
+        vm.expectRevert(abi.encodeWithSelector(RSAttestation.InvalidAttestation.selector));
+        instancel1.newAttestation(defaultSchema1, auth2k, referencingOtherModule);
+
+        // this should work
+        instancel1.newAttestation(defaultSchema2, auth2k, referencingOtherModule);
     }
 
     function testBrokenChainAttestation()

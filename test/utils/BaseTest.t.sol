@@ -53,7 +53,7 @@ contract BaseTest is Test, RegistryTestTools {
             defaultSchema1, type(MockModuleWithArgs).creationCode, abi.encode(1234)
         );
         defaultModule2 = instancel1.deployAndRegister(
-            defaultSchema1, type(MockModuleWithArgs).creationCode, abi.encode(5678)
+            defaultSchema2, type(MockModuleWithArgs).creationCode, abi.encode(5678)
         );
     }
 }
