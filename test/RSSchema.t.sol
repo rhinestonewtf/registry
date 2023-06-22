@@ -21,7 +21,8 @@ contract RSSchemaTest is BaseTest {
     }
 
     function testRegisterSchema() public {
-        bytes32 schemaId = instancel1.registerSchema("Test ABI 2", ISchemaResolver(address(0)), true);
+        bytes32 schemaId =
+            instancel1.registerSchema("Test ABI 2", ISchemaResolver(address(0)), true);
         assertTrue(schemaId != bytes32(0), "schemaId should not be empty");
     }
 
@@ -33,7 +34,8 @@ contract RSSchemaTest is BaseTest {
     }
 
     function testUpdateBridges() public {
-        bytes32 schemaId = instancel1.registerSchema("Test ABI 2", ISchemaResolver(address(0)), true);
+        bytes32 schemaId =
+            instancel1.registerSchema("Test ABI 2", ISchemaResolver(address(0)), true);
         address[] memory bridges = new address[](2);
         bridges[0] = address(1);
         bridges[1] = address(2);
@@ -42,7 +44,8 @@ contract RSSchemaTest is BaseTest {
     }
 
     function testFailUnauthorizedUpdateBridges() public {
-        bytes32 schemaId = instancel1.registerSchema("Test ABI 2", ISchemaResolver(address(0)), true);
+        bytes32 schemaId =
+            instancel1.registerSchema("Test ABI 2", ISchemaResolver(address(0)), true);
         address[] memory bridges = new address[](2);
         bridges[0] = address(1);
         bridges[1] = address(2);
