@@ -2,11 +2,12 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import "./RSRegistry.t.sol";
+
+import "./utils/BaseTest.t.sol";
 
 /// @title AttestationPropagationL2Test
 /// @author zeroknots
-contract AttestationPropagationL2Test is RSRegistryTest {
+contract AttestationPropagationL2Test is BaseTest {
     function setUp() public override {
         super.setUp();
     }

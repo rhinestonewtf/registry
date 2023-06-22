@@ -1,52 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "../src/RSModuleRegistry.sol";
-
 import { IRSSchema, SchemaRecord } from "../src/interface/IRSSchema.sol";
 import { ISchemaResolver } from "../src/resolver/ISchemaResolver.sol";
 import { InvalidSchema } from "../src/Common.sol";
+import "./utils/BaseTest.t.sol";
 
-import { RSSchemaTest } from "./RSSchema.t.sol";
-
-contract MockModule {
-    constructor(uint256 param) { }
-
-    function foo() public pure returns (uint256) {
-        return 42;
-    }
-}
-
-/// @title RSModuleRegistryTest
+/// @title RSModuleTest
 /// @author zeroknots
-contract RSModuleRegistryTest is RSSchemaTest {
-    RSModuleRegistry moduleRegistry;
+contract RSModuleTest is BaseTest {
+    using RegistryTestLib for RegistryInstance;
 
     function setUp() public virtual override {
         super.setUp();
-        moduleRegistry = new RSModuleRegistry();
-        schema = RSSchema(address(moduleRegistry));
     }
 
     function testDeploy() public returns (bytes32 schemaId, address moduleAddr) {
-        bytes32 schemaId =
-            registerSchema(RSSchema(address(moduleRegistry)), "test", simpleResolver, true);
-        moduleAddr = moduleRegistry.deploy({
-            code: type(MockModule).creationCode,
-            deployParams: abi.encode(1234),
-            salt: 0,
-            data: "",
-            schemaId: schemaId
-        });
-        assertFalse(address(0) == moduleAddr);
+        schemaId = instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)), true);
 
-        vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
-        moduleAddr = moduleRegistry.deploy({
-            code: type(MockModule).creationCode,
-            deployParams: abi.encode(1234),
-            salt: 0,
-            data: "",
-            schemaId: "8181"
-        });
+        moduleAddr = instancel1.deployAndRegister(
+            schemaId, type(MockModuleWithArgs).creationCode, abi.encode(1234)
+        );
     }
 }

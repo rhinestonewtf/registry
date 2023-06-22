@@ -9,16 +9,8 @@ import "./RSAttestation.sol";
 /// @title RSRegistry
 /// @author zeroknots
 /// @notice The global attestation registry.
-contract RSRegistry is RSModuleRegistry, RSAttestation {
+abstract contract RSQuery {
     error RevokedAttestation(bytes32 attestationId);
-
-    constructor(
-        Yaho _yaho,
-        Yaru _yaru,
-        address l1Registry
-    )
-        RSAttestation(_yaho, _yaru, l1Registry)
-    { }
 
     function verifyWithRevert(
         address module,
@@ -34,7 +26,7 @@ contract RSRegistry is RSModuleRegistry, RSAttestation {
 
         for (uint256 i; i < length; uncheckedInc(i)) {
             address authority = authorities[i];
-            bytes32 uid = _findAttestation(module, authority);
+            bytes32 uid = _getAttestation(module, authority);
             if (threshold == 0) return true;
             if (uid != EMPTY_UID) {
                 _verifyAttestation(uid);
@@ -65,14 +57,10 @@ contract RSRegistry is RSModuleRegistry, RSAttestation {
     }
 
     function _verifyAttestation(bytes32 attestationId) internal view {
-        Attestation storage attestation = _attestations[attestationId];
+        Attestation storage attestation = _getAttestation(attestationId);
         bytes32 refUID = attestation.refUID;
         if (attestation.revocationTime != 0) revert RevokedAttestation(attestationId);
         if (refUID != EMPTY_UID) _verifyAttestation(refUID); // @TODO security issue?
-    }
-
-    function _findAttestation(address module, address authority) internal view returns (bytes32) {
-        return _moduleToAuthorityToAttestations[module][authority];
     }
 
     function findAttestation(
@@ -81,9 +69,24 @@ contract RSRegistry is RSModuleRegistry, RSAttestation {
     )
         public
         view
-        returns (Attestation memory)
+        returns (Attestation memory attestation)
     {
-        bytes32 attestionId = _findAttestation(module, authority);
-        return _attestations[attestionId];
+        bytes32 attestionId = _getAttestation(module, authority);
+        attestation = _getAttestation(attestionId);
     }
+
+    function _getAttestation(
+        address module,
+        address authority
+    )
+        internal
+        view
+        virtual
+        returns (bytes32);
+
+    function _getAttestation(bytes32 attestationId)
+        internal
+        view
+        virtual
+        returns (Attestation storage);
 }

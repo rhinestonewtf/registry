@@ -11,7 +11,7 @@ struct Module {
     bytes data; // Additional data related to the contract deployment
 }
 
-interface IRSModuleRegistry {
+interface IRSModule {
     // Event triggered when a contract is deployed.
     event Deployment(address indexed implementation, bytes32 codeHash);
     // Error to throw if the deployment is invalid

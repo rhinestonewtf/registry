@@ -2,65 +2,47 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import "../src/RSSchema.sol";
 import "../src/resolver/ISchemaResolver.sol";
-import { SimpleResolver } from "./mock/SimpleResolver.sol";
+import "../src/interface/IRSSchema.sol";
+import { DebugResolver } from "../src/resolver/examples/DebugResolver.sol";
 
-import { AccessDenied } from "../src/Common.sol";
+import "./utils/BaseTest.t.sol";
 
 /// @title RSSchemaTest
 /// @author zeroknots
-contract RSSchemaTest is Test {
-    RSSchema schema;
-    SimpleResolver simpleResolver;
+contract RSSchemaTest is BaseTest {
+    using RegistryTestLib for RegistryInstance;
 
-    function setUp() public virtual {
-        schema = new RSSchema();
-        simpleResolver = new SimpleResolver(address(schema));
+    DebugResolver simpleResolver;
+
+    function setUp() public virtual override {
+        super.setUp();
+        simpleResolver = new DebugResolver(address(instancel1.registry));
     }
 
-    function testRegisterSchema(
-        string memory abi,
-        ISchemaResolver resolver,
-        bool revocable
-    )
-        public
-        returns (bytes32)
-    {
-        return (registerSchema(schema, abi, resolver, revocable));
+    function testRegisterSchema() public {
+        bytes32 schemaId = instancel1.registerSchema("Test ABI 2", ISchemaResolver(address(0)), true);
+        assertTrue(schemaId != bytes32(0), "schemaId should not be empty");
     }
 
-    function registerSchema(
-        RSSchema registry,
-        string memory abi,
-        ISchemaResolver resolver,
-        bool revocable
-    )
-        internal
-        returns (bytes32 schemaId)
-    {
-        return schema.registerSchema(abi, resolver, revocable);
+    function testRegisterSchemaWitSameSchema() public {
+        bytes32 schemaId = instancel1.registerSchema("same", ISchemaResolver(address(0)), true);
+
+        vm.expectRevert(abi.encodeWithSelector(IRSSchema.AlreadyExists.selector));
+        bytes32 schemaId2 = instancel1.registerSchema("same", ISchemaResolver(address(0)), true);
     }
 
     function testUpdateBridges() public {
-        string memory abi = "test";
-        ISchemaResolver resolver = simpleResolver;
-
-        bytes32 schemaId = testRegisterSchema({ abi: abi, resolver: resolver, revocable: true });
-
+        bytes32 schemaId = instancel1.registerSchema("Test ABI 2", ISchemaResolver(address(0)), true);
         address[] memory bridges = new address[](2);
         bridges[0] = address(1);
         bridges[1] = address(2);
 
-        schema.setBridges(schemaId, bridges);
+        instancel1.registry.setBridges(schemaId, bridges);
     }
 
     function testFailUnauthorizedUpdateBridges() public {
-        string memory abi = "test";
-        ISchemaResolver resolver = simpleResolver;
-
-        bytes32 schemaId = testRegisterSchema({ abi: abi, resolver: resolver, revocable: true });
-
+        bytes32 schemaId = instancel1.registerSchema("Test ABI 2", ISchemaResolver(address(0)), true);
         address[] memory bridges = new address[](2);
         bridges[0] = address(1);
         bridges[1] = address(2);
@@ -68,6 +50,6 @@ contract RSSchemaTest is Test {
         address bob = address(0x1234);
 
         vm.prank(bob);
-        schema.setBridges(schemaId, bridges);
+        instancel1.registry.setBridges(schemaId, bridges);
     }
 }

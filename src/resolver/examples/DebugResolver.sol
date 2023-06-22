@@ -2,14 +2,14 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/console2.sol";
-import { SchemaResolver } from "../../src/resolver/SchemaResolver.sol";
-import { Attestation } from "../../src/Common.sol";
+import { SchemaResolver } from "../SchemaResolver.sol";
+import { Attestation } from "../../Common.sol";
 
-/// @title SimpleResolver
+/// @title DebugResolver
 /// @author zeroknots
 /// @notice ContractDescription
 
-contract SimpleResolver is SchemaResolver {
+contract DebugResolver is SchemaResolver {
     constructor(address rs) SchemaResolver(rs) { }
 
     function onAttest(

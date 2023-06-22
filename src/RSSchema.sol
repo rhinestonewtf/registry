@@ -32,7 +32,7 @@ import { ISchemaResolver } from "./resolver/ISchemaResolver.sol";
  * @dev In summary, the RSSchema contract is an integral part of a larger system, providing the functionality to register,
  * retrieve, and manage schemas in a controlled and structured manner.
  */
-contract RSSchema is IRSSchema {
+abstract contract RSSchema is IRSSchema {
     // The version of the contract.
     string public constant VERSION = "0.1";
 
@@ -96,14 +96,14 @@ contract RSSchema is IRSSchema {
     /**
      * @inheritdoc IRSSchema
      */
-    function getSchema(bytes32 uid) public view override returns (SchemaRecord memory) {
+    function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory) {
         return _schemas[uid];
     }
 
     /**
      * @inheritdoc IRSSchema
      */
-    function getBridges(bytes32 uid) public view override returns (address[] memory) {
+    function getBridges(bytes32 uid) public view virtual returns (address[] memory) {
         return _schemas[uid].bridges;
     }
 

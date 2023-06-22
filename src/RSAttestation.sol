@@ -5,7 +5,7 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import "./eip712/EIP712Verifier.sol";
 import "./interface/IRSAttestation.sol";
 import "./RSSchema.sol";
-import "./RSModuleRegistry.sol";
+import "./RSModule.sol";
 
 import { RSRegistryLib } from "./lib/RSRegistryLib.sol";
 
@@ -29,7 +29,7 @@ struct AttestationsResult {
 /// @author zeroknots
 /// @notice ContractDescription TODO
 
-contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
+abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     using Address for address payable;
     using RSRegistryLib for address;
 
@@ -67,9 +67,11 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
     constructor(
         Yaho _yaho,
         Yaru _yaru,
-        address _l1Registry
+        address _l1Registry,
+        string memory name,
+        string memory version
     )
-        EIP712Verifier("RSAttestaton", "1.0")
+        EIP712Verifier(name, version)
     {
         yaho = _yaho;
         yaru = _yaru;
@@ -85,7 +87,6 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         returns (bytes32 attestationId)
     {
         _verifyAttest(delegatedRequest);
-        console2.log("Verified");
 
         AttestationRequestData[] memory data = new AttestationRequestData[](1);
         data[0] = delegatedRequest.data;
@@ -183,8 +184,10 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
     {
         // Get the attestation record for the contract and the authority.
         Attestation memory attestationRecord = _attestations[attestationId];
-        Module memory module = _modules[attestationRecord.recipient];
-        bytes32 codeHash = module.implementation.codeHash();
+        // Module memory module = _modules[attestationRecord.recipient];
+
+        address implementation = _getModule(attestationRecord.recipient).implementation;
+        bytes32 codeHash = implementation.codeHash();
 
         if (attestationRecord.propagateable == false) {
             revert InvalidAttestation();
@@ -349,7 +352,7 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
             }
 
             // Ensure that attestation is for module that was registered.
-            if (_modules[request.recipient].implementation == address(0)) {
+            if (_getModule(request.recipient).implementation == address(0)) {
                 revert InvalidAttestation();
             }
 
@@ -732,5 +735,23 @@ contract RSAttestation is IRSAttestation, RSModuleRegistry, EIP712Verifier {
         if (yaru.sender() != l1Registry) revert InvalidSender(address(this), yaru.sender());
         if (msg.sender != address(yaru)) revert InvalidCaller(address(this), msg.sender);
         _;
+    }
+
+    function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory);
+
+    function getBridges(bytes32 uid) public view virtual returns (address[] memory);
+
+    function _getModule(address moduleAddress) internal view virtual returns (Module storage);
+
+    function _getAttestation(
+        address module,
+        address authority
+    )
+        internal
+        view
+        virtual
+        returns (bytes32)
+    {
+        return _moduleToAuthorityToAttestations[module][authority];
     }
 }
