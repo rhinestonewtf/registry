@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 // A library that provides functions related to registry operations.
 
-library RSRegistryLib {
+library RSModuleDeploymentLib {
     // Gets the code hash of a contract at a given address.
     // @param contractAddr The address of the contract.
     // @return codeHash The hash of the contract code.
@@ -32,9 +32,9 @@ library RSRegistryLib {
         bytes memory initCode = abi.encodePacked(createCode, params);
         // this enforces, that constructor params were supplied via params argument
         // if params were abi.encodePacked in createCode, this will revert
-        if (calcAddress(initCode, salt) == calcAddress(createCode, salt)) {
-            revert InvalidDeployment();
-        }
+        // if (calcAddress(initCode, salt) == calcAddress(createCode, salt)) {
+        //     revert InvalidDeployment();
+        // }
         initCodeHash = keccak256(initCode);
 
         assembly {

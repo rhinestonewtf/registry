@@ -1,11 +1,66 @@
 <img align="right" width="150" height="150" top="100" src="./public/readme.jpg">
 
-# Rhinestone Regsitry • [![tests](https://github.com/rhinestonewtf/registry/actions/workflows/ci.yml/badge.svg?label=tests)](https://github.com/rhinestonewtf/registry/actions/workflows/ci.yml) ![license](https://img.shields.io/github/license/rhinestonewtf/registry?label=license) ![solidity](https://img.shields.io/badge/solidity-^0.8.17-lightgrey)
+# Rhinestone Registry • RSRegistry ![license](https://img.shields.io/github/license/rhinestonewtf/registry?label=license) ![solidity](https://img.shields.io/badge/solidity-^0.8.17-lightgrey)
 
 This Contract is in active development. Do not use this in Prod!
 
 
-RSRegistry is a Solidity contract that serves as a registry for managing various types of records, including contract implementations, attestations, and verifiers. It provides functionality for deploying, registering, and verifying contracts, as well as dispatching and receiving attestation messages between different chains.
+### Intro
+
+RSRegistry allows developers to deploy modules / components for smart accounts. RSRegistry is a permissionless 
+
+#### Modules
+
+Modules are smart contracts that act as modular components that can be added to smart accounts.
+The registry is agnostic towards smart account or module implementations.
+Modules addresses and deployment metadata are [stored](./docs/ModuleRegistration.md) on the registry.
+
+#### Authorities 
+The RhinestoneRegistry allows Authorities to conduct comprehensive security assessments of third-party modules or other 
+contracts before their integration. Authorities can check for potential vulnerabilities, adherence to best security practices, 
+and code quality, ensuring that these modules don't introduce security risks to users or an integrated product (i.e. Smart Account).
+
+#### Attestation Schemas
+[Schemas](./docs/Schemas.md) are ABIs that define the data fields needed for attestations. 
+
+#### Attestations
+[Attestations](./docs/Attestation.md) are digital records of cryptographically signed artifacs that attest to security / safety of a module. 
+
+
+#### Transparency and Trust
+By openly verifying and validating third-party modules, Authorities build trust with the ecosystem and their user base. 
+Users will have the confidence that each module integrated into their Smart Account has been thoroughly assessed for security, 
+reducing their risk while improving the user experience of modular smart accounts.
+
+#### Management of Updates
+Modules evolve over time, with developers releasing new versions to add features or address security 
+vulnerabilities. Authorities can ensure that only the latest and safest versions of these modules are active in your system, 
+enhancing the overall security and functionality. Authorities may also chose to revoke attestations made in the past.
+
+#### Cross-Chain Consistency
+If your product operates [across multiple Ethereum](./docs/L2Propagation.md) chains, the RhinestoneRegistry can ensure the consistency of modules across these chains. 
+This feature will prevent versioning issues, guaranteeing that users experience the same level of security and functionality, 
+irrespective of the chain they're on.
+
+## Architecture
+
+The RhinestoneRegistry is designed as a permissionless hyperstructure. 
+This architecture enables the registry to effectively manage and coordinate various types of smart contracts, 
+spanning multiple developers and authorities. With this level of interconnectedness, smart contracts can freely interact with each other and with 
+various authorities, opening up a world of possibilities for rich, complex interactions. It promotes a decentralized, collaborative environment, 
+where entities can share, validate, and verify smart contracts across chains.
+
+
+![Architecture](./public/docs/architecture.png)
+
+
+
+### Limitations
+- EAS does not support ERC1721, could make sense to fork EAS and add support. Added [PR](https://github.com/ethereum-attestation-service/eas-contracts/pull/65) to EAS
+- who select bridged for propagation
+    could let schema owner select bridges required
+- can a authority make multiple attestation on the same module
+
 
 ### Prerequisites
 - Solidity version 0.8.19 or later
@@ -26,22 +81,3 @@ This function retrieves attestation records for a given module from a list of au
 This function encodes the attestation record into a data payload and sends it to the specified chain using Yaho contract.
 1. Receive attestation messages from L1 by calling the receiveL1attestation function. 
 This function should only be called by a valid caller (Yaru contract) and stores the received attestation record.
-
-### Events
-- Deployment(address indexed implementation, bytes32 codeHash): Triggered when a contract is deployed.
-- Registration(address indexed implementation, bytes32 codeHash): Triggered when a contract is registered.
-- Attestation(address indexed implementation, address indexed authority, Attestation attestation): Triggered when a contract is attested.
-- Propagation(address indexed implementation, address indexed authority): Triggered when a contract attestation is propagated.
-
-### Errors
-
-- InvalidChainId(): Emitted when the provided chain ID is invalid.
-- InvalidBridgeTarget(): Emitted when the bridge target is invalid.
-- InvalidSender(address moduleAddr, address sender): Emitted when the sender address is invalid.
-- InvalidCaller(address moduleAddr, address yaruSender): Emitted when the caller is not the Yaru contract.
-- InvalidAttestation(address moduleAddr, address authority): Emitted when the attestation is invalid.
-- InvalidCodeHash(bytes32 expected, bytes32 actual): Emitted when the contract hash is invalid.
-- RiskTooHigh(uint8 risk): Emitted when the risk level is too high.
-- AlreadyRegistered(address moduleAddr): Emitted when the contract is already registered.
-- SecurityAlert(address moduleAddr, address authority): Emitted when a security alert occurs.
-- ThresholdNotReached(uint256 threshold, address moduleAddr): Emitted when the minimum threshold of verifications is not reached.
