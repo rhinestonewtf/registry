@@ -4,6 +4,8 @@ pragma solidity ^0.8.19;
 import "forge-std/Test.sol";
 import "../src/base/RSAttestation.sol";
 
+import "./utils/ERC1271Attester.sol";
+
 import "./utils/BaseTest.t.sol";
 
 /// @title RSAttestationTest
@@ -77,5 +79,34 @@ contract RSAttestationTest is BaseTest {
             instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
         assertTrue(attestation.revocationTime != 0);
         return (attestationUid1, attestationUid2);
+    }
+
+    function testERC1721Attestation() public {
+        ERC1271Attester attester = new ERC1271Attester();
+
+        AttestationRequestData memory attData = AttestationRequestData({
+            recipient: defaultModule1,
+            expirationTime: uint48(0),
+            revocable: true,
+            propagateable: true,
+            refUID: "",
+            data: abi.encode(true),
+            value: 0
+        });
+
+        EIP712Signature memory sig = EIP712Signature({
+            v: 27,
+            r: "",
+            s: ""
+        });
+
+        DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
+            schema: defaultSchema1,
+            data: attData,
+            signature: sig,
+            attester: address(attester)
+        });
+
+        instancel1.registry.attest(req);
     }
 }
