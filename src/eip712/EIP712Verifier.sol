@@ -187,9 +187,6 @@ abstract contract EIP712Verifier is EIP712 {
             nonce = _nonces[request.revoker]++;
         }
 
-        // bytes32 digest = _hashTypedDataV4(
-        //     keccak256(abi.encode(REVOKE_TYPEHASH, request.schema, data.uid, nonce))
-        // );
         bytes32 digest = _revocationDigest(request.schema, data.uid, nonce);
         _verifySignature(digest, signature, request.revoker);
     }
@@ -204,9 +201,7 @@ abstract contract EIP712Verifier is EIP712 {
     {
         // check if signer is EOA or contract
         if (_isContract(signer)) {
-            // check if contract implements EIP-1271
-            bytes4 magicValue = IERC1271(signer).isValidSignature(digest, abi.encode(signature));
-            if (magicValue != ERC1271_RETURN_VALID_SIGNATURE) {
+            if (IERC1271(signer).isValidSignature(digest, abi.encode(signature)) != ERC1271_RETURN_VALID_SIGNATURE) {
                 revert InvalidSignature();
             }
         } else {
