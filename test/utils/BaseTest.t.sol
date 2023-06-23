@@ -28,6 +28,8 @@ contract MockModule {
 contract BaseTest is Test, RegistryTestTools {
     using RegistryTestLib for RegistryInstance;
 
+    HashiEnv hashiEnv;
+
     RegistryInstance instancel1;
     RegistryInstance instancel2;
 
@@ -40,15 +42,27 @@ contract BaseTest is Test, RegistryTestTools {
     address defaultModule2;
 
     function setUp() public virtual {
-        instancel1 = _setupInstance("RegistryL1");
-        instancel2 = _setupInstance("RegistryL2");
+        address hashiSigner = makeAddr("hashiSigner");
+        hashiEnv = _setupHashi(hashiSigner);
+        instancel1 = _setupInstance({
+            name: "RegistryL1",
+            yaho: Yaho(address(0)),
+            yaru: hashiEnv.yaru,
+            l1Registry: address(0)
+        });
+        instancel2 = _setupInstance({
+            name: "RegistryL2",
+            yaho: hashiEnv.yaho,
+            yaru: Yaru(address(0)),
+            l1Registry: address(instancel1.registry)
+        });
 
         (, auth1k) = makeAddrAndKey("auth1");
         (, auth2k) = makeAddrAndKey("auth2");
 
         defaultSchema1 = instancel1.registerSchema("Test ABI", ISchemaResolver(address(0)), true);
-
         defaultSchema2 = instancel1.registerSchema("Test ABI2", ISchemaResolver(address(0)), true);
+
         defaultModule1 = instancel1.deployAndRegister(
             defaultSchema1, type(MockModuleWithArgs).creationCode, abi.encode(1234)
         );

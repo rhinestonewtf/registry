@@ -34,10 +34,12 @@ import { RSSchema } from "./RSSchema.sol";
  */
 abstract contract RSModule is IRSModule {
     mapping(address moduleAddress => Module) internal _modules;
+
     using RSModuleDeploymentLib for bytes;
     /**
      * @inheritdoc IRSModule
      */
+
     function deploy(
         bytes calldata code,
         bytes calldata deployParams,

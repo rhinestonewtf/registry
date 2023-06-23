@@ -2,11 +2,24 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
+/*//////////////////////////////////////////////////////////////
+                  Import Hashi Core Components
+//////////////////////////////////////////////////////////////*/
+
+import "hashi/Hashi.sol";
+import "hashi/GiriGiriBashi.sol";
 // Hashi's contract to dispatch messages to L2
 import "hashi/Yaho.sol";
-
 // Hashi's contract to receive messages from L1
 import "hashi/Yaru.sol";
+
+/*//////////////////////////////////////////////////////////////
+                      Hashi Bridge adapters
+//////////////////////////////////////////////////////////////*/
+import "hashi/adapters/AMB/AMBAdapter.sol";
+import "hashi/adapters/AMB/IAMB.sol";
+import "hashi/adapters/AMB/AMBMessageRelayer.sol";
+import "hashi/adapters/AMB/test/MockAMB.sol";
 
 import "../../src/RhinestoneRegistry.sol";
 
@@ -22,6 +35,16 @@ struct RegistryInstance {
     string name;
     Yaho yaho;
     Yaru yaru;
+}
+
+struct HashiEnv {
+    Hashi hashi;
+    GiriGiriBashi giriGiriBashi;
+    Yaho yaho;
+    Yaru yaru;
+    MockAMB amb;
+    AMBMessageRelay ambMessageRelay;
+    AMBAdapter ambAdapter;
 }
 
 library RegistryTestLib {
@@ -145,14 +168,42 @@ library RegistryTestLib {
 contract RegistryTestTools {
     using RegistryTestLib for RegistryInstance;
 
-    function _setupInstance(string memory name) internal returns (RegistryInstance memory) {
+    function _setupHashi(address hashiSigner) internal returns (HashiEnv memory hashiEnv) {
+        Hashi hashi = new Hashi();
+        GiriGiriBashi giriGiriBashi = new GiriGiriBashi(hashiSigner, address(hashi));
+        Yaho yaho = new Yaho();
+        MockAMB amb = new MockAMB();
+        Yaru yaru = new Yaru(IHashi(address(hashi)), address(yaho), block.chainid);
+        AMBMessageRelay ambMessageRelay = new AMBMessageRelay(IAMB(address(amb)),yaho);
+        AMBAdapter ambAdapter =
+            new AMBAdapter(IAMB(address(amb)), address(ambMessageRelay), bytes32(block.chainid));
+
+        hashiEnv = HashiEnv({
+            hashi: hashi,
+            giriGiriBashi: giriGiriBashi,
+            yaho: yaho,
+            yaru: yaru,
+            amb: amb,
+            ambMessageRelay: ambMessageRelay,
+            ambAdapter: ambAdapter
+        });
+    }
+
+    function _setupInstance(
+        string memory name,
+        Yaho yaho,
+        Yaru yaru,
+        address l1Registry
+    )
+        internal
+        returns (RegistryInstance memory)
+    {
         RegistryInstance memory instance;
-        Yaru yaru = Yaru(address(0));
-        Yaho yaho = Yaho(address(0));
+
         RhinestoneRegistry registry = new RhinestoneRegistry(
           yaho,
           yaru,
-          address(0),
+          l1Registry,
           name,
           "0.0.1"
         );
