@@ -133,7 +133,6 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
                 revert InvalidLength();
             }
 
-
             // Verify EIP712 signatures. Please note that the signatures are assumed to be signed with increasing nonces.
             for (uint256 j; j < dataLength; j = uncheckedInc(j)) {
                 _verifyAttest(
@@ -184,10 +183,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     {
         // Get the attestation record for the contract and the authority.
         Attestation memory attestationRecord = _attestations[attestationId];
-        // Module memory module = _modules[attestationRecord.recipient];
-
-        address implementation = _getModule(attestationRecord.recipient).implementation;
-        bytes32 codeHash = implementation.codeHash();
+        bytes32 codeHash = attestationRecord.recipient.codeHash();
 
         if (attestationRecord.propagateable == false) {
             revert InvalidAttestation();
@@ -229,8 +225,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         }
 
         // check if schemaId exists on this L2 registry
-        if(getSchema(attestation.schema).uid == EMPTY_UID) revert InvalidAttestation();
-        
+        if (getSchema(attestation.schema).uid == EMPTY_UID) revert InvalidAttestation();
 
         // Store the attestation
         _attestations[attestation.uid] = attestation;
@@ -672,7 +667,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
      * @return array2 The converted array of uint256
      */
     function _toUint256Array(bytes32[] memory array) internal pure returns (uint256[] memory) {
-      uint256 length = array.length;
+        uint256 length = array.length;
         uint256[] memory array2 = new uint256[](length);
         for (uint256 i; i < length; ++i) {
             array2[i] = uint256(array[i]);
