@@ -106,7 +106,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         // Since a multi-attest call is going to make multiple attestations for multiple schemas, we'd need to collect
         // all the returned UIDs into a single list.
         bytes32[][] memory totalUids = new bytes32[][](length);
-        uint256 totalUidsCount = 0;
+        uint256 totalUidsCount;
 
         // We are keeping track of the total available ETH amount that can be sent to resolvers and will keep deducting
         // from it to verify that there isn't any attempt to send too much ETH to resolvers. Please note that unless
@@ -126,14 +126,16 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
             MultiDelegatedAttestationRequest calldata multiDelegatedRequest =
                 multiDelegatedRequests[i];
             AttestationRequestData[] calldata data = multiDelegatedRequest.data;
+            uint256 dataLength = data.length;
 
             // Ensure that no inputs are missing.
-            if (data.length == 0 || data.length != multiDelegatedRequest.signatures.length) {
+            if (dataLength == 0 || dataLength != multiDelegatedRequest.signatures.length) {
                 revert InvalidLength();
             }
 
+
             // Verify EIP712 signatures. Please note that the signatures are assumed to be signed with increasing nonces.
-            for (uint256 j = 0; j < data.length; j = uncheckedInc(j)) {
+            for (uint256 j; j < dataLength; j = uncheckedInc(j)) {
                 _verifyAttest(
                     DelegatedAttestationRequest({
                         schema: multiDelegatedRequest.schema,
@@ -225,6 +227,10 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         if (codeHash != moduleAddress.codeHash()) {
             revert InvalidAttestation();
         }
+
+        // check if schemaId exists on this L2 registry
+        if(getSchema(attestation.schema).uid == EMPTY_UID) revert InvalidAttestation();
+        
 
         // Store the attestation
         _attestations[attestation.uid] = attestation;
@@ -478,6 +484,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
             if (attestation.revocationTime != 0) {
                 revert AlreadyRevoked();
             }
+
             attestation.revocationTime = _time();
 
             attestations[i] = attestation;
@@ -665,8 +672,9 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
      * @return array2 The converted array of uint256
      */
     function _toUint256Array(bytes32[] memory array) internal pure returns (uint256[] memory) {
-        uint256[] memory array2 = new uint256[](array.length);
-        for (uint256 i; i < array.length; ++i) {
+      uint256 length = array.length;
+        uint256[] memory array2 = new uint256[](length);
+        for (uint256 i; i < length; ++i) {
             array2[i] = uint256(array[i]);
         }
         return array2;
