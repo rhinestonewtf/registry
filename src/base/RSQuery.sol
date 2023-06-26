@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import {
     AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
 } from "../Common.sol";
-import "../interface/IRQuery.sol";
+import "../interface/IRSQuery.sol";
 import "./RSAttestation.sol";
 
 import "forge-std/console2.sol";
@@ -12,7 +12,7 @@ import "forge-std/console2.sol";
 /// @title RSRegistry
 /// @author zeroknots
 /// @notice The global attestation registry.
-abstract contract RSQuery is IRQuery {
+abstract contract RSQuery is IRSQuery {
     error RevokedAttestation(bytes32 attestationId);
 
     /**
