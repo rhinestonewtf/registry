@@ -79,4 +79,19 @@ interface IRSQuery {
         external
         view
         returns (Attestation memory attestation);
+
+    /**
+     * Find an attestations associated with a given module and authority.
+     *
+     * @param module The address of the module
+     * @param authority The address of the authority issuing the attestation
+     * @return attestations The attestations associated with the module and authority
+     */
+    function findAttestation(
+        address module,
+        address[] memory authority
+    )
+        external
+        view
+        returns (Attestation[] memory attestations);
 }

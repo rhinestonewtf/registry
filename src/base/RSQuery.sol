@@ -99,6 +99,24 @@ abstract contract RSQuery is IRSQuery {
         attestation = _getAttestation(attestionId);
     }
 
+    /**
+     * @inheritdoc IRSQuery
+     */
+    function findAttestation(
+        address module,
+        address[] memory authority
+    )
+        external
+        view
+        returns (Attestation[] memory attestations)
+    {
+        uint256 length = authority.length;
+        attestations = new Attestation[](length);
+        for (uint256 i; i < length; uncheckedInc(i)) {
+            attestations[i] = findAttestation(module, authority[i]);
+        }
+    }
+
     function _verifyAttestation(bytes32 attestationId) internal view {
         Attestation storage attestation = _getAttestation(attestationId);
         bytes32 refUID = attestation.refUID;
