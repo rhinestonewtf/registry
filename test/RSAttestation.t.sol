@@ -94,11 +94,7 @@ contract RSAttestationTest is BaseTest {
             value: 0
         });
 
-        EIP712Signature memory sig = EIP712Signature({
-            v: 27,
-            r: "",
-            s: ""
-        });
+        EIP712Signature memory sig = EIP712Signature({ v: 27, r: "", s: "" });
 
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
             schema: defaultSchema1,

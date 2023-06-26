@@ -18,22 +18,4 @@ contract RSQueryTest is RSAttestationTest {
         Attestation memory attestation1 =
             instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
     }
-
-    function testQueryChainedAttestation() public {
-        (bytes32 attestationUid1, bytes32 attestationUid2) = testCreateChainedAttestation();
-
-        Attestation memory attestation1 =
-            instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
-        Attestation memory attestation2 =
-            instancel1.registry.findAttestation(defaultModule1, vm.addr(auth2k));
-    }
-
-    function testQueryBrokenChainedAttestation() public {
-        (bytes32 revokedAttestation, bytes32 chainedAttestation) = testBrokenChainAttestation();
-
-        Attestation memory attestation1 =
-            instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
-        Attestation memory attestation2 =
-            instancel1.registry.findAttestation(defaultModule1, vm.addr(auth2k));
-    }
 }

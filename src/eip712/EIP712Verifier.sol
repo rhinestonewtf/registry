@@ -35,7 +35,7 @@ abstract contract EIP712Verifier is EIP712 {
         0xa98d02348410c9c76735e0d0bb1396f4015ac2bb9615f9c2611d19d7a8a99650;
 
     // bytes4(keccak256("isValidSignature(bytes32,bytes)")
-    bytes4 private constant ERC1271_RETURN_VALID_SIGNATURE =  0x1626ba7e;
+    bytes4 private constant ERC1271_RETURN_VALID_SIGNATURE = 0x1626ba7e;
 
     // The user readable name of the signing domain.
     string private _name;
@@ -201,7 +201,10 @@ abstract contract EIP712Verifier is EIP712 {
     {
         // check if signer is EOA or contract
         if (_isContract(signer)) {
-            if (IERC1271(signer).isValidSignature(digest, abi.encode(signature)) != ERC1271_RETURN_VALID_SIGNATURE) {
+            if (
+                IERC1271(signer).isValidSignature(digest, abi.encode(signature))
+                    != ERC1271_RETURN_VALID_SIGNATURE
+            ) {
                 revert InvalidSignature();
             }
         } else {
