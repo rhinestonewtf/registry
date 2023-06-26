@@ -20,7 +20,7 @@ verify, and dispatch verification statuses across various Ethereum chains.
 
 ## Core Principles
 ### Attestations
-![Attestations](./docs/Attestation.md) represent digitally documented assertions made by any entity 
+[Attestations](./docs/Attestation.md) represent digitally documented assertions made by any entity 
 about the security poture of account abstraction modules, 
 serving as a seal of authenticity for the associated data. An entity known as an 
 Attestor forms these records, authenticating them with their Ethereum wallet 
@@ -47,7 +47,7 @@ information authenticity, thus enhancing the information's
 trustworthiness for others.
 
 ### Schemas
-![Schemas](./docs/Schema.md) represent predefined structures utilized for the formation and 
+[Schemas](./docs/Schema.md) represent predefined structures utilized for the formation and 
 verification of attestations. They define the data types, format, and 
 composition of an attestation. The Rhinestone Registry accepts Solidity 
 ABI types as acceptable fields for schemas. Schemas play an essential 
@@ -68,7 +68,7 @@ Modules are smart contracts that act as modular components that can be added to 
 The registry is agnostic towards smart account or module implementations. Modules addresses and 
 deployment metadata are stored on the registry.
 
-Modules are registered on the Rhinestone Registry by ![deploying](./docs/ModulesRegistration.md) the Module Bytecode with `CREATE2`
+Modules are registered on the Rhinestone Registry by [deploying](./docs/ModulesRegistration.md) the Module Bytecode with `CREATE2`
 
 
 ### Cross-Chain Consistency
@@ -102,7 +102,7 @@ where entities can share, validate, and verify smart contracts across chains.
 
 
 ## Noteable Mentions
-- ![Ethereum Attestation Service]() Rhinestone Registry is leveraging an attestation logic inspired by EAS
+- Rhinestone Registry is leveraging an attestation logic inspired by EAS
 
 ### Prerequisites
 - Solidity version 0.8.19 or later

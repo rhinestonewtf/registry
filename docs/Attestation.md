@@ -1,14 +1,13 @@
 ## Intro
 
 Attestations are security guarantees or audit results that authorities commit to the registry.
-these are the artifacts that smart account or users query when validating the safety of a module they want to use in their smart account.
+These are the artifacts that smart account or users query when validating the safety of a module they want to use in their smart account.
 
 ![Attestation Flow](../public/docs/attestation.png)
 
 ## Specs
 
-Attestations are made for a specific schema. the struct defines relevant metadata, while the attestation data is abi encoded in the data field.
-the ABI for the attestation must follow the definition of the schema.
+Attestations are made for a specific schema. The struct defines relevant metadata, while the attestation data is abi encoded in the data field. The ABI for the attestation must follow the definition of the schema.
 ```solidity
 struct Attestation {
     bytes32 uid; // A unique identifier of the attestation.
@@ -24,22 +23,18 @@ struct Attestation {
 }
 ```
 
-### chaining of attestation
+### Chaining of attestation
 
-to allow for complex attestation verifiction models, attestors may utilize the redUID field that references another already existing attestation UID 
+To allow for complex attestation verifiction models, attestors may utilize the refUID field that references another already existing attestation UID 
 Chaining of attestations can allow for complex trust delegation models.
 
-
-### Attestation Incentives
-- Monetization can be implemented in Resolvers
-
 ## Verifiction of Attestations
-the registry exposes a function that allows smart accounts or end users to query security attestations for a selected module.
-this functionality can be called during module installation or execution.
+The registry exposes a function that allows smart accounts or end users to query security attestations for a selected module.
+This functionality can be called during module installation or execution.
 
 ## Challenges
 
-different smart accounts will have different querying needs:
+Different smart accounts will have different querying needs:
 - threshold of n/m authorities
 - chained attestations
 - revert vs return false

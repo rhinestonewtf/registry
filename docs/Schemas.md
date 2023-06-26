@@ -1,12 +1,12 @@
 ## Intro
-any module / Plugin registered in the RSRegistry uses one schema.
+Any module / plugin registered in the RSRegistry uses one schema.
 
 ![Schema Registration](../public/docs/schema.png)
 
 ## Challenges
 
-different authorities may chose different data points that are relevant for their ecosystem. 
-to allow dynamic attetation data fields, we suggest to leverage EAS like schema registration system.
+Different authorities may chose d ifferent data points that are relevant for their ecosystem. 
+To allow dynamic attetation data fields, we suggest to leverage an EAS-like schema registration system.
 
 ## Specs
 
@@ -22,8 +22,8 @@ struct SchemaRecord {
 ```
 
 ### Resolvers / Schema owners
-when registering a schema, a resolver contract can be specified. 
-this contract exposes hooks that will be called during the attestation and revocation process.
-resolver may implement any logic to extend the attestation and revocation process.
+When registering a schema, a resolver contract can be specified. 
+This contract exposes hooks that will be called during the attestation and revocation process.
+The resolver may implement any logic to extend the attestation and revocation process.
 
 
