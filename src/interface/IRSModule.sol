@@ -13,7 +13,7 @@ struct Module {
 
 interface IRSModule {
     // Event triggered when a contract is deployed.
-    event Deployment(address indexed implementation, bytes32 codeHash);
+    event ModuleRegistration(address indexed implementation, bytes32 codeHash);
     // Error to throw if the deployment is invalid
 
     error InvalidDeployment();
@@ -36,4 +36,6 @@ interface IRSModule {
     )
         external
         returns (address moduleAddr);
+
+    function register(bytes32 schemaId, address moduleAddress, bytes calldata data) external;
 }

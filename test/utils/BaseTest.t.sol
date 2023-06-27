@@ -46,14 +46,14 @@ contract BaseTest is Test, RegistryTestTools {
         hashiEnv = _setupHashi(hashiSigner);
         instancel1 = _setupInstance({
             name: "RegistryL1",
-            yaho: Yaho(address(0)),
-            yaru: hashiEnv.yaru,
+            yaho: hashiEnv.yaho,
+            yaru: Yaru(address(0)),
             l1Registry: address(0)
         });
         instancel2 = _setupInstance({
             name: "RegistryL2",
-            yaho: hashiEnv.yaho,
-            yaru: Yaru(address(0)),
+            yaho: Yaho(address(0)),
+            yaru: hashiEnv.yaru,
             l1Registry: address(instancel1.registry)
         });
 
@@ -63,11 +63,24 @@ contract BaseTest is Test, RegistryTestTools {
         defaultSchema1 = instancel1.registerSchema("Test ABI", ISchemaResolver(address(0)), true);
         defaultSchema2 = instancel1.registerSchema("Test ABI2", ISchemaResolver(address(0)), true);
 
+        instancel2.registerSchema("Test ABI", ISchemaResolver(address(0)), true);
+        instancel2.registerSchema("Test ABI2", ISchemaResolver(address(0)), true);
         defaultModule1 = instancel1.deployAndRegister(
             defaultSchema1, type(MockModuleWithArgs).creationCode, abi.encode(1234)
         );
         defaultModule2 = instancel1.deployAndRegister(
             defaultSchema2, type(MockModuleWithArgs).creationCode, abi.encode(5678)
         );
+
+        instancel2.registry.register({
+            schemaId: defaultSchema2,
+            moduleAddress: defaultModule1,
+            data: ""
+        });
+        instancel2.registry.register({
+            schemaId: defaultSchema2,
+            moduleAddress: defaultModule2,
+            data: ""
+        });
     }
 }

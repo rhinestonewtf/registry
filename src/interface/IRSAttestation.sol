@@ -177,9 +177,30 @@ interface IRSAttestation {
      *
      * @param to The address to send to on the destination chain
      * @param toChainId The ID of the destination chain
+     * @param attestationIds The IDs of the attestations to be propagated.
+     *           they have to be attestations on the same recipient
+     * @param moduleOnL2 The address of the module on the Layer 2 chain
+     * @return messages An array of messages sent
+     * @return messageIds An array of IDs of the messages sent
+     */
+    function propagateAttest(
+        address to,
+        uint256 toChainId,
+        bytes32[] calldata attestationIds,
+        address moduleOnL2
+    )
+        external
+        returns (Message[] memory messages, bytes32[] memory messageIds);
+
+    /**
+     * @notice Propagates the attestations to a different blockchain.
+     *
+     * @dev Encodes the attestation record and sends it as a message to the destination chain.
+     *
+     * @param to The address to send to on the destination chain
+     * @param toChainId The ID of the destination chain
      * @param attestationId The ID of the attestation to be propagated
      * @param moduleOnL2 The address of the module on the Layer 2 chain
-     * @param destinationAdapters The destination adapters to send the messages
      * @return messages An array of messages sent
      * @return messageIds An array of IDs of the messages sent
      */
@@ -187,8 +208,7 @@ interface IRSAttestation {
         address to,
         uint256 toChainId,
         bytes32 attestationId,
-        address moduleOnL2,
-        address[] calldata destinationAdapters
+        address moduleOnL2
     )
         external
         returns (Message[] memory messages, bytes32[] memory messageIds);

@@ -36,4 +36,12 @@ contract RSModuleTest is BaseTest {
             constructorArgs: bytes("")
         });
     }
+
+    function testNonexistingModule() public {
+        assertTrue(false);
+    }
+
+    function testReRegisterModule() public {
+        assertTrue(false);
+    }
 }

@@ -81,6 +81,10 @@ contract RSAttestationTest is BaseTest {
         return (attestationUid1, attestationUid2);
     }
 
+    function testAttestationNonExistingSchema() public {
+        assertTrue(false);
+    }
+
     function testERC1721Attestation() public {
         ERC1271Attester attester = new ERC1271Attester();
 

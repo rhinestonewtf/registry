@@ -36,10 +36,13 @@ abstract contract RSModule is IRSModule {
     mapping(address moduleAddress => Module) internal _modules;
 
     using RSModuleDeploymentLib for bytes;
+    using RSModuleDeploymentLib for address;
+
+    error AlreadyRegistered(address module);
+
     /**
      * @inheritdoc IRSModule
      */
-
     function deploy(
         bytes calldata code,
         bytes calldata deployParams,
@@ -53,21 +56,49 @@ abstract contract RSModule is IRSModule {
         // Check if the provided schemaId exists
         if (schemaId != getSchema(schemaId).uid) revert InvalidSchema();
 
-        bytes32 initCodeHash; // Hash of the contract creation code and deployment parameters
         bytes32 contractCodeHash; //  Hash of contract bytecode
-        (moduleAddr, initCodeHash, contractCodeHash) = code.deploy(deployParams, salt);
+        bytes32 deployParamsHash; // Hash of contract deployment parameters
+        (moduleAddr, deployParamsHash, contractCodeHash) = code.deploy(deployParams, salt);
 
+        _register(moduleAddr, msg.sender, schemaId, contractCodeHash, deployParamsHash, data);
+
+        emit ModuleRegistration(moduleAddr, contractCodeHash); // Emit a deployment event
+    }
+
+    function register(bytes32 schemaId, address moduleAddress, bytes calldata data) external {
+        // Check if the provided schemaId exists
+        if (schemaId != getSchema(schemaId).uid) revert InvalidSchema();
+
+        // get codehash of depoyed contract
+        bytes32 contractCodeHash = moduleAddress.codeHash();
+        _register(moduleAddress, address(0), schemaId, contractCodeHash, "", data);
+
+        emit ModuleRegistration(moduleAddress, contractCodeHash); // Emit a registration event
+    }
+
+    function _register(
+        address moduleAddress,
+        address sender,
+        bytes32 schemaId,
+        bytes32 codeHash,
+        bytes32 deployParamsHash,
+        bytes calldata data
+    )
+        private
+    {
+        // ensure moduleAddress is not already registered
+        if (_modules[moduleAddress].implementation != address(0)) {
+            revert AlreadyRegistered(moduleAddress);
+        }
         // Store module data in _modules mapping
-        _modules[moduleAddr] = Module({
-            implementation: moduleAddr,
-            codeHash: contractCodeHash,
+        _modules[moduleAddress] = Module({
+            implementation: moduleAddress,
+            codeHash: codeHash,
+            deployParamsHash: deployParamsHash,
             schemaId: schemaId,
-            sender: msg.sender,
-            deployParamsHash: keccak256(deployParams),
+            sender: sender,
             data: data
         });
-
-        emit Deployment(moduleAddr, contractCodeHash); // Emit a deployment event
     }
 
     function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory);

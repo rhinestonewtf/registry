@@ -19,6 +19,8 @@ import {
     AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
 } from "../Common.sol";
 
+import "forge-std/console2.sol";
+
 struct AttestationsResult {
     uint256 usedValue; // Total ETH amount that was sent to resolvers.
     bytes32[] uids; // UIDs of the new attestations.
@@ -48,6 +50,8 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     error AlreadyTimestamped();
     error InsufficientValue();
     error InvalidAttestation();
+    error InvalidAttestationRefUID(bytes32 missingRefUID);
+    error IncompatibleAttestation(bytes32 sourceCodeHash, bytes32 targetCodeHash);
     error InvalidPropagation();
     error InvalidAttestations();
     error InvalidExpirationTime();
@@ -174,16 +178,53 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     function propagateAttest(
         address to,
         uint256 toChainId,
-        bytes32 attestationId,
-        address moduleOnL2,
-        address[] calldata destinationAdapters
+        bytes32[] memory attestationIds,
+        address moduleOnL2
     )
         external
+        returns (Message[] memory messages, bytes32[] memory messageIds)
+    {
+        uint256 length = attestationIds.length;
+        messages = new Message[](length);
+        messageIds = new bytes32[](length);
+
+        for (uint256 i; i < length; i = uncheckedInc(i)) {
+            Attestation memory attestationRecord = _attestations[attestationIds[i]];
+            _enforceOnlySchemaOwner(attestationRecord.schema);
+            if (attestationRecord.uid == EMPTY_UID) {
+                revert InvalidAttestation();
+            }
+            // Encode the attestation record into a data payload.
+            bytes memory callData = abi.encodeWithSelector(
+                this.attestByPropagation.selector,
+                attestationRecord,
+                attestationRecord.recipient.codeHash(),
+                moduleOnL2
+            );
+            // Prepare the message for dispatch.
+            messages[i] = Message({ to: to, toChainId: toChainId, data: callData });
+        }
+        messageIds = yaho.dispatchMessages(messages);
+    }
+    /**
+     * @inheritdoc IRSAttestation
+     */
+
+    function propagateAttest(
+        address to,
+        uint256 toChainId,
+        bytes32 attestationId,
+        address moduleOnL2
+    )
+        public
         returns (Message[] memory messages, bytes32[] memory messageIds)
     {
         // Get the attestation record for the contract and the authority.
         Attestation memory attestationRecord = _attestations[attestationId];
         bytes32 codeHash = attestationRecord.recipient.codeHash();
+
+        // enforce that only schema owner can trigger the propagation
+        _enforceOnlySchemaOwner(attestationRecord.schema);
 
         if (attestationRecord.propagateable == false) {
             revert InvalidAttestation();
@@ -201,10 +242,6 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         messageIds = new bytes32[](1);
         // Dispatch message to selected L2
         messageIds = yaho.dispatchMessages(messages);
-
-        uint256[] memory messageIdsInt = _toUint256Array(messageIds);
-        address[] memory adapters = getBridges(_attestations[attestationId].uid);
-        yaho.relayMessagesToAdapters(messageIdsInt, adapters, destinationAdapters);
     }
 
     /**
@@ -221,14 +258,30 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         // Check if the code hash from sending chain matches the hash of the module address
         // if codeHash does not match, the attestation is invalid
         if (codeHash != moduleAddress.codeHash()) {
-            revert InvalidAttestation();
+            revert IncompatibleAttestation(codeHash, moduleAddress.codeHash());
         }
 
         // check if schemaId exists on this L2 registry
-        if (getSchema(attestation.schema).uid == EMPTY_UID) revert InvalidAttestation();
+        if (getSchema(attestation.schema).uid == EMPTY_UID) revert WrongSchema();
+
+        // check if refUID exists on this L2 registry
+        if (attestation.refUID != EMPTY_UID) {
+            // check if refUID exists on this L2 registry
+            if (_attestations[attestation.refUID].uid == EMPTY_UID) {
+                revert InvalidAttestationRefUID(attestation.refUID);
+            }
+        }
+
+        // check if attestationId already exists on this L2 registry
+        Attestation storage existingRecord = _attestations[attestation.uid];
+        if (existingRecord.revocationTime != 0) revert InvalidAttestation();
+        // can not propagate attestations that were commited natively after the original attestation was created
+        if (existingRecord.time > attestation.time) revert InvalidAttestation();
 
         // Store the attestation
         _attestations[attestation.uid] = attestation;
+        _moduleToAuthorityToAttestations[attestation.recipient][attestation.attester] =
+            attestation.uid;
         // Emit an event for the attestation
         emit Attested(
             attestation.recipient, attestation.attester, attestation.uid, attestation.schema
@@ -741,6 +794,13 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         if (yaru.sender() != l1Registry) revert InvalidSender(address(this), yaru.sender());
         if (msg.sender != address(yaru)) revert InvalidCaller(address(this), msg.sender);
         _;
+    }
+
+    function _enforceOnlySchemaOwner(bytes32 schema) internal view {
+        address schemaOwner = getSchema(schema).schemaOwner;
+        if (schemaOwner != msg.sender) {
+            revert AccessDenied();
+        }
     }
 
     function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory);

@@ -55,4 +55,12 @@ contract RSSchemaTest is BaseTest {
         vm.prank(bob);
         instancel1.registry.setBridges(schemaId, bridges);
     }
+
+    function testSameUIDOnL2() public {
+        assertTrue(false);
+    }
+
+    function testUpdateResolver() public {
+        assertTrue(false);
+    }
 }

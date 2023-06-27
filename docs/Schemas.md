@@ -26,4 +26,15 @@ When registering a schema, a resolver contract can be specified.
 This contract exposes hooks that will be called during the attestation and revocation process.
 The resolver may implement any logic to extend the attestation and revocation process.
 
+### Registration of Schemas across L2s
 
+The schemaUID is generated using the schema definition as well as the schemaOwner (sender of the schema registration request)
+it is important that these parameters are reused across chains to ensure that attestations propagated across chains are compatible
+
+```solidity
+function _getUID(SchemaRecord memory schemaRecord) private pure returns (bytes32) {
+    return keccak256(
+        abi.encodePacked(schemaRecord.schema, schemaRecord.schemaOwner, schemaRecord.revocable)
+    );
+}
+```
