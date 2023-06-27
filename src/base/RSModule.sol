@@ -39,10 +39,10 @@ abstract contract RSModule is IRSModule {
     using RSModuleDeploymentLib for address;
 
     error AlreadyRegistered(address module);
+
     /**
      * @inheritdoc IRSModule
      */
-
     function deploy(
         bytes calldata code,
         bytes calldata deployParams,

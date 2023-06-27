@@ -50,6 +50,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     error AlreadyTimestamped();
     error InsufficientValue();
     error InvalidAttestation();
+    error InvalidAttestationRefUID(bytes32 missingRefUID);
     error IncompatibleAttestation(bytes32 sourceCodeHash, bytes32 targetCodeHash);
     error InvalidPropagation();
     error InvalidAttestations();
@@ -189,6 +190,10 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
             Attestation memory attestationRecord = _attestations[attestationIds[i]];
+            _enforceOnlySchemaOwner(attestationRecord.schema);
+            if (attestationRecord.uid == EMPTY_UID) {
+                revert InvalidAttestation();
+            }
             // Encode the attestation record into a data payload.
             bytes memory callData = abi.encodeWithSelector(
                 this.attestByPropagation.selector,
@@ -257,12 +262,14 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         }
 
         // check if schemaId exists on this L2 registry
-        if (getSchema(attestation.schema).uid == EMPTY_UID) revert InvalidAttestation();
+        if (getSchema(attestation.schema).uid == EMPTY_UID) revert WrongSchema();
 
         // check if refUID exists on this L2 registry
         if (attestation.refUID != EMPTY_UID) {
             // check if refUID exists on this L2 registry
-            if (_attestations[attestation.refUID].uid == EMPTY_UID) revert InvalidAttestation();
+            if (_attestations[attestation.refUID].uid == EMPTY_UID) {
+                revert InvalidAttestationRefUID(attestation.refUID);
+            }
         }
 
         // check if attestationId already exists on this L2 registry
