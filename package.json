@@ -1,0 +1,10 @@
+{
+  "name": "registry",
+  "version": "0.0.1",
+  "repository": "git@github.com:rhinestonewtf/registry.git",
+  "author": "zeroknots",
+  "scripts": {
+    "deploy": "source .env && forge script script/DeployRegistry.s.sol:DeployRegistryScript --fork-url http://localhost:8545 --broadcast",
+    "deploy:testnet": "source .env && forge script script/DeployRegistry.s.sol:DeployRegistryScript --fork-url http://ec2-18-184-164-130.eu-central-1.compute.amazonaws.com:8545 --broadcast"
+  }
+}
