@@ -1,25 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "solmate/test/utils/mocks/MockERC20.sol";
 import "../utils/BaseTest.t.sol";
-import "../../src/resolver/examples/TokenizedResolver.sol";
+import "../../src/resolver/examples/ValueResolver.sol";
 
-contract TokenizedResolverTest is BaseTest {
+contract ValueResolverTest is BaseTest {
     using RegistryTestLib for RegistryInstance;
 
-    MockERC20 token;
-    TokenizedResolver resolver;
+    ValueResolver resolver;
 
     function setUp() public override {
         super.setUp();
-        token = new MockERC20("test", "test", 8);
-        resolver = new TokenizedResolver(address(instancel1.registry), address(token));
-
-        token.mint(vm.addr(auth1k), 10_000);
+        resolver = new ValueResolver(address(instancel1.registry));
     }
 
-    function testTokenizedResolver() public {
+    function testValueResolver() public {
         bytes32 schema =
             instancel1.registerSchema("TokenizedResolver", ISchemaResolver(address(resolver)), true);
 
@@ -34,12 +29,19 @@ contract TokenizedResolverTest is BaseTest {
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
-            value: 0
+            value: 1 ether
         });
 
-        vm.prank(vm.addr(auth1k));
-        token.approve(address(resolver), 1000);
-        bytes32 attestationId = instancel1.newAttestation(schema, auth1k, attData);
-        assertEq(token.balanceOf(address(resolver)), 10);
+        EIP712Signature memory signature =
+            RegistryTestLib.signAttestation(instancel1, schema, auth1k, attData);
+        DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
+            schema: schema,
+            data: attData,
+            signature: signature,
+            attester: vm.addr(auth1k)
+        });
+
+        bytes32 attestationUid = instancel1.registry.attest{ value: 1 ether }(req);
+        assertTrue(address(resolver).balance > 0);
     }
 }

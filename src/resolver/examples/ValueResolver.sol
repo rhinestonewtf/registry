@@ -22,7 +22,7 @@ contract ValueResolver is SchemaResolver {
         override
         returns (bool)
     {
-        return value == fee;
+      return msg.value > fee;
     }
 
     function onRevoke(
