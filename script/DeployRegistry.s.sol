@@ -9,7 +9,7 @@ import "../test/utils/BaseUtils.sol";
 /// @author zeroknots
 contract DeployRegistryScript is Script, RegistryTestTools {
     function run() public {
-        vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
+        vm.startBroadcast(vm.envUint("PK"));
         HashiEnv memory hashiEnv = _setupHashi(address(123));
         RegistryInstance memory instance = _setupInstance({
             name: "RegistryL1",
