@@ -30,8 +30,9 @@ abstract contract EIP712Verifier is EIP712 {
     );
 
     // The hash of the data type used to relay calls to the revoke function. It's the value of
-    bytes32 private constant REVOKE_TYPEHASH = keccak256("Revoke(bytes32 schema,bytes32 uid,uint256 nonce)");
-        // 0xa98d02348410c9c76735e0d0bb1396f4015ac2bb9615f9c2611d19d7a8a99650;
+    bytes32 private constant REVOKE_TYPEHASH =
+        keccak256("Revoke(bytes32 schema,bytes32 uid,uint256 nonce)");
+    // 0xa98d02348410c9c76735e0d0bb1396f4015ac2bb9615f9c2611d19d7a8a99650;
 
     // bytes4(keccak256("isValidSignature(bytes32,bytes)")
     bytes4 private constant ERC1271_RETURN_VALID_SIGNATURE = 0x1626ba7e;
