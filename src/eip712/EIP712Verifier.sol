@@ -100,7 +100,7 @@ abstract contract EIP712Verifier is EIP712 {
         view
         returns (bytes32 digest)
     {
-        uint256 nonce = getNonce(attester) + 1;
+        uint256 nonce = getNonce(attester)+1;
         digest = _attestationDigest(attData, schemaUid, nonce);
     }
 
@@ -138,13 +138,15 @@ abstract contract EIP712Verifier is EIP712 {
         AttestationRequestData memory data = request.data;
         EIP712Signature memory signature = request.signature;
 
-        uint256 nonce;
-        unchecked {
-            nonce = ++_nonces[request.attester];
-        }
-
+        uint256 nonce = _newNonce(request.attester);
         bytes32 digest = _attestationDigest(data, request.schema, nonce);
         _verifySignature(digest, signature, request.attester);
+    }
+
+    function _newNonce(address account) internal returns(uint256 nonce) {
+        unchecked {
+            nonce = ++_nonces[account];
+        }
     }
 
     function getRevocationDigest(
@@ -156,7 +158,7 @@ abstract contract EIP712Verifier is EIP712 {
         view
         returns (bytes32 digest)
     {
-        uint256 nonce = getNonce(revoker);
+        uint256 nonce = getNonce(revoker)+1;
         digest = _revocationDigest(schemaUid, revData.uid, nonce);
     }
 
@@ -182,11 +184,7 @@ abstract contract EIP712Verifier is EIP712 {
         RevocationRequestData memory data = request.data;
         EIP712Signature memory signature = request.signature;
 
-        uint256 nonce;
-        unchecked {
-            nonce = _nonces[request.revoker]++;
-        }
-
+        uint256 nonce = _newNonce(request.revoker);
         bytes32 digest = _revocationDigest(request.schema, data.uid, nonce);
         _verifySignature(digest, signature, request.revoker);
     }
