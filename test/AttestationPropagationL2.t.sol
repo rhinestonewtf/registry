@@ -340,7 +340,7 @@ contract AttestationPropagationL2Test is RSAttestationTest {
         bytes32 moduleHashAfter = defaultModule1.codeHash();
         assertTrue(moduleHashBefore != moduleHashAfter);
 
-        vm.expectRevert(abi.encodeWithSelector(RSAttestation.InvalidAttestation.selector));
+        vm.expectRevert(abi.encodeWithSelector(AccessDenied.selector));
         (Message[] memory messages, bytes32[] memory messageIdsBytes32) = instancel1
             .registry
             .propagateAttest({

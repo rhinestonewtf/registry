@@ -105,7 +105,7 @@ library RegistryTestLib {
         bytes32 digest = instance.registry.getAttestationDigest({
             attData: attData,
             schemaUid: schemaId,
-            nonce: nonce 
+            nonce: nonce
         });
 
         (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
