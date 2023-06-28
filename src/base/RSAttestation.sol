@@ -428,22 +428,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
             });
 
             // Look for the first non-existing UID (and use a bump seed/nonce in the rare case of a conflict).
-            bytes32 uid;
-
-            // creating scope to avoid stack too deep
-            {
-                uint32 bump;
-                while (true) {
-                    uid = _getUID(attestation, bump);
-                    if (_attestations[uid].uid == EMPTY_UID) {
-                        break;
-                    }
-
-                    unchecked {
-                        ++bump;
-                    }
-                }
-            }
+            bytes32 uid = _newUID(attestation);
             attestation.uid = uid;
 
             // saving into contract storage
@@ -684,6 +669,20 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         }
 
         return totalUsedValue;
+    }
+
+    function _newUID(Attestation memory attestation) private view returns (bytes32 uid) {
+        uint32 bump;
+        while (true) {
+            uid = _getUID(attestation, bump);
+            if (_attestations[uid].uid == EMPTY_UID) {
+                return uid;
+            }
+
+            unchecked {
+                ++bump;
+            }
+        }
     }
 
     /**

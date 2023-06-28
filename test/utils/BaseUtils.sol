@@ -23,6 +23,8 @@ import "hashi/adapters/AMB/test/MockAMB.sol";
 
 import "../../src/RhinestoneRegistry.sol";
 
+import "forge-std/console2.sol";
+
 address constant VM_ADDR = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D;
 bytes12 constant ADDR_MASK = 0xffffffffffffffffffffffff;
 
@@ -96,16 +98,45 @@ library RegistryTestLib {
         AttestationRequestData memory attData
     )
         internal
+        view
         returns (EIP712Signature memory sig)
     {
+        uint256 nonce = instance.registry.getNonce(getAddr(attesterPk)) + 1;
         bytes32 digest = instance.registry.getAttestationDigest({
             attData: attData,
             schemaUid: schemaId,
-            attester: getAddr(attesterPk)
+            nonce: nonce 
         });
 
         (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
         sig = EIP712Signature({ v: v, r: r, s: s });
+    }
+
+    function signAttestation(
+        RegistryInstance memory instance,
+        bytes32 schemaId,
+        uint256 attesterPk,
+        AttestationRequestData[] memory attData
+    )
+        internal
+        view
+        returns (EIP712Signature[] memory sig)
+    {
+        sig = new EIP712Signature[](attData.length);
+
+        uint256 nonce = instance.registry.getNonce(getAddr(attesterPk)) + 1;
+
+        for (uint256 i = 0; i < attData.length; i++) {
+            bytes32 digest = instance.registry.getAttestationDigest({
+                attData: attData[i],
+                schemaUid: schemaId,
+                nonce: nonce + i
+            });
+            console2.logBytes32(digest);
+
+            (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
+            sig[i] = EIP712Signature({ v: v, r: r, s: s });
+        }
     }
 
     function revokeAttestation(

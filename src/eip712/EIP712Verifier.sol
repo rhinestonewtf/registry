@@ -94,13 +94,25 @@ abstract contract EIP712Verifier is EIP712 {
     function getAttestationDigest(
         AttestationRequestData memory attData,
         bytes32 schemaUid,
+        uint256 nonce
+    )
+        public
+        view
+        returns (bytes32 digest)
+    {
+        digest = _attestationDigest(attData, schemaUid, nonce);
+    }
+
+    function getAttestationDigest(
+        AttestationRequestData memory attData,
+        bytes32 schemaUid,
         address attester
     )
         public
         view
         returns (bytes32 digest)
     {
-        uint256 nonce = getNonce(attester)+1;
+        uint256 nonce = getNonce(attester) + 1;
         digest = _attestationDigest(attData, schemaUid, nonce);
     }
 
@@ -143,7 +155,7 @@ abstract contract EIP712Verifier is EIP712 {
         _verifySignature(digest, signature, request.attester);
     }
 
-    function _newNonce(address account) internal returns(uint256 nonce) {
+    function _newNonce(address account) private returns (uint256 nonce) {
         unchecked {
             nonce = ++_nonces[account];
         }
@@ -158,7 +170,7 @@ abstract contract EIP712Verifier is EIP712 {
         view
         returns (bytes32 digest)
     {
-        uint256 nonce = getNonce(revoker)+1;
+        uint256 nonce = getNonce(revoker) + 1;
         digest = _revocationDigest(schemaUid, revData.uid, nonce);
     }
 

@@ -109,4 +109,48 @@ contract RSAttestationTest is BaseTest {
 
         instancel1.registry.attest(req);
     }
+
+    function testMultiAttest() public {
+
+        address anotherModule = instancel1.deployAndRegister(
+            defaultSchema1, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
+        );
+
+        AttestationRequestData memory attData1 = AttestationRequestData({
+            recipient: defaultModule1,
+            expirationTime: uint48(0),
+            revocable: true,
+            propagateable: true,
+            refUID: "",
+            data: abi.encode(true),
+            value: 0
+        });
+
+        AttestationRequestData memory attData2 = AttestationRequestData({
+            recipient: anotherModule,
+            expirationTime: uint48(0),
+            revocable: true,
+            propagateable: true,
+            refUID: "",
+            data: abi.encode(true),
+            value: 0
+        });
+
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
+        attArray[0] = attData1;
+        attArray[1] = attData2;
+
+        EIP712Signature[] memory sigs = instancel1.signAttestation(defaultSchema1, auth1k, attArray);
+
+        MultiDelegatedAttestationRequest[] memory reqs = new MultiDelegatedAttestationRequest[](1);
+        MultiDelegatedAttestationRequest memory req1 = MultiDelegatedAttestationRequest({
+            schema: defaultSchema1,
+            data: attArray,
+            attester: vm.addr(auth1k),
+            signatures: sigs
+        });
+        reqs[0] = req1;
+
+        instancel1.registry.multiAttest(reqs);
+    }
 }
