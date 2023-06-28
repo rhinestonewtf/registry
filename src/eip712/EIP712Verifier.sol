@@ -26,7 +26,7 @@ import { EIP712Signature, InvalidSignature } from "../Common.sol";
 abstract contract EIP712Verifier is EIP712 {
     // The hash of the data type used to relay calls to the attest function. It's the value of
     bytes32 private constant ATTEST_TYPEHASH = keccak256(
-        "Attest(bytes32 schema,address recipient, uint48 expirationTime,bool revocable,bytes32 refUID,bytes32 dataHash,uint256 nonce)"
+        "Attest(bytes32 schema,address recipient,uint48 expirationTime,bool revocable,bytes32 refUID,bytes32 dataHash,uint256 nonce)"
     );
 
     // The hash of the data type used to relay calls to the revoke function. It's the value of
