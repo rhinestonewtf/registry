@@ -247,4 +247,23 @@ interface IRSAttestation {
     function multiRevoke(MultiDelegatedRevocationRequest[] calldata multiDelegatedRequests)
         external
         payable;
+
+
+    /**
+     * @notice Predicts Attestation UID for a given request
+     *
+     * @dev The function returns the UID of the attestation that would be issued for the given request
+     *
+     * @param schema The schema of the attestation
+     * @param attester The attester of the attestation
+     * @param request The request data
+     */
+    function predictAttestationUID(
+        bytes32 schema,
+        address attester,
+        AttestationRequestData memory request
+    )
+        external
+        view
+        returns (bytes32 uid);
 }

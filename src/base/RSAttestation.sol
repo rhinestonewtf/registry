@@ -672,7 +672,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     }
 
     function _newUID(Attestation memory attestation) private view returns (bytes32 uid) {
-        uint32 bump;
+        uint256 bump;
         while (true) {
             uid = _getUID(attestation, bump);
             if (_attestations[uid].uid == EMPTY_UID) {
@@ -686,6 +686,34 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     }
 
     /**
+     * @inheritdoc IRSAttestation
+     */
+    function predictAttestationUID(
+        bytes32 schema,
+        address attester,
+        AttestationRequestData memory request
+    )
+        external
+        view
+        returns (bytes32 uid)
+    {
+        Attestation memory attestation = Attestation({
+            uid: EMPTY_UID,
+            schema: schema,
+            refUID: request.refUID,
+            time: _time(),
+            expirationTime: request.expirationTime,
+            revocationTime: 0,
+            recipient: request.recipient,
+            attester: attester,
+            revocable: request.revocable,
+            propagateable: request.propagateable,
+            data: request.data
+        });
+        return _newUID(attestation);
+    }
+
+    /**
      * @dev Calculates a UID for a given attestation.
      *
      * @param attestation The input attestation.
@@ -693,13 +721,13 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
      *
      * @return Attestation UID.
      */
-    function _getUID(Attestation memory attestation, uint32 bump) private pure returns (bytes32) {
+    function _getUID(Attestation memory attestation, uint256 bump) private pure returns (bytes32) {
         return keccak256(
             abi.encodePacked(
                 attestation.schema,
                 attestation.recipient,
                 attestation.attester,
-                attestation.time,
+                // attestation.time, <-- makes UIDs unpredictable. is removing this a security issue?
                 attestation.expirationTime,
                 attestation.revocable,
                 attestation.refUID,

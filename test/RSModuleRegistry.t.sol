@@ -38,12 +38,12 @@ contract RSModuleTest is BaseTest {
     }
 
     function testNonexistingModule() public {
-      // TODO
+        // TODO
         assertTrue(true);
     }
 
     function testReRegisterModule() public {
-      // TODO
+        // TODO
         assertTrue(true);
     }
 }
