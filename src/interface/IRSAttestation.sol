@@ -248,7 +248,6 @@ interface IRSAttestation {
         external
         payable;
 
-
     /**
      * @notice Predicts Attestation UID for a given request
      *
