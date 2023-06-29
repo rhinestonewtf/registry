@@ -39,17 +39,17 @@ contract RSModuleTest is BaseTest {
 
     function testNonexistingModule() public {
         // TODO
-        bytes32 schemaId = instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)), true);
+        bytes32 schemaId =
+            instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)), true);
 
         address module = makeAddr("doesntExist");
         vm.expectRevert();
         instancel1.registry.register(schemaId, module, "");
-
-
     }
 
     function testReRegisterModule() public {
-        bytes32 schemaId = instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)), true);
+        bytes32 schemaId =
+            instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)), true);
 
         bytes memory bytecode = type(MockModule).creationCode;
         address moduleAddr = instancel1.deployAndRegister({

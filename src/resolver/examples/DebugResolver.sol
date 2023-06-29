@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import "forge-std/console2.sol";
 import { SchemaResolver } from "../SchemaResolver.sol";
-import { Attestation } from "../../Common.sol";
+import { Attestation, Module } from "../../Common.sol";
 
 /// @title DebugResolver
 /// @author zeroknots
@@ -32,6 +32,17 @@ contract DebugResolver is SchemaResolver {
     )
         internal
         pure
+        override
+        returns (bool)
+    {
+        return true;
+    }
+
+    function onModuleRegistration(
+        Module calldata module,
+        uint256 value
+    )
+        internal
         override
         returns (bool)
     {

@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { IRSModule, Module } from "../interface/IRSModule.sol";
+import { IRSModule } from "../interface/IRSModule.sol";
 import { InvalidSchema } from "../Common.sol";
 import { RSModuleDeploymentLib } from "../lib/RSModuleDeploymentLib.sol";
 import { IRSSchema, SchemaRecord } from "../interface/IRSSchema.sol";
 import { RSSchema } from "./RSSchema.sol";
+import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
+import { Attestation, Module } from "../Common.sol";
 
 /**
  * @title RSModule
@@ -54,24 +56,26 @@ abstract contract RSModule is IRSModule {
         returns (address moduleAddr)
     {
         // Check if the provided schemaId exists
-        if (schemaId != getSchema(schemaId).uid) revert InvalidSchema();
+        SchemaRecord memory schema = getSchema(schemaId);
+        if (schemaId != schema.uid) revert InvalidSchema();
 
         bytes32 contractCodeHash; //  Hash of contract bytecode
         bytes32 deployParamsHash; // Hash of contract deployment parameters
         (moduleAddr, deployParamsHash, contractCodeHash) = code.deploy(deployParams, salt);
 
-        _register(moduleAddr, msg.sender, schemaId, contractCodeHash, deployParamsHash, data);
+        _register(moduleAddr, msg.sender, schema, contractCodeHash, deployParamsHash, data);
 
         emit ModuleRegistration(moduleAddr, contractCodeHash); // Emit a deployment event
     }
 
     function register(bytes32 schemaId, address moduleAddress, bytes calldata data) external {
         // Check if the provided schemaId exists
-        if (schemaId != getSchema(schemaId).uid) revert InvalidSchema();
+        SchemaRecord memory schema = getSchema(schemaId);
+        if (schemaId != schema.uid) revert InvalidSchema();
 
         // get codehash of depoyed contract
         bytes32 contractCodeHash = moduleAddress.codeHash();
-        _register(moduleAddress, address(0), schemaId, contractCodeHash, "", data);
+        _register(moduleAddress, address(0), schema, contractCodeHash, "", data);
 
         emit ModuleRegistration(moduleAddress, contractCodeHash); // Emit a registration event
     }
@@ -79,7 +83,7 @@ abstract contract RSModule is IRSModule {
     function _register(
         address moduleAddress,
         address sender,
-        bytes32 schemaId,
+        SchemaRecord memory schema,
         bytes32 codeHash,
         bytes32 deployParamsHash,
         bytes calldata data
@@ -91,14 +95,28 @@ abstract contract RSModule is IRSModule {
             revert AlreadyRegistered(moduleAddress);
         }
         // Store module data in _modules mapping
-        _modules[moduleAddress] = Module({
+        Module memory moduleRegistration = Module({
             implementation: moduleAddress,
             codeHash: codeHash,
             deployParamsHash: deployParamsHash,
-            schemaId: schemaId,
+            schemaId: schema.uid,
             sender: sender,
             data: data
         });
+
+        _resolveRegistration(schema.resolver, moduleRegistration);
+
+        _modules[moduleAddress] = moduleRegistration;
+    }
+
+    function _resolveRegistration(
+        ISchemaResolver resolver,
+        Module memory moduleRegistration
+    )
+        private
+    {
+        if (address(resolver) == address(0)) return;
+        if (resolver.moduleRegistration(moduleRegistration) == false) revert InvalidDeployment();
     }
 
     function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory);

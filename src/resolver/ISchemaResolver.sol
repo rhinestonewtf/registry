@@ -2,11 +2,11 @@
 
 pragma solidity ^0.8.0;
 
-import { Attestation } from "../Common.sol";
-
+import { Attestation, Module } from "../Common.sol";
 /**
  * @title The interface of an optional schema resolver.
  */
+
 interface ISchemaResolver {
     /**
      * @dev Returns whether the resolver supports ETH transfers.
@@ -21,6 +21,15 @@ interface ISchemaResolver {
      * @return Whether the attestation is valid.
      */
     function attest(Attestation calldata attestation) external payable returns (bool);
+
+    /**
+     * @dev Processes a Module Registration
+     *
+     * @param module Module registration artefact
+     *
+     * @return Whether the registration is valid
+     */
+    function moduleRegistration(Module calldata module) external payable returns (bool);
 
     /**
      * @dev Processes multiple attestations and verifies whether they are valid.

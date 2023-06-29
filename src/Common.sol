@@ -40,6 +40,16 @@ struct Attestation {
     bytes data; // Custom attestation data.
 }
 
+// Struct that represents a contract artifact.
+struct Module {
+    address implementation; // The deployed contract address
+    bytes32 codeHash; // The hash of the contract code
+    bytes32 deployParamsHash; // The hash of the parameters used to deploy the contract
+    bytes32 schemaId; // The id of the schema related to this module
+    address sender; // The address of the sender who deployed the contract
+    bytes data; // Additional data related to the contract deployment
+}
+
 /**
  * @dev A helper function to work with unchecked iterators in loops.
  */
