@@ -9,6 +9,7 @@ import "../test/utils/BaseUtils.sol";
 /// @author zeroknots
 contract DeployRegistryScript is Script, RegistryTestTools {
     function run() public {
+        vm.startBroadcast(vm.envUint("PK"));
         HashiEnv memory hashiEnv = _setupHashi(address(123));
         RegistryInstance memory instance = _setupInstance({
             name: "RegistryL1",
@@ -16,8 +17,6 @@ contract DeployRegistryScript is Script, RegistryTestTools {
             yaru: Yaru(address(0)),
             l1Registry: address(0)
         });
-
-        vm.broadcast(address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266));
-        console2.log("DeployRegistryScript: registry address: %s", address(instance.registry));
+        vm.stopBroadcast();
     }
 }
