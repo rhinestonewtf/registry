@@ -48,4 +48,18 @@ contract DebugResolver is SchemaResolver {
     {
         return true;
     }
+
+    function onPropagation(
+        Attestation calldata attestation,
+        address sender,
+        address to,
+        uint256 toChainId,
+        address moduleOnL2
+    )
+        internal
+        override
+        returns (bool)
+    {
+        return true;
+    }
 }

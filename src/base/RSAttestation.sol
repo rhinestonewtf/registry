@@ -190,7 +190,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
             Attestation memory attestationRecord = _attestations[attestationIds[i]];
-            _enforceOnlySchemaOwner(attestationRecord.schema);
+            _resolvePropagation(attestationRecord, to, toChainId, moduleOnL2);
             if (attestationRecord.uid == EMPTY_UID) {
                 revert InvalidAttestation();
             }
@@ -223,8 +223,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         Attestation memory attestationRecord = _attestations[attestationId];
         bytes32 codeHash = attestationRecord.recipient.codeHash();
 
-        // enforce that only schema owner can trigger the propagation
-        _enforceOnlySchemaOwner(attestationRecord.schema);
+        _resolvePropagation(attestationRecord, to, toChainId, moduleOnL2);
 
         if (attestationRecord.propagateable == false) {
             revert InvalidAttestation();
@@ -821,6 +820,23 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         if (yaru.sender() != l1Registry) revert InvalidSender(address(this), yaru.sender());
         if (msg.sender != address(yaru)) revert InvalidCaller(address(this), msg.sender);
         _;
+    }
+
+    function _resolvePropagation(
+        Attestation memory attestation,
+        address to,
+        uint256 toChainId,
+        address moduleOnL2
+    )
+        private
+        returns (bool)
+    {
+        ISchemaResolver resolver = getSchema(attestation.schema).resolver;
+        if (address(resolver) != address(0)) {
+            bool valid = resolver.propagation(attestation, msg.sender, to, toChainId, moduleOnL2);
+            if(valid) return valid;
+            else revert InvalidPropagation();
+        }
     }
 
     function _enforceOnlySchemaOwner(bytes32 schema) internal view {

@@ -55,7 +55,10 @@ library RegistryTestLib {
         bytes32 schemaId,
         uint256 attesterKey,
         address moduleAddr
-    ) public returns (bytes32 attestationUid) {
+    )
+        public
+        returns (bytes32 attestationUid)
+    {
         AttestationRequestData memory attData = AttestationRequestData({
             recipient: moduleAddr,
             expirationTime: uint48(0),
@@ -73,13 +76,11 @@ library RegistryTestLib {
         bytes32 schemaId,
         uint256 attesterKey,
         AttestationRequestData memory attData
-    ) public returns (bytes32 attestationUid) {
-        EIP712Signature memory signature = signAttestation(
-            instance,
-            schemaId,
-            attesterKey,
-            attData
-        );
+    )
+        public
+        returns (bytes32 attestationUid)
+    {
+        EIP712Signature memory signature = signAttestation(instance, schemaId, attesterKey, attData);
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
             schema: schemaId,
             data: attData,
@@ -95,7 +96,11 @@ library RegistryTestLib {
         bytes32 schemaId,
         uint256 attesterPk,
         AttestationRequestData memory attData
-    ) internal view returns (EIP712Signature memory sig) {
+    )
+        internal
+        view
+        returns (EIP712Signature memory sig)
+    {
         uint256 nonce = instance.registry.getNonce(getAddr(attesterPk)) + 1;
         bytes32 digest = instance.registry.getAttestationDigest({
             attData: attData,
@@ -104,7 +109,7 @@ library RegistryTestLib {
         });
 
         (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
-        sig = EIP712Signature({v: v, r: r, s: s});
+        sig = EIP712Signature({ v: v, r: r, s: s });
     }
 
     function signAttestation(
@@ -112,7 +117,11 @@ library RegistryTestLib {
         bytes32 schemaId,
         uint256 attesterPk,
         AttestationRequestData[] memory attData
-    ) internal view returns (EIP712Signature[] memory sig) {
+    )
+        internal
+        view
+        returns (EIP712Signature[] memory sig)
+    {
         sig = new EIP712Signature[](attData.length);
 
         uint256 nonce = instance.registry.getNonce(getAddr(attesterPk)) + 1;
@@ -125,11 +134,8 @@ library RegistryTestLib {
             });
             console2.logBytes32(digest);
 
-            (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(
-                attesterPk,
-                digest
-            );
-            sig[i] = EIP712Signature({v: v, r: r, s: s});
+            (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
+            sig[i] = EIP712Signature({ v: v, r: r, s: s });
         }
     }
 
@@ -138,20 +144,17 @@ library RegistryTestLib {
         bytes32 attestationUid,
         bytes32 schemaId,
         uint256 attesterPk
-    ) public {
-        RevocationRequestData memory revoke = RevocationRequestData({
-            uid: attestationUid,
-            value: 0
-        });
+    )
+        public
+    {
+        RevocationRequestData memory revoke =
+            RevocationRequestData({ uid: attestationUid, value: 0 });
 
-        bytes32 digest = instance.registry.getRevocationDigest(
-            revoke,
-            schemaId,
-            getAddr(attesterPk)
-        );
+        bytes32 digest =
+            instance.registry.getRevocationDigest(revoke, schemaId, getAddr(attesterPk));
 
         (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
-        EIP712Signature memory signature = EIP712Signature({v: v, r: r, s: s});
+        EIP712Signature memory signature = EIP712Signature({ v: v, r: r, s: s });
 
         DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
             schema: schemaId,
@@ -167,7 +170,10 @@ library RegistryTestLib {
         string memory abiString,
         ISchemaResolver resolver,
         bool revocable
-    ) internal returns (bytes32 schemaId) {
+    )
+        internal
+        returns (bytes32 schemaId)
+    {
         return instance.registry.registerSchema(abiString, resolver, revocable);
     }
 
@@ -176,7 +182,10 @@ library RegistryTestLib {
         bytes32 schemaId,
         bytes memory bytecode,
         bytes memory constructorArgs
-    ) internal returns (address moduleAddr) {
+    )
+        internal
+        returns (address moduleAddr)
+    {
         moduleAddr = instance.registry.deploy({
             code: bytecode,
             deployParams: constructorArgs,
@@ -190,9 +199,7 @@ library RegistryTestLib {
 contract RegistryTestTools {
     using RegistryTestLib for RegistryInstance;
 
-    function _setupHashi(
-        address hashiSigner
-    ) internal returns (HashiEnv memory hashiEnv) {
+    function _setupHashi(address hashiSigner) internal returns (HashiEnv memory hashiEnv) {
         Hashi hashi = new Hashi();
         GiriGiriBashi giriGiriBashi = new GiriGiriBashi(
             hashiSigner,
@@ -231,7 +238,10 @@ contract RegistryTestTools {
         Yaho yaho,
         Yaru yaru,
         address l1Registry
-    ) internal returns (RegistryInstance memory) {
+    )
+        internal
+        returns (RegistryInstance memory)
+    {
         RegistryInstance memory instance;
 
         RhinestoneRegistry registry = new RhinestoneRegistry(

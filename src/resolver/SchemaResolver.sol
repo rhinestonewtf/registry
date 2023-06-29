@@ -80,6 +80,24 @@ abstract contract SchemaResolver is ISchemaResolver {
     /**
      * @inheritdoc ISchemaResolver
      */
+
+    function propagation(
+        Attestation calldata attestation,
+        address sender,
+        address to,
+        uint256 toChainId,
+        address moduleOnL2
+    )
+        external
+        payable
+        returns (bool)
+    {
+        return onPropagation(attestation, sender, to, toChainId, moduleOnL2);
+    }
+    /**
+     * @inheritdoc ISchemaResolver
+     */
+
     function multiAttest(
         Attestation[] calldata attestations,
         uint256[] calldata values
@@ -207,6 +225,17 @@ abstract contract SchemaResolver is ISchemaResolver {
     function onModuleRegistration(
         Module calldata module,
         uint256 value
+    )
+        internal
+        virtual
+        returns (bool);
+
+    function onPropagation(
+        Attestation calldata attestation,
+        address sender,
+        address to,
+        uint256 toChainId,
+        address moduleOnL2
     )
         internal
         virtual

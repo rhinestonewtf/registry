@@ -32,6 +32,28 @@ interface ISchemaResolver {
     function moduleRegistration(Module calldata module) external payable returns (bool);
 
     /**
+     * @dev Processes a Attestation Propagation
+     *
+     * @param attestation Attestation propagation artefact
+     * @param sender Sender of the message
+     * @param to Receiver of the message
+     * @param toChainId Chain ID of the receiver
+     * @param moduleOnL2 Module on L2
+     *
+     * @return Whether the  propagation is valid
+     */
+    function propagation(
+        Attestation calldata attestation,
+        address sender,
+        address to,
+        uint256 toChainId,
+        address moduleOnL2
+    )
+        external
+        payable
+        returns (bool);
+
+    /**
      * @dev Processes multiple attestations and verifies whether they are valid.
      *
      * @param attestations The new attestations.
