@@ -3,7 +3,12 @@
 pragma solidity 0.8.19;
 
 import {
-    AccessDenied, NO_EXPIRATION_TIME, NotFound, uncheckedInc, Attestation
+    AccessDenied,
+    NO_EXPIRATION_TIME,
+    NotFound,
+    uncheckedInc,
+    Attestation,
+    Module
 } from "../Common.sol";
 
 import { ISchemaResolver } from "./ISchemaResolver.sol";
@@ -63,6 +68,13 @@ abstract contract SchemaResolver is ISchemaResolver {
      */
     function attest(Attestation calldata attestation) external payable onlyRS returns (bool) {
         return onAttest(attestation, msg.value);
+    }
+
+    /**
+     * @inheritdoc ISchemaResolver
+     */
+    function moduleRegistration(Module calldata module) external payable onlyRS returns (bool) {
+        return onModuleRegistration(module, msg.value);
     }
 
     /**
@@ -186,6 +198,14 @@ abstract contract SchemaResolver is ISchemaResolver {
      */
     function onRevoke(
         Attestation calldata attestation,
+        uint256 value
+    )
+        internal
+        virtual
+        returns (bool);
+
+    function onModuleRegistration(
+        Module calldata module,
         uint256 value
     )
         internal

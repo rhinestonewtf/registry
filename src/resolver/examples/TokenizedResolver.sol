@@ -46,4 +46,15 @@ contract TokenizedResolver is SchemaResolver {
     {
         return true;
     }
+
+    function onModuleRegistration(
+        Module calldata module,
+        uint256 value
+    )
+        internal
+        override
+        returns (bool)
+    {
+        return true;
+    }
 }
