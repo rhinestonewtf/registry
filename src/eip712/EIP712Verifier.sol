@@ -22,6 +22,8 @@ import { EIP712Signature, InvalidSignature } from "../Common.sol";
 
 /**
  * @title EIP712 typed signatures verifier for EAS delegated attestations.
+ *
+ * @author zeroknots.eth
  */
 abstract contract EIP712Verifier is EIP712 {
     // The hash of the data type used to relay calls to the attest function. It's the value of

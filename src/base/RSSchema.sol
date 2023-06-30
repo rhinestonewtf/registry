@@ -10,6 +10,8 @@ import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
 /**
  * @title RSSchema
  *
+ * @author zeroknots.eth
+
  * @dev The RSSchema contract serves as a crucial component of a broader system for managing "schemas" within a
  * blockchain ecosystem. It provides functionality to register, retrieve and manage schemas. This contract is a
  * concrete implementation of the IRSSchema interface.

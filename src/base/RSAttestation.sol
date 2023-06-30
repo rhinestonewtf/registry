@@ -25,9 +25,11 @@ struct AttestationsResult {
     uint256 usedValue; // Total ETH amount that was sent to resolvers.
     bytes32[] uids; // UIDs of the new attestations.
 }
-/// @title RSAttestation
-/// @author zeroknots
-/// @notice ContractDescription TODO
+/**
+ * @title RSModule
+ * 
+ * @author zeroknots
+ */
 
 abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     using Address for address payable;
@@ -834,7 +836,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         ISchemaResolver resolver = getSchema(attestation.schema).resolver;
         if (address(resolver) != address(0)) {
             bool valid = resolver.propagation(attestation, msg.sender, to, toChainId, moduleOnL2);
-            if(valid) return valid;
+            if (valid) return valid;
             else revert InvalidPropagation();
         }
     }

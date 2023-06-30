@@ -6,6 +6,9 @@ import "./base/RSAttestation.sol";
 import "./base/RSModule.sol";
 import "./base/RSQuery.sol";
 
+/**
+ * @author zeroknots
+ */
 contract RhinestoneRegistry is RSSchema, RSQuery, RSAttestation, RSModule {
     constructor(
         Yaho _yaho,

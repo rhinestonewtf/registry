@@ -15,6 +15,8 @@ import { ISchemaResolver } from "./ISchemaResolver.sol";
 
 /**
  * @title A base resolver contract
+ *
+ * @author zeroknots.eth
  */
 abstract contract SchemaResolver is ISchemaResolver {
     error InsufficientValue();

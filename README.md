@@ -6,16 +6,18 @@ This Contract is in active development. Do not use this in Prod!
 
 ## Intro
 
-As the number of smart contracts grows, so too does the complexity of managing and 
-verifying their legitimacy and security. In response to this, we introduce 
-RhinestoneRegistry, a permissionless smart contract that serves as a registry for 
-managing various types of records, including contract implementations. It also enables 
-cross-chain verification of contracts, enhancing the security and interoperability of the Ethereum ecosystem.
+Account abstraction (or smart accounts) will deliver three key enhancements for the Ethereum ecosystem; 
+improved UX, enhanced user security and greater wallet extensibility. Modular smart accounts are the next 
+frontier for supercharging these deliverables. However, it also opens up a number of new challenges that 
+could drastically undermine the objective by opening up a plethora of new attack vectors and security concerns for accounts. 
 
-RhinestoneRegistry is a smart contract designed to function as a decentralized registry 
-and verification system for other smart contracts on the Ethereum platform. With an 
-emphasis on contract security and transparency, it allows attesters to register, 
-verify, and dispatch verification statuses across various Ethereum chains.
+
+The [Rhinestone Registry] aims to solve this concern by providing a means of verifying the legitimacy and 
+security of independently built smart account modules for deployment and use across any integrated 
+smart account. [Rhinestone Registry] is a free, open and permissionless registry and verifications 
+system for smart account modules on the Ethereum platform. With an emphasis on contract security and 
+transparency, it allows attesters to register, verify, and dispatch verification statuses across 
+various EVM chains.
 
 
 ## Core Principles
