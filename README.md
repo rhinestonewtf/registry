@@ -125,6 +125,7 @@ For feature of change requests, feel free to get in touch with us, or open PRs
 <table>
   <tr>
     <td align="center"><a href="http://twitter.com/zeroknotsETH/"><img src="https://pbs.twimg.com/profile_images/1639062011387715590/bNmZ5Gpf_400x400.jpg" width="100px;" alt=""/><br /><sub><b>zeroknots</b></sub></a><br /><a href="https://github.com/rhinestonewtf/registry/commits?author=zeroknots" title="Code">💻</a></td>
-    <!-- <td align="center"><a href="https://twitter.com/abstractooor"><img src="https://pbs.twimg.com/profile_images/1563803892231675905/9heafdY__400x400.jpg" width="100px;" alt=""/><br /><sub><b>Konrad</b></sub></a><br /><a href="https://github.com/libscie/credit-roll/issues?q=author%3Apbr4ne" title="Bug reports">🐛</a> <a href="https://github.com/libscie/credit-roll/commits?author=pbr4ne" title="Code">💻</a></td> -->
+    <td align="center"><a href="https://twitter.com/abstractooor"><img src="https://pbs.twimg.com/profile_images/1563803892231675905/9heafdY__400x400.jpg" width="100px;" alt=""/><br /><sub><b>Konrad</b></sub></a><br /><a href="https://github.com/rhinestonewtf/registry/commits?author=kopy-kat" title="Code">💻<</a> </td>
+    
   </tr>
 </table>
