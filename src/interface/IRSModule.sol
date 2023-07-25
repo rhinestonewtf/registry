@@ -27,5 +27,5 @@ interface IRSModule {
         external
         returns (address moduleAddr);
 
-    function register(bytes32 schemaId, address moduleAddress, bytes calldata data) external;
+    // function register(bytes32 schemaId, address moduleAddress, bytes calldata data) external;
 }
