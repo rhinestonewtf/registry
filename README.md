@@ -1,6 +1,8 @@
-<img align="right" width="150" height="150" top="100" src="./public/readme.jpg">
+<img align="right" width="150" height="150" top="100" src="https://docs-9d8fk274h-rhinestone.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Frhinestone.d2796f13.png&w=2048&q=75">
 
-# Rhinestone Registry • RSRegistry ![license](https://img.shields.io/github/license/rhinestonewtf/registry?label=license) ![solidity](https://img.shields.io/badge/solidity-^0.8.17-lightgrey)
+# Registry  [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![solidity](https://img.shields.io/badge/solidity-^0.8.19-lightgrey) [![Foundry][foundry-badge]][foundry]
+[foundry]: https://getfoundry.sh
+[foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
 
 This Contract is in active development. Do not use this in Prod!
 

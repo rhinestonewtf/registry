@@ -27,7 +27,7 @@ struct AttestationsResult {
 }
 /**
  * @title RSModule
- * 
+ *
  * @author zeroknots
  */
 
