@@ -6,6 +6,7 @@ import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
 
 /**
  * @title A struct representing a record for a submitted schema.
+ * Inspired by schema definitions of EAS (Ethereum Attestation Service)
  */
 struct SchemaRecord {
     bytes32 uid; // The unique identifier of the schema.

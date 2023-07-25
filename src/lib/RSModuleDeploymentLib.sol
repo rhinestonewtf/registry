@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 // A library that provides functions related to registry operations.
+// @author zeroknots
 
 library RSModuleDeploymentLib {
     // Gets the code hash of a contract at a given address.

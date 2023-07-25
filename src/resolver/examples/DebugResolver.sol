@@ -7,7 +7,7 @@ import { Attestation, Module } from "../../Common.sol";
 
 /// @title DebugResolver
 /// @author zeroknots
-/// @notice ContractDescription
+/// @notice A debug resolver for testing purposes.
 
 contract DebugResolver is SchemaResolver {
     constructor(address rs) SchemaResolver(rs) { }

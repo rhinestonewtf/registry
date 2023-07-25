@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -8,6 +8,8 @@ import "hashi/Yaho.sol";
 
 // Hashi's contract to receive messages from L1
 import "hashi/Yaru.sol";
+
+// Credits to Ethereum Attestation Service. A lot of these structs are from there.
 
 /**
  * @dev A struct representing the arguments of the attestation request.

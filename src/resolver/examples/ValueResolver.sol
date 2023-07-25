@@ -6,7 +6,7 @@ import "../../Common.sol";
 
 /// @title ValueResolver
 /// @author zeroknots
-/// @notice ContractDescription
+/// @notice A resolver for value (ETH) attestations.
 
 contract ValueResolver is SchemaResolver {
     uint256 immutable fee = 10;

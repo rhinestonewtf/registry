@@ -25,6 +25,7 @@ struct EIP712Signature {
 
 /**
  * @dev A struct representing a single attestation.
+ * inspired by EAS (Ethereum Attestation Service)
  */
 struct Attestation {
     bytes32 uid; // A unique identifier of the attestation.

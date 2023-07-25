@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title TokenizedResolver
 /// @author zeroknots
-/// @notice ContractDescription
+/// @notice A resolver for tokenized attestations.
 
 contract TokenizedResolver is SchemaResolver {
     using SafeERC20 for IERC20;
