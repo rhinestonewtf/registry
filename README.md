@@ -105,10 +105,26 @@ where entities can share, validate, and verify smart contracts across chains.
 ![Architecture](./public/docs/architecture.png)
 
 
-## Noteable Mentions
-- Rhinestone Registry is leveraging an attestation logic inspired by EAS
 
 ### Prerequisites
 - Solidity version 0.8.19 or later
 - External dependencies: Hashi's Yaho.sol and Hashi's Yaru.sol
 
+
+## Contribute
+For feature of change requests, feel free to get in touch with us, or open PRs
+
+## Credits
+- Rhinestone Registry is leveraging an attestation logic inspired by EAS
+
+## Authors ✨
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="http://twitter.com/zeroknotsETH/"><img src="https://pbs.twimg.com/profile_images/1639062011387715590/bNmZ5Gpf_400x400.jpg" width="100px;" alt=""/><br /><sub><b>zeroknots</b></sub></a><br /><a href="https://github.com/libscie/credit-roll/commits?author=juliangruber" title="Code">💻</a></td>
+    <td align="center"><a href="https://twitter.com/abstractooor"><img src="https://pbs.twimg.com/profile_images/1563803892231675905/9heafdY__400x400.jpg" width="100px;" alt=""/><br /><sub><b>Konrad</b></sub></a><br /><a href="https://github.com/libscie/credit-roll/issues?q=author%3Apbr4ne" title="Bug reports">🐛</a> <a href="https://github.com/libscie/credit-roll/commits?author=pbr4ne" title="Code">💻</a></td>
+  </tr>
+</table>
