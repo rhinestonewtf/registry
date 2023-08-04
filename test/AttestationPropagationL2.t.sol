@@ -254,7 +254,7 @@ contract AttestationPropagationL2Test is RSAttestationTest {
             value: 0
         });
 
-        bytes32 attestationUid2 = instancel1.newAttestation(newSchema, auth1k, attData);
+        attestationUid2 = instancel1.newAttestation(newSchema, auth1k, attData);
         assertTrue(attestationUid != attestationUid2);
 
         vm.etch(module, "asdfqqwerasdf");
@@ -400,7 +400,7 @@ contract AttestationPropagationL2Test is RSAttestationTest {
             value: 0
         });
 
-        bytes32 attestationUid2 = instancel1.newAttestation(newSchema, auth1k, attData);
+        attestationUid2 = instancel1.newAttestation(newSchema, auth1k, attData);
         assertTrue(attestationUid != attestationUid2);
 
         vm.etch(module, "asdfqqwerasdf");
