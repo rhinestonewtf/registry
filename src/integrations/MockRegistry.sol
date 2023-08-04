@@ -21,7 +21,7 @@ contract MockRegistry is IRSQuery {
         return (1234, 0);
     }
 
-    function check(
+    function verify(
         address module,
         address[] memory authorities,
         uint256 threshold
@@ -30,7 +30,9 @@ contract MockRegistry is IRSQuery {
         view
         override
         returns (bool verified)
-    { }
+    {
+        return true;
+    }
 
     function verifyWithRevert(bytes32 attestationId)
         external

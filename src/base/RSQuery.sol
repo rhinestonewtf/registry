@@ -34,7 +34,7 @@ abstract contract RSQuery is IRSQuery {
     /**
      * @inheritdoc IRSQuery
      */
-    function check(
+    function verify(
         address module,
         address[] memory authorities,
         uint256 threshold
@@ -48,7 +48,9 @@ abstract contract RSQuery is IRSQuery {
 
         for (uint256 i; i < length; uncheckedInc(i)) {
             if (threshold == 0) return true;
-            check(module, authorities[i]);
+            (uint256 listedAt, uint256 revokedAt) = check(module, authorities[i]);
+            if (revokedAt == 0) return false;
+            if (listedAt == NO_EXPIRATION_TIME) continue;
             --threshold;
         }
         return false;

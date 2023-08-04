@@ -36,7 +36,7 @@ interface IRSQuery {
      * @param threshold The minimum number of valid attestations required
      * @return verified True if the number of valid attestations is at least the threshold
      */
-    function check(
+    function verify(
         address module,
         address[] memory authorities,
         uint256 threshold
