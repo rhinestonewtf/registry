@@ -68,17 +68,20 @@ abstract contract RSModule is IRSModule {
         emit ModuleRegistration(moduleAddr, contractCodeHash); // Emit a deployment event
     }
 
-    // function register(bytes32 schemaId, address moduleAddress, bytes calldata data) external {
-    //     // Check if the provided schemaId exists
-    //     SchemaRecord memory schema = getSchema(schemaId);
-    //     if (schemaId != schema.uid) revert InvalidSchema();
-    //
-    //     // get codehash of depoyed contract
-    //     bytes32 contractCodeHash = moduleAddress.codeHash();
-    //     _register(moduleAddress, address(0), schema, contractCodeHash, "", data);
-    //
-    //     emit ModuleRegistration(moduleAddress, contractCodeHash); // Emit a registration event
-    // }
+    // this function might be removed in the future.
+    // could be a security risk
+    // TODO
+    function register(bytes32 schemaId, address moduleAddress, bytes calldata data) external {
+        // Check if the provided schemaId exists
+        SchemaRecord memory schema = getSchema(schemaId);
+        if (schemaId != schema.uid) revert InvalidSchema();
+
+        // get codehash of depoyed contract
+        bytes32 contractCodeHash = moduleAddress.codeHash();
+        _register(moduleAddress, address(0), schema, contractCodeHash, "", data);
+
+        emit ModuleRegistration(moduleAddress, contractCodeHash); // Emit a registration event
+    }
 
     function _register(
         address moduleAddress,

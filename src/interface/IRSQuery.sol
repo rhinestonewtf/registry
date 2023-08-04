@@ -10,20 +10,23 @@ import { Attestation } from "../Common.sol";
  */
 
 interface IRSQuery {
+    error RevokedAttestation(bytes32 attestationId);
     /**
      * Verify an attestation associated with a given module and authority. Revert if the attestation is invalid.
      *
-     * @param module The address of the module to verify
-     * @param authority The address of the authority issuing the attestation
-     * @return verified True if the attestation is valid
+     * @param plugin The address of the module to verify
+     * @param trustedEntity The address of the authority issuing the attestation
+     * @return listedAt True if the attestation is valid
+     * @return revokedAt True if the attestation is valid
      */
-    function verifyWithRevert(
-        address module,
-        address authority
+
+    function check(
+        address plugin,
+        address trustedEntity
     )
         external
         view
-        returns (bool verified);
+        returns (uint48 listedAt, uint48 revokedAt);
 
     /**
      * Verify a set of attestations associated with a given module and a list of authorities. Revert if any attestation is invalid.
@@ -33,7 +36,7 @@ interface IRSQuery {
      * @param threshold The minimum number of valid attestations required
      * @return verified True if the number of valid attestations is at least the threshold
      */
-    function verifyWithRevert(
+    function verify(
         address module,
         address[] memory authorities,
         uint256 threshold
