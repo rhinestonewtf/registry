@@ -13,28 +13,28 @@ import "forge-std/console2.sol";
 /// @author zeroknots
 /// @notice The global attestation registry.
 abstract contract RSQuery is IRSQuery {
-    error RevokedAttestation(bytes32 attestationId);
-
     /**
      * @inheritdoc IRSQuery
      */
-    function verifyWithRevert(
+    function check(
         address module,
         address authority
     )
         public
         view
-        returns (bool verified)
+        returns (uint48 listedAt, uint48 revokedAt)
     {
         bytes32 uid = _getAttestation(module, authority);
-        _verifyAttestation(uid);
-        verified = true;
+        Attestation storage attestation = _getAttestation(uid);
+
+        listedAt = attestation.time;
+        revokedAt = attestation.revocationTime;
     }
 
     /**
      * @inheritdoc IRSQuery
      */
-    function verifyWithRevert(
+    function check(
         address module,
         address[] memory authorities,
         uint256 threshold
@@ -48,7 +48,7 @@ abstract contract RSQuery is IRSQuery {
 
         for (uint256 i; i < length; uncheckedInc(i)) {
             if (threshold == 0) return true;
-            verifyWithRevert(module, authorities[i]);
+            check(module, authorities[i]);
             --threshold;
         }
         return false;
