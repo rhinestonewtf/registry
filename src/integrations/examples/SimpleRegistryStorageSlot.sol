@@ -67,7 +67,7 @@ abstract contract RegistryIntegrationStorageSlot {
      *
      * @param _contract The address of the contract to be checked
      */
-    modifier onlyAllowed(address _contract) {
+    modifier onlyWithRegistryCheck(address _contract) {
         (uint48 listedAt, uint48 revokedAt) = _checkRegistry(_contract);
 
         // revert if contract was ever flagged or was never attested to
