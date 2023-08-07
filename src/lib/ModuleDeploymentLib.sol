@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 // A library that provides functions related to registry operations.
 // @author zeroknots
 
-library RSModuleDeploymentLib {
+library ModuleDeploymentLib {
     // Gets the code hash of a contract at a given address.
     // @param contractAddr The address of the contract.
     // @return codeHash The hash of the contract code.

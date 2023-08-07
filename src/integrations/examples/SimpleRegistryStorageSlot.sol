@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { IRSQuery } from "../../interface/IRSQuery.sol";
+import { IQuery } from "../../interface/IQuery.sol";
 
-bytes32 constant REGISTRY_INTEGRATION_SLOT =
-    keccak256("RhinestoneRegistryIntegration.storage.location");
+bytes32 constant REGISTRY_INTEGRATION_SLOT = keccak256("RegistryIntegration.storage.location");
 
 library RegistryIntegrationStorage {
     struct Storage {
-        IRSQuery registry;
+        IQuery registry;
         address trustedAttester;
     }
 
@@ -25,7 +24,7 @@ library RegistryIntegrationStorage {
  * @author zeroknots
  *
  * @dev This contract allows only trusted contracts (attested by a specific attester)
- * to interact with it by leveraging the IRSQuery registry
+ * to interact with it by leveraging the IQuery registry
  */
 abstract contract RegistryIntegrationStorageSlot {
     error TargetContractNotPermitted(address target, uint48 listedAt, uint48 flaggedAt);
@@ -33,12 +32,12 @@ abstract contract RegistryIntegrationStorageSlot {
     /**
      * @dev Constructs the contract and initializes the registry and the trusted attester
      *
-     * @param _registry The address of the IRSQuery registry
+     * @param _registry The address of the IQuery registry
      * @param _trustedAttester The address of the trusted attester
      */
     function _set(address _registry, address _trustedAttester) internal {
         RegistryIntegrationStorage.Storage storage s = RegistryIntegrationStorage.store();
-        s.registry = IRSQuery(_registry);
+        s.registry = IQuery(_registry);
         s.trustedAttester = _trustedAttester;
     }
     /**

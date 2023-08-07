@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-interface IRSModule {
+interface IModule {
     // Event triggered when a contract is deployed.
     event ModuleRegistration(address indexed implementation, bytes32 codeHash);
     // Error to throw if the deployment is invalid

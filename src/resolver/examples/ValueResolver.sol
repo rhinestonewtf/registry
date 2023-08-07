@@ -14,7 +14,7 @@ contract ValueResolver is SchemaResolver {
     constructor(address rs) SchemaResolver(rs) { }
 
     function onAttest(
-        Attestation calldata attestation,
+        AttestationRecord calldata attestation,
         uint256 value
     )
         internal
@@ -26,7 +26,7 @@ contract ValueResolver is SchemaResolver {
     }
 
     function onRevoke(
-        Attestation calldata attestation,
+        AttestationRecord calldata attestation,
         uint256 value
     )
         internal
@@ -42,7 +42,7 @@ contract ValueResolver is SchemaResolver {
     }
 
     function onModuleRegistration(
-        Module calldata module,
+        ModuleRecord calldata module,
         uint256 value
     )
         internal
@@ -53,7 +53,7 @@ contract ValueResolver is SchemaResolver {
     }
 
     function onPropagation(
-        Attestation calldata attestation,
+        AttestationRecord calldata attestation,
         address sender,
         address to,
         uint256 toChainId,

@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import "./base/RSSchema.sol";
-import "./base/RSAttestation.sol";
-import "./base/RSModule.sol";
-import "./base/RSQuery.sol";
+import "./base/Schema.sol";
+import "./base/Attestation.sol";
+import "./base/Module.sol";
+import "./base/Query.sol";
 
 /**
  * @author zeroknots
  */
-contract RhinestoneRegistry is RSSchema, RSQuery, RSAttestation, RSModule {
+contract Registry is Schema, Query, Attestation, Module {
     constructor(
         Yaho _yaho,
         Yaru _yaru,
@@ -17,7 +17,7 @@ contract RhinestoneRegistry is RSSchema, RSQuery, RSAttestation, RSModule {
         string memory name,
         string memory version
     )
-        RSAttestation(_yaho, _yaru, _l1registry, name, version)
+        Attestation(_yaho, _yaru, _l1registry, name, version)
     { }
 
     /*//////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@ contract RhinestoneRegistry is RSSchema, RSQuery, RSAttestation, RSModule {
     function getBridges(bytes32 uid)
         public
         view
-        override(RSAttestation, RSSchema)
+        override(Attestation, Schema)
         returns (address[] memory)
     {
         return super.getBridges(uid);
@@ -36,7 +36,7 @@ contract RhinestoneRegistry is RSSchema, RSQuery, RSAttestation, RSModule {
     function getSchema(bytes32 uid)
         public
         view
-        override(RSAttestation, RSModule, RSSchema)
+        override(Attestation, Module, Schema)
         returns (SchemaRecord memory)
     {
         return super.getSchema(uid);
@@ -49,7 +49,7 @@ contract RhinestoneRegistry is RSSchema, RSQuery, RSAttestation, RSModule {
         internal
         view
         virtual
-        override(RSAttestation, RSQuery)
+        override(Attestation, Query)
         returns (bytes32)
     {
         return super._getAttestation(module, authority);
@@ -60,7 +60,7 @@ contract RhinestoneRegistry is RSSchema, RSQuery, RSAttestation, RSModule {
         view
         virtual
         override
-        returns (Attestation storage)
+        returns (AttestationRecord storage)
     {
         return _attestations[attestationId];
     }
@@ -69,8 +69,8 @@ contract RhinestoneRegistry is RSSchema, RSQuery, RSAttestation, RSModule {
         internal
         view
         virtual
-        override(RSAttestation, RSModule)
-        returns (Module storage)
+        override(Attestation, Module)
+        returns (ModuleRecord storage)
     {
         return super._getModule(moduleAddress);
     }

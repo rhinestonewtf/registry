@@ -3,14 +3,14 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "../src/resolver/ISchemaResolver.sol";
-import "../src/interface/IRSSchema.sol";
+import "../src/interface/ISchema.sol";
 import { DebugResolver } from "../src/resolver/examples/DebugResolver.sol";
 
 import "./utils/BaseTest.t.sol";
 
-/// @title RSSchemaTest
+/// @title SchemaTest
 /// @author zeroknots
-contract RSSchemaTest is BaseTest {
+contract SchemaTest is BaseTest {
     using RegistryTestLib for RegistryInstance;
 
     DebugResolver simpleResolver;
@@ -29,7 +29,7 @@ contract RSSchemaTest is BaseTest {
     function testRegisterSchemaWitSameSchema() public {
         bytes32 schemaId = instancel1.registerSchema("same", ISchemaResolver(address(0)), true);
 
-        vm.expectRevert(abi.encodeWithSelector(IRSSchema.AlreadyExists.selector));
+        vm.expectRevert(abi.encodeWithSelector(ISchema.AlreadyExists.selector));
         bytes32 schemaId2 = instancel1.registerSchema("same", ISchemaResolver(address(0)), true);
     }
 

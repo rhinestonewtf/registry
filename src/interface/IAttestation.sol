@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import { Attestation, EIP712Signature } from "../Common.sol";
+import { AttestationRecord, EIP712Signature } from "../Common.sol";
 // Hashi's contract to dispatch messages to L2
 import "hashi/Yaho.sol";
 
@@ -104,7 +104,7 @@ struct MultiDelegatedRevocationRequest {
     address revoker; // The revoking account.
 }
 
-interface IRSAttestation {
+interface IAttestation {
     /**
      * @dev Emitted when an attestation has been made.
      *
@@ -225,7 +225,7 @@ interface IRSAttestation {
      * @param moduleAddress The address of the module
      */
     function attestByPropagation(
-        Attestation calldata attestation,
+        AttestationRecord calldata attestation,
         bytes32 codeHash,
         address moduleAddress
     )

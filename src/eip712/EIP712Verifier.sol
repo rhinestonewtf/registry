@@ -16,7 +16,7 @@ import {
     DelegatedRevocationRequest,
     RevocationRequest,
     RevocationRequestData
-} from "../interface/IRSAttestation.sol";
+} from "../interface/IAttestation.sol";
 
 import { EIP712Signature, InvalidSignature } from "../Common.sol";
 

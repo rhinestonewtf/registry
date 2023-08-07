@@ -1,23 +1,23 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { IRSModule } from "../interface/IRSModule.sol";
+import { IModule } from "../interface/IModule.sol";
 import { InvalidSchema } from "../Common.sol";
-import { RSModuleDeploymentLib } from "../lib/RSModuleDeploymentLib.sol";
-import { IRSSchema, SchemaRecord } from "../interface/IRSSchema.sol";
-import { RSSchema } from "./RSSchema.sol";
+import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
+import { ISchema, SchemaRecord } from "../interface/ISchema.sol";
+import { Schema } from "./Schema.sol";
 import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
-import { Attestation, Module } from "../Common.sol";
+import { AttestationRecord, ModuleRecord } from "../Common.sol";
 
 /**
- * @title RSModule
+ * @title Module
  *
- * @dev The RSModule contract serves as a component in a larger system for handling smart contracts or "modules"
- * within a blockchain ecosystem. This contract inherits from the IRSModule interface and the RSSchema contract,
- * providing the actual implementation for the interface and extending the functionality of the RSSchema contract.
+ * @dev The Module contract serves as a component in a larger system for handling smart contracts or "modules"
+ * within a blockchain ecosystem. This contract inherits from the IModule interface and the Schema contract,
+ * providing the actual implementation for the interface and extending the functionality of the Schema contract.
  *
- * @dev The primary responsibility of the RSModule is to deploy and manage modules. A module is a smart contract
- * that has been deployed through the RSModule. The details of each module, such as its address, code hash, schema ID,
+ * @dev The primary responsibility of the Module is to deploy and manage modules. A module is a smart contract
+ * that has been deployed through the Module. The details of each module, such as its address, code hash, schema ID,
  * sender address, deploy parameters hash, and additional data are stored in a struct and mapped to the module's address in
  * the `_modules` mapping for easy access and management.
  *
@@ -26,24 +26,24 @@ import { Attestation, Module } from "../Common.sol";
  * all passed as arguments to this function. This function first checks if the provided schema ID is valid and then deploys the contract.
  * Once the contract is successfully deployed, the details are stored in the `_modules` mapping and a `Deployment` event is emitted.
  *
- * @dev Furthermore, the RSModule contract utilizes the Ethereum `CREATE2` opcode in its `_deploy` function for deploying
+ * @dev Furthermore, the Module contract utilizes the Ethereum `CREATE2` opcode in its `_deploy` function for deploying
  * contracts. This opcode allows creating a contract with a deterministic address, which is calculated in the `_calcAddress` function.
  * This approach provides flexibility and advanced patterns in contract interactions, like the ability to show a contract’s address
  * before it is mined.
  *
- * @dev In conclusion, the RSModule is a central part of a system to manage, deploy, and interact with a set of smart contracts
+ * @dev In conclusion, the Module is a central part of a system to manage, deploy, and interact with a set of smart contracts
  * in a structured and controlled manner.
  */
-abstract contract RSModule is IRSModule {
-    mapping(address moduleAddress => Module) internal _modules;
+abstract contract Module is IModule {
+    mapping(address moduleAddress => ModuleRecord) internal _modules;
 
-    using RSModuleDeploymentLib for bytes;
-    using RSModuleDeploymentLib for address;
+    using ModuleDeploymentLib for bytes;
+    using ModuleDeploymentLib for address;
 
     error AlreadyRegistered(address module);
 
     /**
-     * @inheritdoc IRSModule
+     * @inheritdoc IModule
      */
     function deploy(
         bytes calldata code,
@@ -98,7 +98,7 @@ abstract contract RSModule is IRSModule {
             revert AlreadyRegistered(moduleAddress);
         }
         // Store module data in _modules mapping
-        Module memory moduleRegistration = Module({
+        ModuleRecord memory moduleRegistration = ModuleRecord({
             implementation: moduleAddress,
             codeHash: codeHash,
             deployParamsHash: deployParamsHash,
@@ -114,7 +114,7 @@ abstract contract RSModule is IRSModule {
 
     function _resolveRegistration(
         ISchemaResolver resolver,
-        Module memory moduleRegistration
+        ModuleRecord memory moduleRegistration
     )
         private
     {
@@ -124,7 +124,7 @@ abstract contract RSModule is IRSModule {
 
     function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory);
 
-    function _getModule(address moduleAddress) internal view virtual returns (Module storage) {
+    function _getModule(address moduleAddress) internal view virtual returns (ModuleRecord storage) {
         return _modules[moduleAddress];
     }
 }

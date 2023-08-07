@@ -20,7 +20,7 @@ struct SchemaRecord {
 /**
  * @title The global schema registry interface.
  */
-interface IRSSchema {
+interface ISchema {
     // Error to throw if the SchemaID already exists
     error AlreadyExists();
     /**

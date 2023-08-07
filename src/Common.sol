@@ -27,7 +27,7 @@ struct EIP712Signature {
  * @dev A struct representing a single attestation.
  * inspired by EAS (Ethereum Attestation Service)
  */
-struct Attestation {
+struct AttestationRecord {
     bytes32 uid; // A unique identifier of the attestation.
     bytes32 schema; // The unique identifier of the schema.
     bytes32 refUID; // The UID of the related attestation.
@@ -42,7 +42,7 @@ struct Attestation {
 }
 
 // Struct that represents a contract artifact.
-struct Module {
+struct ModuleRecord {
     address implementation; // The deployed contract address
     bytes32 codeHash; // The hash of the contract code
     bytes32 deployParamsHash; // The hash of the parameters used to deploy the contract

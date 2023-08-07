@@ -21,7 +21,7 @@ import "hashi/adapters/AMB/IAMB.sol";
 import "hashi/adapters/AMB/AMBMessageRelayer.sol";
 import "hashi/adapters/AMB/test/MockAMB.sol";
 
-import "../../src/RhinestoneRegistry.sol";
+import "../../src/Registry.sol";
 
 import "forge-std/console2.sol";
 
@@ -33,7 +33,7 @@ function getAddr(uint256 pk) pure returns (address) {
 }
 
 struct RegistryInstance {
-    RhinestoneRegistry registry;
+    Registry registry;
     string name;
     Yaho yaho;
     Yaru yaru;
@@ -244,7 +244,7 @@ contract RegistryTestTools {
     {
         RegistryInstance memory instance;
 
-        RhinestoneRegistry registry = new RhinestoneRegistry(
+        Registry registry = new Registry(
             yaho,
             yaru,
             l1Registry,

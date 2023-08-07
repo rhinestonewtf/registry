@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import "forge-std/console2.sol";
 import { SchemaResolver } from "../SchemaResolver.sol";
-import { Attestation, Module } from "../../Common.sol";
+import { AttestationRecord, ModuleRecord } from "../../Common.sol";
 
 /// @title DebugResolver
 /// @author zeroknots
@@ -13,7 +13,7 @@ contract DebugResolver is SchemaResolver {
     constructor(address rs) SchemaResolver(rs) { }
 
     function onAttest(
-        Attestation calldata attestation,
+        AttestationRecord calldata attestation,
         uint256 /*value*/
     )
         internal
@@ -27,7 +27,7 @@ contract DebugResolver is SchemaResolver {
     }
 
     function onRevoke(
-        Attestation calldata, /*attestation*/
+        AttestationRecord calldata, /*attestation*/
         uint256 /*value*/
     )
         internal
@@ -39,7 +39,7 @@ contract DebugResolver is SchemaResolver {
     }
 
     function onModuleRegistration(
-        Module calldata module,
+        ModuleRecord calldata module,
         uint256 value
     )
         internal
@@ -50,7 +50,7 @@ contract DebugResolver is SchemaResolver {
     }
 
     function onPropagation(
-        Attestation calldata attestation,
+        AttestationRecord calldata attestation,
         address sender,
         address to,
         uint256 toChainId,

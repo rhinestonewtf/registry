@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { IRSQuery } from "../interface/IRSQuery.sol";
-import { Attestation } from "../Common.sol";
+import { IQuery } from "../interface/IQuery.sol";
+import { AttestationRecord } from "../Common.sol";
 
 /// @title MockRegistry
 /// @author zeroknots
 /// @notice ContractDescription
 
-contract MockRegistry is IRSQuery {
+contract MockRegistry is IQuery {
     function check(
         address plugin,
         address trustedEntity
@@ -58,7 +58,7 @@ contract MockRegistry is IRSQuery {
         external
         view
         override
-        returns (Attestation memory attestation)
+        returns (AttestationRecord memory attestation)
     { }
 
     function findAttestation(
@@ -68,6 +68,6 @@ contract MockRegistry is IRSQuery {
         external
         view
         override
-        returns (Attestation[] memory attestations)
+        returns (AttestationRecord[] memory attestations)
     { }
 }

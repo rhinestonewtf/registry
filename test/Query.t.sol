@@ -3,11 +3,11 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 
-import "./RSAttestation.t.sol";
+import "./Attestation.t.sol";
 /// @title RSRegistryTest
 /// @author zeroknots
 
-contract RSQueryTest is RSAttestationTest {
+contract QueryTest is AttestationTest {
     function setUp() public virtual override {
         super.setUp();
     }
@@ -15,7 +15,7 @@ contract RSQueryTest is RSAttestationTest {
     function testQueryAttestation() public {
         bytes32 attestationUid = testCreateAttestation();
 
-        Attestation memory attestation1 =
+        AttestationRecord memory attestation1 =
             instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
     }
 }

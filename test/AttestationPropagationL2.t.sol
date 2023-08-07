@@ -2,14 +2,14 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import "./RSAttestation.t.sol";
-import "../src/lib/RSModuleDeploymentLib.sol";
+import "./Attestation.t.sol";
+import "../src/lib/ModuleDeploymentLib.sol";
 
 /// @title AttestationPropagationL2Test
 /// @author zeroknots
-contract AttestationPropagationL2Test is RSAttestationTest {
+contract AttestationPropagationL2Test is AttestationTest {
     using RegistryTestLib for RegistryInstance;
-    using RSModuleDeploymentLib for address;
+    using ModuleDeploymentLib for address;
 
     bytes32 attestationUid1;
     bytes32 attestationUid2;
@@ -161,7 +161,7 @@ contract AttestationPropagationL2Test is RSAttestationTest {
         testPropagateChainedAttestations();
         instancel1.revokeAttestation(attestationUid1, defaultSchema1, auth1k);
         testPropagateChainedAttestations();
-        Attestation memory attestation =
+        AttestationRecord memory attestation =
             instancel2.registry.findAttestation(defaultModule1, vm.addr(auth1k));
         assertTrue(attestation.revocationTime != 0);
     }
@@ -170,7 +170,7 @@ contract AttestationPropagationL2Test is RSAttestationTest {
         testPropagateChainedAttestations();
         instancel1.revokeAttestation(attestationUid1, defaultSchema1, auth1k);
         testPropagateChainedAttestations();
-        Attestation memory attestation =
+        AttestationRecord memory attestation =
             instancel2.registry.findAttestation(defaultModule1, vm.addr(auth1k));
         assertTrue(attestation.revocationTime != 0);
     }
@@ -283,7 +283,7 @@ contract AttestationPropagationL2Test is RSAttestationTest {
         oracleAdapter[0] = IOracleAdapter(address(hashiEnv.ambAdapter));
 
         // vm.expectRevert(
-        //     abi.encodeWithSelector(RSAttestation.InvalidAttestationRefUID.selector, attestationUid));
+        //     abi.encodeWithSelector(Attestation.InvalidAttestationRefUID.selector, attestationUid));
         vm.expectRevert(
             abi.encodeWithSelector(Yaru.CallFailed.selector, address(instancel2.yaru), 0)
         );
@@ -340,7 +340,7 @@ contract AttestationPropagationL2Test is RSAttestationTest {
         bytes32 moduleHashAfter = defaultModule1.codeHash();
         assertTrue(moduleHashBefore != moduleHashAfter);
 
-        vm.expectRevert(abi.encodeWithSelector(RSAttestation.InvalidAttestation.selector));
+        vm.expectRevert(abi.encodeWithSelector(Attestation.InvalidAttestation.selector));
         (Message[] memory messages, bytes32[] memory messageIdsBytes32) = instancel1
             .registry
             .propagateAttest({
@@ -429,7 +429,7 @@ contract AttestationPropagationL2Test is RSAttestationTest {
         oracleAdapter[0] = IOracleAdapter(address(hashiEnv.ambAdapter));
 
         // vm.expectRevert(
-        //     abi.encodeWithSelector(RSAttestation.InvalidAttestationRefUID.selector, attestationUid));
+        //     abi.encodeWithSelector(Attestation.InvalidAttestationRefUID.selector, attestationUid));
         vm.expectRevert(
             abi.encodeWithSelector(Yaru.CallFailed.selector, address(instancel2.yaru), 0)
         );

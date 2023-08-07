@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { IRSSchema, SchemaRecord } from "../src/interface/IRSSchema.sol";
+import { ISchema, SchemaRecord } from "../src/interface/ISchema.sol";
 import { ISchemaResolver } from "../src/resolver/ISchemaResolver.sol";
 import { InvalidSchema } from "../src/Common.sol";
 import "./utils/BaseTest.t.sol";
 
-/// @title RSModuleTest
+/// @title ModuleTest
 /// @author zeroknots
-contract RSModuleTest is BaseTest {
+contract ModuleTest is BaseTest {
     using RegistryTestLib for RegistryInstance;
 
     function setUp() public virtual override {
@@ -57,7 +57,7 @@ contract RSModuleTest is BaseTest {
             bytecode: bytecode,
             constructorArgs: abi.encode(313_132)
         });
-        vm.expectRevert(abi.encodeWithSelector(RSModule.AlreadyRegistered.selector, moduleAddr));
+        vm.expectRevert(abi.encodeWithSelector(Module.AlreadyRegistered.selector, moduleAddr));
         instancel1.registry.register(schemaId, moduleAddr, "");
     }
 }

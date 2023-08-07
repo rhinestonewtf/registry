@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Script.sol";
-import "../src/RhinestoneRegistry.sol";
+import "../src/Registry.sol";
 import "../test/utils/BaseUtils.sol";
 
 /// @title DeployRegistryScript

@@ -3,24 +3,24 @@
 pragma solidity 0.8.19;
 
 import { EMPTY_UID, AccessDenied } from "../Common.sol";
-import { IRSSchema, SchemaRecord } from "../interface/IRSSchema.sol";
+import { ISchema, SchemaRecord } from "../interface/ISchema.sol";
 
 import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
 
 /**
- * @title RSSchema
+ * @title Schema
  *
  * @author zeroknots.eth
  *
- * @dev The RSSchema contract serves as a crucial component of a broader system for managing "schemas" within a
+ * @dev The Schema contract serves as a crucial component of a broader system for managing "schemas" within a
  * blockchain ecosystem. It provides functionality to register, retrieve and manage schemas. This contract is a
- * concrete implementation of the IRSSchema interface.
+ * concrete implementation of the ISchema interface.
  *
  * @dev A schema in this context is a defined structure that represents a record for a submitted schema,
  * encompassing its unique identifier (UID), resolver (optional), revocability status, specification, owner's address,
  * and associated bridges for Layer 2 (L2) propagation.
  *
- * @dev The main functionality of the RSSchema contract includes the registration of new schemas (`registerSchema` function)
+ * @dev The main functionality of the Schema contract includes the registration of new schemas (`registerSchema` function)
  * and the retrieval of existing schemas (`getSchema` function). It also offers additional management features such as
  * setting bridges (`setBridges` function) and resolvers (`setResolver` function) for each schema.
  *
@@ -28,13 +28,13 @@ import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
  * This UID is used as a key to map the schema record in the `_schemas` mapping. The system ensures uniqueness of the schemas
  * by validating that a schema with the same UID does not already exist.
  *
- * @dev Furthermore, the RSSchema contract introduces access control by ensuring that certain operations such as setting
+ * @dev Furthermore, the Schema contract introduces access control by ensuring that certain operations such as setting
  * bridges and resolvers can only be performed by the owner of the schema.
  *
- * @dev In summary, the RSSchema contract is an integral part of a larger system, providing the functionality to register,
+ * @dev In summary, the Schema contract is an integral part of a larger system, providing the functionality to register,
  * retrieve, and manage schemas in a controlled and structured manner.
  */
-abstract contract RSSchema is IRSSchema {
+abstract contract Schema is ISchema {
     // The version of the contract.
     string public constant VERSION = "0.1";
 
@@ -42,7 +42,7 @@ abstract contract RSSchema is IRSSchema {
     mapping(bytes32 uid => SchemaRecord schemaRecord) private _schemas;
 
     /**
-     * @inheritdoc IRSSchema
+     * @inheritdoc ISchema
      */
     function registerSchema(
         string calldata schema,
@@ -79,7 +79,7 @@ abstract contract RSSchema is IRSSchema {
     }
 
     /**
-     * @inheritdoc IRSSchema
+     * @inheritdoc ISchema
      */
     function setBridges(bytes32 uid, address[] calldata bridges) external onlySchemaOwner(uid) {
         SchemaRecord storage schemaRecord = _schemas[uid];
@@ -87,7 +87,7 @@ abstract contract RSSchema is IRSSchema {
     }
 
     /**
-     * @inheritdoc IRSSchema
+     * @inheritdoc ISchema
      */
     function setResolver(bytes32 uid, ISchemaResolver resolver) external onlySchemaOwner(uid) {
         SchemaRecord storage schemaRecord = _schemas[uid];
@@ -96,14 +96,14 @@ abstract contract RSSchema is IRSSchema {
     }
 
     /**
-     * @inheritdoc IRSSchema
+     * @inheritdoc ISchema
      */
     function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory) {
         return _schemas[uid];
     }
 
     /**
-     * @inheritdoc IRSSchema
+     * @inheritdoc ISchema
      */
     function getBridges(bytes32 uid) public view virtual returns (address[] memory) {
         return _schemas[uid].bridges;

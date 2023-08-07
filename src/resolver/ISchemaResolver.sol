@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import { Attestation, Module } from "../Common.sol";
+import { AttestationRecord, ModuleRecord } from "../Common.sol";
 /**
  * @title The interface of an optional schema resolver.
  */
@@ -20,7 +20,7 @@ interface ISchemaResolver {
      *
      * @return Whether the attestation is valid.
      */
-    function attest(Attestation calldata attestation) external payable returns (bool);
+    function attest(AttestationRecord calldata attestation) external payable returns (bool);
 
     /**
      * @dev Processes a Module Registration
@@ -29,7 +29,7 @@ interface ISchemaResolver {
      *
      * @return Whether the registration is valid
      */
-    function moduleRegistration(Module calldata module) external payable returns (bool);
+    function moduleRegistration(ModuleRecord calldata module) external payable returns (bool);
 
     /**
      * @dev Processes a Attestation Propagation
@@ -43,7 +43,7 @@ interface ISchemaResolver {
      * @return Whether the  propagation is valid
      */
     function propagation(
-        Attestation calldata attestation,
+        AttestationRecord calldata attestation,
         address sender,
         address to,
         uint256 toChainId,
@@ -62,7 +62,7 @@ interface ISchemaResolver {
      * @return Whether all the attestations are valid.
      */
     function multiAttest(
-        Attestation[] calldata attestations,
+        AttestationRecord[] calldata attestations,
         uint256[] calldata values
     )
         external
@@ -76,7 +76,7 @@ interface ISchemaResolver {
      *
      * @return Whether the attestation can be revoked.
      */
-    function revoke(Attestation calldata attestation) external payable returns (bool);
+    function revoke(AttestationRecord calldata attestation) external payable returns (bool);
 
     /**
      * @dev Processes revocation of multiple attestation and verifies they can be revoked.
@@ -87,7 +87,7 @@ interface ISchemaResolver {
      * @return Whether the attestations can be revoked.
      */
     function multiRevoke(
-        Attestation[] calldata attestations,
+        AttestationRecord[] calldata attestations,
         uint256[] calldata values
     )
         external

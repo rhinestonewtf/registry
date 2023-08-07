@@ -7,8 +7,8 @@ import {
     NO_EXPIRATION_TIME,
     NotFound,
     uncheckedInc,
-    Attestation,
-    Module
+    AttestationRecord,
+    ModuleRecord
 } from "../Common.sol";
 
 import { ISchemaResolver } from "./ISchemaResolver.sol";
@@ -68,14 +68,19 @@ abstract contract SchemaResolver is ISchemaResolver {
     /**
      * @inheritdoc ISchemaResolver
      */
-    function attest(Attestation calldata attestation) external payable onlyRS returns (bool) {
+    function attest(AttestationRecord calldata attestation) external payable onlyRS returns (bool) {
         return onAttest(attestation, msg.value);
     }
 
     /**
      * @inheritdoc ISchemaResolver
      */
-    function moduleRegistration(Module calldata module) external payable onlyRS returns (bool) {
+    function moduleRegistration(ModuleRecord calldata module)
+        external
+        payable
+        onlyRS
+        returns (bool)
+    {
         return onModuleRegistration(module, msg.value);
     }
 
@@ -84,7 +89,7 @@ abstract contract SchemaResolver is ISchemaResolver {
      */
 
     function propagation(
-        Attestation calldata attestation,
+        AttestationRecord calldata attestation,
         address sender,
         address to,
         uint256 toChainId,
@@ -101,7 +106,7 @@ abstract contract SchemaResolver is ISchemaResolver {
      */
 
     function multiAttest(
-        Attestation[] calldata attestations,
+        AttestationRecord[] calldata attestations,
         uint256[] calldata values
     )
         external
@@ -141,7 +146,7 @@ abstract contract SchemaResolver is ISchemaResolver {
     /**
      * @inheritdoc ISchemaResolver
      */
-    function revoke(Attestation calldata attestation) external payable onlyRS returns (bool) {
+    function revoke(AttestationRecord calldata attestation) external payable onlyRS returns (bool) {
         return onRevoke(attestation, msg.value);
     }
 
@@ -149,7 +154,7 @@ abstract contract SchemaResolver is ISchemaResolver {
      * @inheritdoc ISchemaResolver
      */
     function multiRevoke(
-        Attestation[] calldata attestations,
+        AttestationRecord[] calldata attestations,
         uint256[] calldata values
     )
         external
@@ -198,7 +203,7 @@ abstract contract SchemaResolver is ISchemaResolver {
      * @return Whether the attestation is valid.
      */
     function onAttest(
-        Attestation calldata attestation,
+        AttestationRecord calldata attestation,
         uint256 value
     )
         internal
@@ -217,7 +222,7 @@ abstract contract SchemaResolver is ISchemaResolver {
      * @return Whether the attestation can be revoked.
      */
     function onRevoke(
-        Attestation calldata attestation,
+        AttestationRecord calldata attestation,
         uint256 value
     )
         internal
@@ -225,7 +230,7 @@ abstract contract SchemaResolver is ISchemaResolver {
         returns (bool);
 
     function onModuleRegistration(
-        Module calldata module,
+        ModuleRecord calldata module,
         uint256 value
     )
         internal
@@ -233,7 +238,7 @@ abstract contract SchemaResolver is ISchemaResolver {
         returns (bool);
 
     function onPropagation(
-        Attestation calldata attestation,
+        AttestationRecord calldata attestation,
         address sender,
         address to,
         uint256 toChainId,

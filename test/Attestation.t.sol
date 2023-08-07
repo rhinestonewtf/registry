@@ -2,15 +2,15 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import "../src/base/RSAttestation.sol";
+import "../src/base/Attestation.sol";
 
 import "./utils/ERC1271Attester.sol";
 
 import "./utils/BaseTest.t.sol";
 
-/// @title RSAttestationTest
+/// @title AttestationTest
 /// @author zeroknots
-contract RSAttestationTest is BaseTest {
+contract AttestationTest is BaseTest {
     using RegistryTestLib for RegistryInstance;
 
     function setUp() public virtual override {
@@ -25,7 +25,7 @@ contract RSAttestationTest is BaseTest {
     function testRevokeAttestation() public {
         bytes32 attestationUid = testCreateAttestation();
         instancel1.revokeAttestation(attestationUid, defaultSchema1, auth1k);
-        Attestation memory attestation =
+        AttestationRecord memory attestation =
             instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
         assertTrue(attestation.revocationTime != 0);
     }
@@ -49,7 +49,7 @@ contract RSAttestationTest is BaseTest {
         attestationUid2 = instancel1.newAttestation(defaultSchema1, auth2k, chainedAttestation);
 
         // revert if other schema is supplied
-        vm.expectRevert(abi.encodeWithSelector(RSAttestation.InvalidAttestation.selector));
+        vm.expectRevert(abi.encodeWithSelector(Attestation.InvalidAttestation.selector));
         instancel1.newAttestation(defaultSchema2, auth2k, chainedAttestation);
 
         AttestationRequestData memory referencingOtherModule = AttestationRequestData({
@@ -62,7 +62,7 @@ contract RSAttestationTest is BaseTest {
             value: 0
         });
 
-        vm.expectRevert(abi.encodeWithSelector(RSAttestation.InvalidAttestation.selector));
+        vm.expectRevert(abi.encodeWithSelector(Attestation.InvalidAttestation.selector));
         instancel1.newAttestation(defaultSchema1, auth2k, referencingOtherModule);
 
         // this should work
@@ -75,7 +75,7 @@ contract RSAttestationTest is BaseTest {
     {
         (bytes32 attestationUid1, bytes32 attestationUid2) = testCreateChainedAttestation();
         instancel1.revokeAttestation(attestationUid1, defaultSchema1, auth1k);
-        Attestation memory attestation =
+        AttestationRecord memory attestation =
             instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
         assertTrue(attestation.revocationTime != 0);
         return (attestationUid1, attestationUid2);

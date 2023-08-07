@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { IRSQuery } from "../../interface/IRSQuery.sol";
+import { IQuery } from "../../interface/IQuery.sol";
 
 /**
  * @title SimpleRegistryIntegration
  * @author zeroknots
  *
  * @dev This contract allows only trusted contracts (attested by a specific attester)
- * to interact with it by leveraging the IRSQuery registry
+ * to interact with it by leveraging the IQuery registry
  */
 abstract contract RegistryIntegration {
-    IRSQuery public immutable registry; // Instance of the registry
+    IQuery public immutable registry; // Instance of the registry
     address public immutable trustedAttester; // Address of the trusted authority for attesting
 
     error TargetContractNotPermitted(address target, uint48 listedAt, uint48 flaggedAt);
@@ -19,11 +19,11 @@ abstract contract RegistryIntegration {
     /**
      * @dev Constructs the contract and initializes the registry and the trusted attester
      *
-     * @param _registry The address of the IRSQuery registry
+     * @param _registry The address of the IQuery registry
      * @param _trustedAttester The address of the trusted attester
      */
     constructor(address _registry, address _trustedAttester) {
-        registry = IRSQuery(_registry);
+        registry = IQuery(_registry);
         trustedAttester = _trustedAttester;
     }
     /**

@@ -4,17 +4,17 @@ pragma solidity ^0.8.19;
 import {
     AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
 } from "../Common.sol";
-import "../interface/IRSQuery.sol";
-import "./RSAttestation.sol";
+import "../interface/IQuery.sol";
+import "./Attestation.sol";
 
 import "forge-std/console2.sol";
 
 /// @title RSRegistry
 /// @author zeroknots
 /// @notice The global attestation registry.
-abstract contract RSQuery is IRSQuery {
+abstract contract Query is IQuery {
     /**
-     * @inheritdoc IRSQuery
+     * @inheritdoc IQuery
      */
     function check(
         address module,
@@ -25,14 +25,14 @@ abstract contract RSQuery is IRSQuery {
         returns (uint48 listedAt, uint48 revokedAt)
     {
         bytes32 uid = _getAttestation(module, authority);
-        Attestation storage attestation = _getAttestation(uid);
+        AttestationRecord storage attestation = _getAttestation(uid);
 
         listedAt = attestation.time;
         revokedAt = attestation.revocationTime;
     }
 
     /**
-     * @inheritdoc IRSQuery
+     * @inheritdoc IQuery
      */
     function verify(
         address module,
@@ -57,7 +57,7 @@ abstract contract RSQuery is IRSQuery {
     }
 
     /**
-     * @inheritdoc IRSQuery
+     * @inheritdoc IQuery
      */
     function verifyWithRevert(bytes32 attestationId) public view returns (bool verified) {
         _verifyAttestation(attestationId);
@@ -65,7 +65,7 @@ abstract contract RSQuery is IRSQuery {
     }
 
     /**
-     * @inheritdoc IRSQuery
+     * @inheritdoc IQuery
      */
     function verifyWithRevert(
         bytes32[] memory attestationIds,
@@ -87,7 +87,7 @@ abstract contract RSQuery is IRSQuery {
     }
 
     /**
-     * @inheritdoc IRSQuery
+     * @inheritdoc IQuery
      */
     function findAttestation(
         address module,
@@ -95,14 +95,14 @@ abstract contract RSQuery is IRSQuery {
     )
         public
         view
-        returns (Attestation memory attestation)
+        returns (AttestationRecord memory attestation)
     {
         bytes32 attestionId = _getAttestation(module, authority);
         attestation = _getAttestation(attestionId);
     }
 
     /**
-     * @inheritdoc IRSQuery
+     * @inheritdoc IQuery
      */
     function findAttestation(
         address module,
@@ -110,17 +110,17 @@ abstract contract RSQuery is IRSQuery {
     )
         external
         view
-        returns (Attestation[] memory attestations)
+        returns (AttestationRecord[] memory attestations)
     {
         uint256 length = authority.length;
-        attestations = new Attestation[](length);
+        attestations = new AttestationRecord[](length);
         for (uint256 i; i < length; uncheckedInc(i)) {
             attestations[i] = findAttestation(module, authority[i]);
         }
     }
 
     function _verifyAttestation(bytes32 attestationId) internal view {
-        Attestation storage attestation = _getAttestation(attestationId);
+        AttestationRecord storage attestation = _getAttestation(attestationId);
         bytes32 refUID = attestation.refUID;
         if (attestation.revocationTime != 0) revert RevokedAttestation(attestationId);
         if (refUID != EMPTY_UID) _verifyAttestation(refUID); // @TODO security issue?
@@ -139,5 +139,5 @@ abstract contract RSQuery is IRSQuery {
         internal
         view
         virtual
-        returns (Attestation storage);
+        returns (AttestationRecord storage);
 }

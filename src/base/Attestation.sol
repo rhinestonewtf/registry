@@ -3,11 +3,11 @@ pragma solidity ^0.8.19;
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import "../eip712/EIP712Verifier.sol";
-import "../interface/IRSAttestation.sol";
-import "./RSSchema.sol";
-import "./RSModule.sol";
+import "../interface/IAttestation.sol";
+import "./Schema.sol";
+import "./Module.sol";
 
-import { RSModuleDeploymentLib } from "../lib/RSModuleDeploymentLib.sol";
+import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
 
 // Hashi's contract to dispatch messages to L2
 import "hashi/Yaho.sol";
@@ -26,16 +26,16 @@ struct AttestationsResult {
     bytes32[] uids; // UIDs of the new attestations.
 }
 /**
- * @title RSModule
+ * @title Module
  *
  * @author zeroknots
  */
 
-abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
+abstract contract Attestation is IAttestation, EIP712Verifier {
     using Address for address payable;
-    using RSModuleDeploymentLib for address;
+    using ModuleDeploymentLib for address;
 
-    mapping(bytes32 uid => Attestation attestation) internal _attestations;
+    mapping(bytes32 uid => AttestationRecord attestation) internal _attestations;
     mapping(address module => mapping(address authority => bytes32 attestationId)) internal
         _moduleToAuthorityToAttestations;
 
@@ -83,7 +83,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     }
 
     /**
-     * @inheritdoc IRSAttestation
+     * @inheritdoc IAttestation
      */
     function attest(DelegatedAttestationRequest calldata delegatedRequest)
         external
@@ -100,7 +100,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     }
 
     /**
-     * @inheritdoc IRSAttestation
+     * @inheritdoc IAttestation
      */
     function multiAttest(MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests)
         external
@@ -175,7 +175,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     }
 
     /**
-     * @inheritdoc IRSAttestation
+     * @inheritdoc IAttestation
      */
     function propagateAttest(
         address to,
@@ -191,7 +191,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         messageIds = new bytes32[](length);
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
-            Attestation memory attestationRecord = _attestations[attestationIds[i]];
+            AttestationRecord memory attestationRecord = _attestations[attestationIds[i]];
             _resolvePropagation(attestationRecord, to, toChainId, moduleOnL2);
             if (attestationRecord.uid == EMPTY_UID) {
                 revert InvalidAttestation();
@@ -209,7 +209,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         messageIds = yaho.dispatchMessages(messages);
     }
     /**
-     * @inheritdoc IRSAttestation
+     * @inheritdoc IAttestation
      */
 
     function propagateAttest(
@@ -222,7 +222,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         returns (Message[] memory messages, bytes32[] memory messageIds)
     {
         // Get the attestation record for the contract and the authority.
-        Attestation memory attestationRecord = _attestations[attestationId];
+        AttestationRecord memory attestationRecord = _attestations[attestationId];
         bytes32 codeHash = attestationRecord.recipient.codeHash();
 
         _resolvePropagation(attestationRecord, to, toChainId, moduleOnL2);
@@ -246,10 +246,10 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     }
 
     /**
-     * @inheritdoc IRSAttestation
+     * @inheritdoc IAttestation
      */
     function attestByPropagation(
-        Attestation calldata attestation,
+        AttestationRecord calldata attestation,
         bytes32 codeHash,
         address moduleAddress
     )
@@ -274,7 +274,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         }
 
         // check if attestationId already exists on this L2 registry
-        Attestation storage existingRecord = _attestations[attestation.uid];
+        AttestationRecord storage existingRecord = _attestations[attestation.uid];
         if (existingRecord.revocationTime != 0) revert InvalidAttestation();
         // can not propagate attestations that were commited natively after the original attestation was created
         if (existingRecord.time > attestation.time) revert InvalidAttestation();
@@ -290,7 +290,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     }
 
     /**
-     * @inheritdoc IRSAttestation
+     * @inheritdoc IAttestation
      */
     function revoke(DelegatedRevocationRequest calldata request) external payable {
         _verifyRevoke(request);
@@ -302,7 +302,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     }
 
     /**
-     * @inheritdoc IRSAttestation
+     * @inheritdoc IAttestation
      */
     function multiRevoke(MultiDelegatedRevocationRequest[] calldata multiDelegatedRequests)
         external
@@ -388,7 +388,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
             revert InvalidSchema();
         }
 
-        Attestation[] memory attestations = new Attestation[](length);
+        AttestationRecord[] memory attestations = new AttestationRecord[](length);
         uint256[] memory values = new uint256[](length);
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
@@ -414,7 +414,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
                 revert InvalidAttestation();
             }
 
-            Attestation memory attestation = Attestation({
+            AttestationRecord memory attestation = AttestationRecord({
                 uid: EMPTY_UID,
                 schema: schema,
                 refUID: request.refUID,
@@ -485,13 +485,13 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         }
 
         uint256 length = data.length;
-        Attestation[] memory attestations = new Attestation[](length);
+        AttestationRecord[] memory attestations = new AttestationRecord[](length);
         uint256[] memory values = new uint256[](length);
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
             RevocationRequestData memory request = data[i];
 
-            Attestation storage attestation = _attestations[request.uid];
+            AttestationRecord storage attestation = _attestations[request.uid];
 
             // Ensure that we aren't attempting to revoke a non-existing attestation.
             if (attestation.uid == EMPTY_UID) {
@@ -508,7 +508,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
                 revert AccessDenied();
             }
 
-            // Please note that also checking of the schema itself is revocable is unnecessary, since it's not possible to
+            // Please note tModuleRecordhat also checking of the schema itself is revocable is unnecessary, since it's not possible to
             // make revocable attestations to an irrevocable schema.
             if (!attestation.revocable) {
                 revert Irrevocable();
@@ -544,7 +544,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
      */
     function _resolveAttestation(
         SchemaRecord memory schemaRecord,
-        Attestation memory attestation,
+        AttestationRecord memory attestation,
         uint256 value,
         bool isRevocation,
         uint256 availableValue,
@@ -607,7 +607,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
      */
     function _resolveAttestations(
         SchemaRecord memory schemaRecord,
-        Attestation[] memory attestations,
+        AttestationRecord[] memory attestations,
         uint256[] memory values,
         bool isRevocation,
         uint256 availableValue,
@@ -672,7 +672,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         return totalUsedValue;
     }
 
-    function _newUID(Attestation memory attestation) private view returns (bytes32 uid) {
+    function _newUID(AttestationRecord memory attestation) private view returns (bytes32 uid) {
         uint256 bump;
         while (true) {
             uid = _getUID(attestation, bump);
@@ -687,7 +687,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     }
 
     /**
-     * @inheritdoc IRSAttestation
+     * @inheritdoc IAttestation
      */
     function predictAttestationUID(
         bytes32 schema,
@@ -698,7 +698,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
         view
         returns (bytes32 uid)
     {
-        Attestation memory attestation = Attestation({
+        AttestationRecord memory attestation = AttestationRecord({
             uid: EMPTY_UID,
             schema: schema,
             refUID: request.refUID,
@@ -722,7 +722,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
      *
      * @return Attestation UID.
      */
-    function _getUID(Attestation memory attestation, uint256 bump) private pure returns (bytes32) {
+    function _getUID(AttestationRecord memory attestation, uint256 bump) private pure returns (bytes32) {
         return keccak256(
             abi.encodePacked(
                 attestation.schema,
@@ -825,7 +825,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
     }
 
     function _resolvePropagation(
-        Attestation memory attestation,
+        AttestationRecord memory attestation,
         address to,
         uint256 toChainId,
         address moduleOnL2
@@ -852,7 +852,7 @@ abstract contract RSAttestation is IRSAttestation, EIP712Verifier {
 
     function getBridges(bytes32 uid) public view virtual returns (address[] memory);
 
-    function _getModule(address moduleAddress) internal view virtual returns (Module storage);
+    function _getModule(address moduleAddress) internal view virtual returns (ModuleRecord storage);
 
     function _getAttestation(
         address module,

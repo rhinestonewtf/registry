@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { Attestation } from "../Common.sol";
+import { AttestationRecord } from "../Common.sol";
 /**
- * RSQuery interface allows for the verification of attestations
+ * Query interface allows for the verification of attestations
  * with potential for reversion in case of invalid attestation.
  *
  * @author zeroknots
  */
 
-interface IRSQuery {
+interface IQuery {
     error RevokedAttestation(bytes32 attestationId);
     /**
      * Verify an attestation associated with a given module and authority. Revert if the attestation is invalid.
@@ -81,7 +81,7 @@ interface IRSQuery {
     )
         external
         view
-        returns (Attestation memory attestation);
+        returns (AttestationRecord memory attestation);
 
     /**
      * Find an attestations associated with a given module and authority.
@@ -96,5 +96,5 @@ interface IRSQuery {
     )
         external
         view
-        returns (Attestation[] memory attestations);
+        returns (AttestationRecord[] memory attestations);
 }
