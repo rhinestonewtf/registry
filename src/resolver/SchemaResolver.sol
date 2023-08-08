@@ -68,7 +68,12 @@ abstract contract SchemaResolver is ISchemaResolver {
     /**
      * @inheritdoc ISchemaResolver
      */
-    function attest(AttestationRecord calldata attestation) external payable onlyRS returns (bool) {
+    function attest(AttestationRecord calldata attestation)
+        external
+        payable
+        onlyRS
+        returns (bool)
+    {
         return onAttest(attestation, msg.value);
     }
 
@@ -146,7 +151,12 @@ abstract contract SchemaResolver is ISchemaResolver {
     /**
      * @inheritdoc ISchemaResolver
      */
-    function revoke(AttestationRecord calldata attestation) external payable onlyRS returns (bool) {
+    function revoke(AttestationRecord calldata attestation)
+        external
+        payable
+        onlyRS
+        returns (bool)
+    {
         return onRevoke(attestation, msg.value);
     }
 

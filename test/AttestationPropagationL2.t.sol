@@ -219,7 +219,7 @@ contract AttestationPropagationL2Test is AttestationTest {
         );
 
         AttestationRequestData memory attData = AttestationRequestData({
-            recipient: module,
+            subject: module,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,
@@ -232,7 +232,7 @@ contract AttestationPropagationL2Test is AttestationTest {
         instancel1.newAttestation(newSchema, auth1k, attData);
 
         attData = AttestationRequestData({
-            recipient: module,
+            subject: module,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,
@@ -245,7 +245,7 @@ contract AttestationPropagationL2Test is AttestationTest {
         assertTrue(attestationUid != bytes32(0));
 
         attData = AttestationRequestData({
-            recipient: module,
+            subject: module,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,
@@ -365,7 +365,7 @@ contract AttestationPropagationL2Test is AttestationTest {
         );
 
         AttestationRequestData memory attData = AttestationRequestData({
-            recipient: module,
+            subject: module,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,
@@ -378,7 +378,7 @@ contract AttestationPropagationL2Test is AttestationTest {
         instancel1.newAttestation(newSchema, auth1k, attData);
 
         attData = AttestationRequestData({
-            recipient: module,
+            subject: module,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,
@@ -391,7 +391,7 @@ contract AttestationPropagationL2Test is AttestationTest {
         assertTrue(attestationUid != bytes32(0));
 
         attData = AttestationRequestData({
-            recipient: module,
+            subject: module,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,

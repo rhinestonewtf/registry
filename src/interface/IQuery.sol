@@ -12,12 +12,12 @@ import { AttestationRecord } from "../Common.sol";
 interface IQuery {
     error RevokedAttestation(bytes32 attestationId);
     /**
-     * Verify an attestation associated with a given module and authority. 
+     * Verify an attestation associated with a given module and authority.
      *
      * @param plugin The address of the module to verify
      * @param trustedEntity The address of the authority issuing the attestation
-     * @return listedAt True if the attestation is valid
-     * @return revokedAt True if the attestation is valid
+     * @return listedAt timestamp  Not zero if the attesation is valid
+     * @return revokedAt timestamp not zero if the attestation was revoked.
      */
 
     function check(
@@ -29,7 +29,7 @@ interface IQuery {
         returns (uint48 listedAt, uint48 revokedAt);
 
     /**
-     * Verify a set of attestations associated with a given module and a list of authorities. 
+     * Verify a set of attestations associated with a given module and a list of authorities.
      *
      * @param module The address of the module to verify
      * @param authorities The list of authorities issuing the attestations

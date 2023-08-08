@@ -60,7 +60,7 @@ library RegistryTestLib {
         returns (bytes32 attestationUid)
     {
         AttestationRequestData memory attData = AttestationRequestData({
-            recipient: moduleAddr,
+            subject: moduleAddr,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,

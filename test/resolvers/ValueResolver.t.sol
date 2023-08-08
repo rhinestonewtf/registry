@@ -23,7 +23,7 @@ contract ValueResolverTest is BaseTest {
         );
 
         AttestationRequestData memory attData = AttestationRequestData({
-            recipient: module,
+            subject: module,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,

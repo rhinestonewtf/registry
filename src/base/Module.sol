@@ -124,7 +124,12 @@ abstract contract Module is IModule {
 
     function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory);
 
-    function _getModule(address moduleAddress) internal view virtual returns (ModuleRecord storage) {
+    function _getModule(address moduleAddress)
+        internal
+        view
+        virtual
+        returns (ModuleRecord storage)
+    {
         return _modules[moduleAddress];
     }
 }

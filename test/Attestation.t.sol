@@ -37,7 +37,7 @@ contract AttestationTest is BaseTest {
         attestationUid1 = testCreateAttestation();
 
         AttestationRequestData memory chainedAttestation = AttestationRequestData({
-            recipient: defaultModule1,
+            subject: defaultModule1,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,
@@ -53,7 +53,7 @@ contract AttestationTest is BaseTest {
         instancel1.newAttestation(defaultSchema2, auth2k, chainedAttestation);
 
         AttestationRequestData memory referencingOtherModule = AttestationRequestData({
-            recipient: defaultModule2, // <-- here is the reference of the wrong module
+            subject: defaultModule2, // <-- here is the reference of the wrong module
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,
@@ -90,7 +90,7 @@ contract AttestationTest is BaseTest {
         ERC1271Attester attester = new ERC1271Attester();
 
         AttestationRequestData memory attData = AttestationRequestData({
-            recipient: defaultModule1,
+            subject: defaultModule1,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,
@@ -117,7 +117,7 @@ contract AttestationTest is BaseTest {
         );
 
         AttestationRequestData memory attData1 = AttestationRequestData({
-            recipient: defaultModule1,
+            subject: defaultModule1,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,
@@ -127,7 +127,7 @@ contract AttestationTest is BaseTest {
         });
 
         AttestationRequestData memory attData2 = AttestationRequestData({
-            recipient: anotherModule,
+            subject: anotherModule,
             expirationTime: uint48(0),
             revocable: true,
             propagateable: true,

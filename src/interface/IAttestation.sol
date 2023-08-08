@@ -15,7 +15,7 @@ import "hashi/Yaru.sol";
  * @dev A struct representing the arguments of the attestation request.
  */
 struct AttestationRequestData {
-    address recipient; // The recipient of the attestation.
+    address subject; // The subject of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     bool revocable; // Whether the attestation is revocable.
     bool propagateable; // Whether the attestation is propagateable to L2s.
@@ -108,25 +108,25 @@ interface IAttestation {
     /**
      * @dev Emitted when an attestation has been made.
      *
-     * @param recipient The recipient of the attestation.
+     * @param subject The subject of the attestation.
      * @param attester The attesting account.
      * @param uid The UID the revoked attestation.
      * @param schema The UID of the schema.
      */
     event Attested(
-        address indexed recipient, address indexed attester, bytes32 uid, bytes32 indexed schema
+        address indexed subject, address indexed attester, bytes32 uid, bytes32 indexed schema
     );
 
     /**
      * @dev Emitted when an attestation has been revoked.
      *
-     * @param recipient The recipient of the attestation.
+     * @param subject The subject of the attestation.
      * @param attester The attesting account.
      * @param schema The UID of the schema.
      * @param uid The UID the revoked attestation.
      */
     event Revoked(
-        address indexed recipient, address indexed attester, bytes32 uid, bytes32 indexed schema
+        address indexed subject, address indexed attester, bytes32 uid, bytes32 indexed schema
     );
 
     /**
@@ -180,7 +180,7 @@ interface IAttestation {
      * @param to The address to send to on the destination chain
      * @param toChainId The ID of the destination chain
      * @param attestationIds The IDs of the attestations to be propagated.
-     *           they have to be attestations on the same recipient
+     *           they have to be attestations on the same subject
      * @param moduleOnL2 The address of the module on the Layer 2 chain
      * @return messages An array of messages sent
      * @return messageIds An array of IDs of the messages sent

@@ -200,7 +200,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             bytes memory callData = abi.encodeWithSelector(
                 this.attestByPropagation.selector,
                 attestationRecord,
-                attestationRecord.recipient.codeHash(),
+                attestationRecord.subject.codeHash(),
                 moduleOnL2
             );
             // Prepare the message for dispatch.
@@ -223,7 +223,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     {
         // Get the attestation record for the contract and the authority.
         AttestationRecord memory attestationRecord = _attestations[attestationId];
-        bytes32 codeHash = attestationRecord.recipient.codeHash();
+        bytes32 codeHash = attestationRecord.subject.codeHash();
 
         _resolvePropagation(attestationRecord, to, toChainId, moduleOnL2);
 
@@ -281,11 +281,11 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
         // Store the attestation
         _attestations[attestation.uid] = attestation;
-        _moduleToAuthorityToAttestations[attestation.recipient][attestation.attester] =
+        _moduleToAuthorityToAttestations[attestation.subject][attestation.attester] =
             attestation.uid;
         // Emit an event for the attestation
         emit Attested(
-            attestation.recipient, attestation.attester, attestation.uid, attestation.schema
+            attestation.subject, attestation.attester, attestation.uid, attestation.schema
         );
     }
 
@@ -405,12 +405,12 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             }
 
             // Ensure that attestation is for module that was registered.
-            if (_getModule(request.recipient).implementation == address(0)) {
+            if (_getModule(request.subject).implementation == address(0)) {
                 revert InvalidAttestation();
             }
 
             // Ensure that attestation for a module is using the modules schemaId
-            if (_getModule(request.recipient).schemaId != schema) {
+            if (_getModule(request.subject).schemaId != schema) {
                 revert InvalidAttestation();
             }
 
@@ -421,7 +421,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 time: _time(),
                 expirationTime: request.expirationTime,
                 revocationTime: 0,
-                recipient: request.recipient,
+                subject: request.subject,
                 attester: attester,
                 revocable: request.revocable,
                 propagateable: request.propagateable,
@@ -434,7 +434,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
             // saving into contract storage
             _attestations[uid] = attestation;
-            _moduleToAuthorityToAttestations[request.recipient][attester] = uid;
+            _moduleToAuthorityToAttestations[request.subject][attester] = uid;
 
             if (request.refUID != 0) {
                 // Ensure that we aren't trying to attest to a non-existing referenced UID.
@@ -448,7 +448,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
             res.uids[i] = uid;
 
-            emit Attested(request.recipient, attester, uid, schema);
+            emit Attested(request.subject, attester, uid, schema);
         }
 
         res.usedValue =
@@ -524,7 +524,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             attestations[i] = attestation;
             values[i] = request.value;
 
-            emit Revoked(attestation.recipient, revoker, request.uid, attestation.schema);
+            emit Revoked(attestation.subject, revoker, request.uid, attestation.schema);
         }
 
         return _resolveAttestations(schemaRecord, attestations, values, true, availableValue, last);
@@ -705,7 +705,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             time: _time(),
             expirationTime: request.expirationTime,
             revocationTime: 0,
-            recipient: request.recipient,
+            subject: request.subject,
             attester: attester,
             revocable: request.revocable,
             propagateable: request.propagateable,
@@ -722,11 +722,18 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
      *
      * @return Attestation UID.
      */
-    function _getUID(AttestationRecord memory attestation, uint256 bump) private pure returns (bytes32) {
+    function _getUID(
+        AttestationRecord memory attestation,
+        uint256 bump
+    )
+        private
+        pure
+        returns (bytes32)
+    {
         return keccak256(
             abi.encodePacked(
                 attestation.schema,
-                attestation.recipient,
+                attestation.subject,
                 attestation.attester,
                 // attestation.time, <-- makes UIDs unpredictable. is removing this a security issue?
                 attestation.expirationTime,
@@ -852,7 +859,11 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
     function getBridges(bytes32 uid) public view virtual returns (address[] memory);
 
-    function _getModule(address moduleAddress) internal view virtual returns (ModuleRecord storage);
+    function _getModule(address moduleAddress)
+        internal
+        view
+        virtual
+        returns (ModuleRecord storage);
 
     function _getAttestation(
         address module,

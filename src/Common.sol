@@ -31,7 +31,7 @@ struct AttestationRecord {
     bytes32 uid; // A unique identifier of the attestation.
     bytes32 schema; // The unique identifier of the schema.
     bytes32 refUID; // The UID of the related attestation.
-    address recipient; // The recipient of the attestation i.e. module
+    address subject; // The recipient of the attestation i.e. module
     address attester; // The attester/sender of the attestation.
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
