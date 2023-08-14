@@ -27,7 +27,7 @@ abstract contract Query is IQuery {
         bytes32 uid = _getAttestation(module, authority);
         AttestationRecord storage attestation = _getAttestation(uid);
 
-        listedAt = attestation.time;
+        listedAt = attestation.expirationTime != 0 ? 0 : attestation.time;
         revokedAt = attestation.revocationTime;
     }
 
