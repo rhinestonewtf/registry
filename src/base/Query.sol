@@ -49,7 +49,7 @@ abstract contract Query is IQuery {
         for (uint256 i; i < length; uncheckedInc(i)) {
             if (threshold == 0) return true;
             (uint256 listedAt, uint256 revokedAt) = check(module, authorities[i]);
-            if (revokedAt == 0) return false;
+            if (revokedAt != 0) return false;
             if (listedAt == NO_EXPIRATION_TIME) continue;
             --threshold;
         }
