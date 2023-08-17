@@ -41,7 +41,7 @@ struct AttestationRecord {
     bytes data; // Custom attestation data.
 }
 
-// Struct that represents a contract artifact.
+// Struct that represents a contract artefact.
 struct ModuleRecord {
     address implementation; // The deployed contract address
     bytes32 codeHash; // The hash of the contract code

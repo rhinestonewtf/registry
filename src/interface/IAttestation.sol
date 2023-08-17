@@ -110,7 +110,7 @@ interface IAttestation {
      *
      * @param subject The subject of the attestation.
      * @param attester The attesting account.
-     * @param uid The UID the revoked attestation.
+     * @param uid The UID of the attestation.
      * @param schema The UID of the schema.
      */
     event Attested(
@@ -122,8 +122,8 @@ interface IAttestation {
      *
      * @param subject The subject of the attestation.
      * @param attester The attesting account.
-     * @param schema The UID of the schema.
      * @param uid The UID the revoked attestation.
+     * @param schema The UID of the schema.
      */
     event Revoked(
         address indexed subject, address indexed attester, bytes32 uid, bytes32 indexed schema
@@ -162,7 +162,7 @@ interface IAttestation {
     /**
      * @notice Function to handle multiple delegated attestation requests
      *
-     * @dev It iterates over the attestation requests and processes them. It collects the returned UIDs into a single list.
+     * @dev It iterates over the attestation requests and processes them. It collects the returned UIDs into a list.
      *
      * @param multiDelegatedRequests An array of multiple delegated attestation requests
      * @return attestationIds An array of IDs of the performed attestations
@@ -180,7 +180,7 @@ interface IAttestation {
      * @param to The address to send to on the destination chain
      * @param toChainId The ID of the destination chain
      * @param attestationIds The IDs of the attestations to be propagated.
-     *           they have to be attestations on the same subject
+     *           They have to be attestations on the same subject
      * @param moduleOnL2 The address of the module on the Layer 2 chain
      * @return messages An array of messages sent
      * @return messageIds An array of IDs of the messages sent
@@ -230,6 +230,7 @@ interface IAttestation {
         address moduleAddress
     )
         external;
+
     /**
      * @notice Handles a single delegated revocation request
      *

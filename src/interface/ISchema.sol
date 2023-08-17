@@ -23,13 +23,13 @@ struct SchemaRecord {
 interface ISchema {
     // Error to throw if the SchemaID already exists
     error AlreadyExists();
+
     /**
      * @dev Emitted when a new schema has been registered
      *
      * @param uid The schema UID.
      * @param registerer The address of the account used to register the schema.
      */
-
     event Registered(bytes32 indexed uid, address registerer);
 
     /**
@@ -87,7 +87,7 @@ interface ISchema {
      *
      * @param uid The UID of the schema to retrieve.
      *
-     * @return The schema data members.
+     * @return The schema record.
      */
     function getSchema(bytes32 uid) external view returns (SchemaRecord memory);
 }

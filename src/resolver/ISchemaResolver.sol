@@ -3,10 +3,10 @@
 pragma solidity ^0.8.0;
 
 import { AttestationRecord, ModuleRecord } from "../Common.sol";
+
 /**
  * @title The interface of an optional schema resolver.
  */
-
 interface ISchemaResolver {
     /**
      * @dev Returns whether the resolver supports ETH transfers.
@@ -32,7 +32,7 @@ interface ISchemaResolver {
     function moduleRegistration(ModuleRecord calldata module) external payable returns (bool);
 
     /**
-     * @dev Processes a Attestation Propagation
+     * @dev Processes an Attestation Propagation
      *
      * @param attestation Attestation propagation artefact
      * @param sender Sender of the message

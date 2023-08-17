@@ -25,6 +25,7 @@ struct AttestationsResult {
     uint256 usedValue; // Total ETH amount that was sent to resolvers.
     bytes32[] uids; // UIDs of the new attestations.
 }
+
 /**
  * @title Module
  *
@@ -208,10 +209,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         }
         messageIds = yaho.dispatchMessages(messages);
     }
+
     /**
      * @inheritdoc IAttestation
      */
-
     function propagateAttest(
         address to,
         uint256 toChainId,
@@ -263,7 +264,9 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         }
 
         // check if schemaId exists on this L2 registry
-        if (getSchema(attestation.schema).uid == EMPTY_UID) revert WrongSchema();
+        if (getSchema(attestation.schema).uid == EMPTY_UID) {
+            revert WrongSchema();
+        }
 
         // check if refUID exists on this L2 registry
         if (attestation.refUID != EMPTY_UID) {
@@ -359,7 +362,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     /**
      * @dev Attests to a specific schema.
      *
-     * @param schema // the unique identifier of the schema to attest to.
+     * @param schemaUID The unique identifier of the schema to attest to.
      * @param data The arguments of the attestation requests.
      * @param attester The attesting account.
      * @param availableValue The total available ETH amount that can be sent to the resolver.
@@ -368,7 +371,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
      * @return The UID of the new attestations and the total sent ETH amount.
      */
     function _attest(
-        bytes32 schema,
+        bytes32 schemaUID,
         AttestationRequestData[] memory data,
         address attester,
         uint256 availableValue,
@@ -388,7 +391,9 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             revert InvalidSchema();
         }
 
-        AttestationRecord[] memory attestations = new AttestationRecord[](length);
+        AttestationRecord[] memory attestations = new AttestationRecord[](
+            length
+        );
         uint256[] memory values = new uint256[](length);
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
@@ -460,7 +465,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     /**
      * @dev Revokes an existing attestation to a specific schema.
      *
-     * @param schema The unique identifier of the schema to attest to.
+     * @param schema The unique identifier of the schema that was used to attest.
      * @param data The arguments of the revocation requests.
      * @param revoker The revoking account.
      * @param availableValue The total available ETH amount that can be sent to the resolver.
@@ -485,7 +490,9 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         }
 
         uint256 length = data.length;
-        AttestationRecord[] memory attestations = new AttestationRecord[](length);
+        AttestationRecord[] memory attestations = new AttestationRecord[](
+            length
+        );
         uint256[] memory values = new uint256[](length);
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
@@ -508,7 +515,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 revert AccessDenied();
             }
 
-            // Please note tModuleRecordhat also checking of the schema itself is revocable is unnecessary, since it's not possible to
+            // Please note that also checking whether the schema itself is revocable is unnecessary, since it's not possible to
             // make revocable attestations to an irrevocable schema.
             if (!attestation.revocable) {
                 revert Irrevocable();
@@ -789,9 +796,9 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
      * @dev Merges lists of UIDs.
      *
      * @param uidLists The provided lists of UIDs.
-     * @param uidsCount Total UIDs count.
+     * @param uidsCount Total number of UIDs.
      *
-     * @return A merged and flatten list of all the UIDs.
+     * @return A merged and flattened list of all the UIDs.
      */
     function _mergeUIDs(
         bytes32[][] memory uidLists,
@@ -826,8 +833,12 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
     // Modifier that checks the validity of the caller and sender.
     modifier onlyHashi() {
-        if (yaru.sender() != l1Registry) revert InvalidSender(address(this), yaru.sender());
-        if (msg.sender != address(yaru)) revert InvalidCaller(address(this), msg.sender);
+        if (yaru.sender() != l1Registry) {
+            revert InvalidSender(address(this), yaru.sender());
+        }
+        if (msg.sender != address(yaru)) {
+            revert InvalidCaller(address(this), msg.sender);
+        }
         _;
     }
 
