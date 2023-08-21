@@ -394,8 +394,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         for (uint256 i; i < length; i = uncheckedInc(i)) {
             AttestationRequestData memory request = data[i];
 
+            uint48 timeNow = _time();
+
             // Ensure that either no expiration time was set or that it was set in the future.
-            if (request.expirationTime != NO_EXPIRATION_TIME && request.expirationTime <= _time()) {
+            if (request.expirationTime != NO_EXPIRATION_TIME && request.expirationTime <= timeNow) {
                 revert InvalidExpirationTime();
             }
 
@@ -418,7 +420,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 uid: EMPTY_UID,
                 schema: schema,
                 refUID: request.refUID,
-                time: _time(),
+                time: timeNow,
                 expirationTime: request.expirationTime,
                 revocationTime: 0,
                 subject: request.subject,
