@@ -365,7 +365,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
      * @param availableValue The total available ETH amount that can be sent to the resolver.
      * @param last Whether this is the last attestations/revocations set.
      *
-     * @return The UID of the new attestations and the total sent ETH amount.
+     * @return res The AttestationResult struct
      */
     function _attest(
         bytes32 schema,
@@ -375,11 +375,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         bool last
     )
         private
-        returns (AttestationsResult memory)
+        returns (AttestationsResult memory res)
     {
         uint256 length = data.length;
 
-        AttestationsResult memory res;
         res.uids = new bytes32[](length);
 
         // Ensure that we aren't attempting to attest to a non-existing schema.
@@ -391,10 +390,12 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         AttestationRecord[] memory attestations = new AttestationRecord[](length);
         uint256[] memory values = new uint256[](length);
 
+        // caching the current time
+        uint48 timeNow = _time();
+
         for (uint256 i; i < length; i = uncheckedInc(i)) {
             AttestationRequestData memory request = data[i];
 
-            uint48 timeNow = _time();
 
             // Ensure that either no expiration time was set or that it was set in the future.
             if (request.expirationTime != NO_EXPIRATION_TIME && request.expirationTime <= timeNow) {

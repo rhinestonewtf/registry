@@ -11,7 +11,6 @@ import { AttestationRecord } from "../Common.sol";
 
 interface IQuery {
     error RevokedAttestation(bytes32 attestationId);
-    error InvalidAttestation(bytes32 attestationId);
     /**
      * Verify an attestation associated with a given module and authority.
      *
