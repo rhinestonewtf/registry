@@ -147,11 +147,10 @@ abstract contract EIP712Verifier is EIP712 {
      */
     function _verifyAttest(DelegatedAttestationRequest memory request) internal {
         AttestationRequestData memory data = request.data;
-        EIP712Signature memory signature = request.signature;
 
         uint256 nonce = _newNonce(request.attester);
         bytes32 digest = _attestationDigest(data, request.schema, nonce);
-        _verifySignature(digest, signature, request.attester);
+        _verifySignature(digest, request.signature, request.attester);
     }
 
     function _newNonce(address account) private returns (uint256 nonce) {
@@ -193,16 +192,15 @@ abstract contract EIP712Verifier is EIP712 {
      */
     function _verifyRevoke(DelegatedRevocationRequest memory request) internal {
         RevocationRequestData memory data = request.data;
-        EIP712Signature memory signature = request.signature;
 
         uint256 nonce = _newNonce(request.revoker);
         bytes32 digest = _revocationDigest(request.schema, data.uid, nonce);
-        _verifySignature(digest, signature, request.revoker);
+        _verifySignature(digest, request.signature, request.revoker);
     }
 
     function _verifySignature(
         bytes32 digest,
-        EIP712Signature memory signature,
+        bytes memory signature,
         address signer
     )
         internal
@@ -211,13 +209,17 @@ abstract contract EIP712Verifier is EIP712 {
         // check if signer is EOA or contract
         if (_isContract(signer)) {
             if (
-                IERC1271(signer).isValidSignature(digest, abi.encode(signature))
+                IERC1271(signer).isValidSignature(digest, signature)
                     != ERC1271_RETURN_VALID_SIGNATURE
             ) {
                 revert InvalidSignature();
             }
         } else {
-            if (ECDSA.recover(digest, signature.v, signature.r, signature.s) != signer) {
+            EIP712Signature memory eip712Signature = abi.decode(signature, (EIP712Signature));
+            if (
+                ECDSA.recover(digest, eip712Signature.v, eip712Signature.r, eip712Signature.s)
+                    != signer
+            ) {
                 revert InvalidSignature();
             }
         }
