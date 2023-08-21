@@ -37,9 +37,9 @@ library ModuleDeploymentLib {
 
         assembly {
             moduleAddress := create2(0, add(initCode, 0x20), mload(initCode), salt)
-            contractCodeHash := extcodehash(moduleAddress)
             // If the contract was not created successfully, the transaction is reverted.
             if iszero(extcodesize(moduleAddress)) { revert(0, 0) }
+            contractCodeHash := extcodehash(moduleAddress)
         }
     }
 
