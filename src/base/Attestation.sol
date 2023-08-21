@@ -26,7 +26,7 @@ struct AttestationsResult {
     bytes32[] uids; // UIDs of the new attestations.
 }
 /**
- * @title Module
+ * @title Attestation
  *
  * @author zeroknots
  */
