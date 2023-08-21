@@ -9,7 +9,7 @@ import "./base/Query.sol";
 /**
  * @author zeroknots
  */
-contract Registry is Schema, Query, Attestation, Module {
+contract Registry is Schema, Query, Module {
     constructor(
         Yaho _yaho,
         Yaru _yaru,
@@ -17,7 +17,7 @@ contract Registry is Schema, Query, Attestation, Module {
         string memory name,
         string memory version
     )
-        Attestation(_yaho, _yaru, _l1registry, name, version)
+        Query(_yaho, _yaru, _l1registry, name, version)
     { }
 
     /*//////////////////////////////////////////////////////////////
@@ -40,29 +40,6 @@ contract Registry is Schema, Query, Attestation, Module {
         returns (SchemaRecord memory)
     {
         return super.getSchema(uid);
-    }
-
-    function _getAttestation(
-        address module,
-        address authority
-    )
-        internal
-        view
-        virtual
-        override(Attestation, Query)
-        returns (bytes32)
-    {
-        return super._getAttestation(module, authority);
-    }
-
-    function _getAttestation(bytes32 attestationId)
-        internal
-        view
-        virtual
-        override
-        returns (AttestationRecord storage)
-    {
-        return _attestations[attestationId];
     }
 
     function _getModule(address moduleAddress)
