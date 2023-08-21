@@ -123,7 +123,7 @@ abstract contract Query is IQuery {
         AttestationRecord storage attestation = _getAttestation(attestationId);
         bytes32 refUID = attestation.refUID;
         if (attestation.revocationTime != 0) revert RevokedAttestation(attestationId);
-        if (attestation.time != 0) revert InvalidAttestation(attestationId);
+        if (attestation.time != 0) revert Attestation.InvalidAttestation();
         if (refUID != EMPTY_UID) _verifyAttestation(refUID); // @TODO security issue?
     }
 
