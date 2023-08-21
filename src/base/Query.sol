@@ -36,7 +36,7 @@ abstract contract Query is IQuery {
      */
     function verify(
         address module,
-        address[] memory authorities,
+        address[] calldata authorities,
         uint256 threshold
     )
         external

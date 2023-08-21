@@ -84,7 +84,7 @@ library RegistryTestLib {
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
             schema: schemaId,
             data: attData,
-            signature: signature,
+            signature: abi.encode(signature),
             attester: getAddr(attesterKey)
         });
 
@@ -132,7 +132,6 @@ library RegistryTestLib {
                 schemaUid: schemaId,
                 nonce: nonce + i
             });
-            console2.logBytes32(digest);
 
             (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
             sig[i] = EIP712Signature({ v: v, r: r, s: s });
@@ -159,7 +158,7 @@ library RegistryTestLib {
         DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
             schema: schemaId,
             data: revoke,
-            signature: signature,
+            signature: abi.encode(signature),
             revoker: getAddr(attesterPk)
         });
         instance.registry.revoke(req);
