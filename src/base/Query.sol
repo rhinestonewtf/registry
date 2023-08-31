@@ -27,7 +27,7 @@ abstract contract Query is IQuery {
         bytes32 uid = _getAttestation(module, authority);
         AttestationRecord storage attestation = _getAttestation(uid);
 
-        listedAt = attestation.time;
+        listedAt = attestation.expirationTime < block.timestamp ? attestation.time : 0;
         revokedAt = attestation.revocationTime;
     }
 
@@ -36,7 +36,7 @@ abstract contract Query is IQuery {
      */
     function verify(
         address module,
-        address[] memory authorities,
+        address[] calldata authorities,
         uint256 threshold
     )
         external
@@ -49,7 +49,7 @@ abstract contract Query is IQuery {
         for (uint256 i; i < length; uncheckedInc(i)) {
             if (threshold == 0) return true;
             (uint256 listedAt, uint256 revokedAt) = check(module, authorities[i]);
-            if (revokedAt == 0) return false;
+            if (revokedAt != 0) return false;
             if (listedAt == NO_EXPIRATION_TIME) continue;
             --threshold;
         }
@@ -125,6 +125,7 @@ abstract contract Query is IQuery {
         if (attestation.revocationTime != 0) {
             revert RevokedAttestation(attestationId);
         }
+        if (attestation.time != 0) revert Attestation.InvalidAttestation();
         if (refUID != EMPTY_UID) _verifyAttestation(refUID); // @TODO security issue?
     }
 

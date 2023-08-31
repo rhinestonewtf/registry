@@ -27,14 +27,11 @@ import { EIP712Signature, InvalidSignature } from "../Common.sol";
  */
 abstract contract EIP712Verifier is EIP712 {
     // The hash of the data type used to relay calls to the attest function. It's the value of
-    bytes32 private constant ATTEST_TYPEHASH = keccak256(
-        "Attest(bytes32 schema,address subject,uint48 expirationTime,bool revocable,bytes32 refUID,bytes32 dataHash,uint256 nonce)"
-    );
+    bytes32 private constant ATTEST_TYPEHASH =
+        keccak256("Attest(bytes32,address,uint48,bool,bytes32,bytes32,uint256)");
 
     // The hash of the data type used to relay calls to the revoke function. It's the value of
-    bytes32 private constant REVOKE_TYPEHASH =
-        keccak256("Revoke(bytes32 schema,bytes32 uid,uint256 nonce)");
-    // 0xa98d02348410c9c76735e0d0bb1396f4015ac2bb9615f9c2611d19d7a8a99650;
+    bytes32 private constant REVOKE_TYPEHASH = keccak256("Revoke(bytes32,bytes32,uint256)");
 
     // bytes4(keccak256("isValidSignature(bytes32,bytes)")
     bytes4 private constant ERC1271_RETURN_VALID_SIGNATURE = 0x1626ba7e;
@@ -150,11 +147,10 @@ abstract contract EIP712Verifier is EIP712 {
      */
     function _verifyAttest(DelegatedAttestationRequest memory request) internal {
         AttestationRequestData memory data = request.data;
-        EIP712Signature memory signature = request.signature;
 
         uint256 nonce = _newNonce(request.attester);
         bytes32 digest = _attestationDigest(data, request.schema, nonce);
-        _verifySignature(digest, signature, request.attester);
+        _verifySignature(digest, request.signature, request.attester);
     }
 
     function _newNonce(address account) private returns (uint256 nonce) {
@@ -196,16 +192,15 @@ abstract contract EIP712Verifier is EIP712 {
      */
     function _verifyRevoke(DelegatedRevocationRequest memory request) internal {
         RevocationRequestData memory data = request.data;
-        EIP712Signature memory signature = request.signature;
 
         uint256 nonce = _newNonce(request.revoker);
         bytes32 digest = _revocationDigest(request.schema, data.uid, nonce);
-        _verifySignature(digest, signature, request.revoker);
+        _verifySignature(digest, request.signature, request.revoker);
     }
 
     function _verifySignature(
         bytes32 digest,
-        EIP712Signature memory signature,
+        bytes memory signature,
         address signer
     )
         internal
@@ -214,13 +209,17 @@ abstract contract EIP712Verifier is EIP712 {
         // check if signer is EOA or contract
         if (_isContract(signer)) {
             if (
-                IERC1271(signer).isValidSignature(digest, abi.encode(signature))
+                IERC1271(signer).isValidSignature(digest, signature)
                     != ERC1271_RETURN_VALID_SIGNATURE
             ) {
                 revert InvalidSignature();
             }
         } else {
-            if (ECDSA.recover(digest, signature.v, signature.r, signature.s) != signer) {
+            EIP712Signature memory eip712Signature = abi.decode(signature, (EIP712Signature));
+            if (
+                ECDSA.recover(digest, eip712Signature.v, eip712Signature.r, eip712Signature.s)
+                    != signer
+            ) {
                 revert InvalidSignature();
             }
         }

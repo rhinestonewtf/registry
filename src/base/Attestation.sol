@@ -83,6 +83,51 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         l1Registry = _l1Registry;
     }
 
+    function attest(AttestationRequest calldata request) external payable returns (bytes32) {
+        AttestationRequestData[] memory requests = new AttestationRequestData[](1);
+        requests[0] = request.data;
+
+        return _attest(request.schema, requests, msg.sender, msg.value, true).uids[0];
+    }
+
+    function multiAttest(MultiAttestationRequest[] calldata multiRequests)
+        external
+        payable
+        returns (bytes32[] memory)
+    {
+        uint256 length = multiRequests.length;
+        // Since a multi-attest call is going to make multiple attestations for multiple schemas, we'd need to collect
+        // all the returned UIDs into a single list.
+        bytes32[][] memory totalUids = new bytes32[][](length);
+        uint256 totalUidsCount = 0;
+
+        uint256 availableValue = msg.value;
+
+        for (uint256 i; i < length; i = uncheckedInc(i)) {
+            bool last;
+            unchecked {
+                last = i == length - 1;
+            }
+
+            // Process the current batch of attestations.
+            MultiAttestationRequest calldata multiRequest = multiRequests[i];
+            AttestationsResult memory res =
+                _attest(multiRequest.schema, multiRequest.data, msg.sender, availableValue, last);
+
+            // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
+            availableValue -= res.usedValue;
+
+            // Collect UIDs (and merge them later).
+            totalUids[i] = res.uids;
+            unchecked {
+                totalUidsCount += res.uids.length;
+            }
+        }
+
+        // Merge all the collected UIDs and return them as a flatten array.
+        return _mergeUIDs(totalUids, totalUidsCount);
+    }
+
     /**
      * @inheritdoc IAttestation
      */
@@ -292,6 +337,37 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         );
     }
 
+    function revoke(RevocationRequest calldata request) external payable {
+        RevocationRequestData[] memory requests = new RevocationRequestData[](1);
+        requests[0] = request.data;
+
+        _revoke(request.schema, requests, msg.sender, msg.value, true);
+    }
+
+    function multiRevoke(MultiRevocationRequest[] calldata multiRequests) external payable {
+        // We are keeping track of the total available ETH amount that can be sent to resolvers and will keep deducting
+        // from it to verify that there isn't any attempt to send too much ETH to resolvers. Please note that unless
+        // some ETH was stuck in the contract by accident (which shouldn't happen in normal conditions), it won't be
+        // possible to send too much ETH anyway.
+        uint256 availableValue = msg.value;
+
+        for (uint256 i = 0; i < multiRequests.length; i = uncheckedInc(i)) {
+            // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there
+            // is a remainder - it will be refunded back to the attester (something that we can only verify during the
+            // last and final batch).
+            bool last;
+            unchecked {
+                last = i == multiRequests.length - 1;
+            }
+
+            MultiRevocationRequest calldata multiRequest = multiRequests[i];
+
+            // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
+            availableValue -=
+                _revoke(multiRequest.schema, multiRequest.data, msg.sender, availableValue, last);
+        }
+    }
+
     /**
      * @inheritdoc IAttestation
      */
@@ -368,7 +444,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
      * @param availableValue The total available ETH amount that can be sent to the resolver.
      * @param last Whether this is the last attestations/revocations set.
      *
-     * @return The UID of the new attestations and the total sent ETH amount.
+     * @return res The AttestationResult struct
      */
     function _attest(
         bytes32 schemaUID,
@@ -378,11 +454,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         bool last
     )
         private
-        returns (AttestationsResult memory)
+        returns (AttestationsResult memory res)
     {
         uint256 length = data.length;
 
-        AttestationsResult memory res;
         res.uids = new bytes32[](length);
 
         // Ensure that we aren't attempting to attest to a non-existing schema.
@@ -396,11 +471,14 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         );
         uint256[] memory values = new uint256[](length);
 
+        // caching the current time
+        uint48 timeNow = _time();
+
         for (uint256 i; i < length; i = uncheckedInc(i)) {
             AttestationRequestData memory request = data[i];
 
             // Ensure that either no expiration time was set or that it was set in the future.
-            if (request.expirationTime != NO_EXPIRATION_TIME && request.expirationTime <= _time()) {
+            if (request.expirationTime != NO_EXPIRATION_TIME && request.expirationTime <= timeNow) {
                 revert InvalidExpirationTime();
             }
 
@@ -423,7 +501,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 uid: EMPTY_UID,
                 schema: schema,
                 refUID: request.refUID,
-                time: _time(),
+                time: timeNow,
                 expirationTime: request.expirationTime,
                 revocationTime: 0,
                 subject: request.subject,

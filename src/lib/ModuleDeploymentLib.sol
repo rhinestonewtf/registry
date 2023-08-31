@@ -33,16 +33,13 @@ library ModuleDeploymentLib {
         bytes memory initCode = abi.encodePacked(createCode, params);
         // this enforces, that constructor params were supplied via params argument
         // if params were abi.encodePacked in createCode, this will revert
-        // if (calcAddress(initCode, salt) == calcAddress(createCode, salt)) {
-        //     revert InvalidDeployment();
-        // }
         initCodeHash = keccak256(initCode);
 
         assembly {
             moduleAddress := create2(0, add(initCode, 0x20), mload(initCode), salt)
-            contractCodeHash := extcodehash(moduleAddress)
             // If the contract was not created successfully, the transaction is reverted.
             if iszero(extcodesize(moduleAddress)) { revert(0, 0) }
+            contractCodeHash := extcodehash(moduleAddress)
         }
     }
 
