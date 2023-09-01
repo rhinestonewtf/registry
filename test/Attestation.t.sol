@@ -36,8 +36,6 @@ contract AttestationTest is BaseTest {
     {
         attestationUid1 = testCreateAttestation();
 
-        console2.logBytes32(attestationUid1);
-
         AttestationRequestData memory chainedAttestation = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),

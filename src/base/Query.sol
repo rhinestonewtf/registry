@@ -12,38 +12,10 @@ import "forge-std/console2.sol";
 /// @title RSRegistry
 /// @author zeroknots
 /// @notice The global attestation registry.
-abstract contract Query is IQuery, Attestation {
-    constructor(
-        Yaho _yaho,
-        Yaru _yaru,
-        address _l1registry,
-        string memory name,
-        string memory version
-    )
-        Attestation(_yaho, _yaru, _l1registry, name, version)
-    { }
-
-    function checkID(
-        address module,
-        address authority
-    )
-        public
-        returns (uint48 listedAt, uint48 revokedAt)
-    {
-        AttestationRecord storage attestation = _getAttestation(module, authority);
-
-        bytes32 slot1;
-        bytes32 slot2 = _getAttestationID(module, authority);
-        assembly {
-            slot1 := attestation.slot
-        }
-
-        require(slot1 == slot2, "slot mismatch");
-    }
+abstract contract Query is IQuery {
     /**
      * @inheritdoc IQuery
      */
-
     function check(
         address module,
         address authority
@@ -52,7 +24,8 @@ abstract contract Query is IQuery, Attestation {
         view
         returns (uint48 listedAt, uint48 revokedAt)
     {
-        AttestationRecord storage attestation = _getAttestation(module, authority);
+        bytes32 uid = _getAttestation(module, authority);
+        AttestationRecord storage attestation = _getAttestation(uid);
 
         listedAt = attestation.expirationTime < block.timestamp ? attestation.time : 0;
         revokedAt = attestation.revocationTime;
@@ -124,7 +97,8 @@ abstract contract Query is IQuery, Attestation {
         view
         returns (AttestationRecord memory attestation)
     {
-        attestation = _getAttestation(module, authority);
+        bytes32 attestionId = _getAttestation(module, authority);
+        attestation = _getAttestation(attestionId);
     }
 
     /**
@@ -154,4 +128,19 @@ abstract contract Query is IQuery, Attestation {
         if (attestation.time != 0) revert Attestation.InvalidAttestation();
         if (refUID != EMPTY_UID) _verifyAttestation(refUID); // @TODO security issue?
     }
+
+    function _getAttestation(
+        address module,
+        address authority
+    )
+        internal
+        view
+        virtual
+        returns (bytes32);
+
+    function _getAttestation(bytes32 attestationId)
+        internal
+        view
+        virtual
+        returns (AttestationRecord storage);
 }
