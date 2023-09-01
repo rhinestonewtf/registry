@@ -491,14 +491,19 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 revert Irrevocable();
             }
 
-            // Ensure that attestation is for module that was registered.
-            if (_getModule(request.subject).implementation == address(0)) {
-                revert InvalidAttestation();
-            }
+            // Block scope to avoid stack too deep
+            {
+                ModuleRecord memory moduleRecord = _getModule(request.subject);
 
-            // Ensure that attestation for a module is using the modules schemaId
-            if (_getModule(request.subject).schemaUID != schemaUID) {
-                revert InvalidAttestation();
+                // Ensure that attestation is for module that was registered.
+                if (moduleRecord.implementation == address(0)) {
+                    revert InvalidAttestation();
+                }
+
+                // Ensure that attestation for a module is using the modules schemaId
+                if (moduleRecord.schemaUID != schemaUID) {
+                    revert InvalidAttestation();
+                }
             }
 
             AttestationRecord memory attestation = AttestationRecord({
