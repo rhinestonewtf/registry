@@ -12,9 +12,9 @@ import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
  *
  * @author zeroknots.eth
  *
- * @dev The Schema contract serves as a crucial component of a broader system for managing "schemas" within a
- * blockchain ecosystem. It provides functionality to register, retrieve and manage schemas. This contract is a
- * concrete implementation of the ISchema interface.
+ * @dev The Schema contract serves as a crucial component that allows the registry to be maximally flexible.
+ * It provides functionality to register, retrieve and manage schemas. This contract is a concrete implementation of
+ * the ISchema interface.
  *
  * @dev A schema in this context is a defined structure that represents a record for a submitted schema,
  * encompassing its unique identifier (UID), resolver (optional), revocability status, specification, owner's address,
@@ -30,9 +30,6 @@ import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
  *
  * @dev Furthermore, the Schema contract introduces access control by ensuring that certain operations such as setting
  * bridges and resolvers can only be performed by the owner of the schema.
- *
- * @dev In summary, the Schema contract is an integral part of a larger system, providing the functionality to register,
- * retrieve, and manage schemas in a controlled and structured manner.
  */
 abstract contract Schema is ISchema {
     // The version of the contract.

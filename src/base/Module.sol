@@ -12,13 +12,9 @@ import { AttestationRecord, ModuleRecord } from "../Common.sol";
 /**
  * @title Module
  *
- * @dev The Module contract serves as a component in a larger system for handling smart contracts or "modules"
- * within a blockchain ecosystem. This contract inherits from the IModule interface and the Schema contract,
- * providing the actual implementation for the interface and extending the functionality of the Schema contract.
- *
- * @dev The primary responsibility of the Module is to deploy and manage modules. A module is a smart contract
- * that has been deployed through the Module. The details of each module, such as its address, code hash, schema ID,
- * sender address, deploy parameters hash, and additional data are stored in a struct and mapped to the module's address in
+ * @dev The primary responsibility of the Module contract is to deploy and manage modules. A module is a smart contract
+ * that extends the functionality of a smart account. The details of each module, such as its address, code hash, schema ID,
+ * deployer address, deploy parameters hash, and additional data are stored in a struct and mapped to the module's address in
  * the `_modules` mapping for easy access and management.
  *
  * @dev The `deploy` function is used to deploy a new module. The code of the module, parameters for deployment (constructor arguments),
@@ -26,13 +22,9 @@ import { AttestationRecord, ModuleRecord } from "../Common.sol";
  * all passed as arguments to this function. This function first checks if the provided schema ID is valid and then deploys the contract.
  * Once the contract is successfully deployed, the details are stored in the `_modules` mapping and a `Deployment` event is emitted.
  *
- * @dev Furthermore, the Module contract utilizes the Ethereum `CREATE2` opcode in its `_deploy` function for deploying
- * contracts. This opcode allows creating a contract with a deterministic address, which is calculated in the `_calcAddress` function.
- * This approach provides flexibility and advanced patterns in contract interactions, like the ability to show a contract’s address
- * before it is mined.
- *
- * @dev In conclusion, the Module is a central part of a system to manage, deploy, and interact with a set of smart contracts
- * in a structured and controlled manner.
+ * @dev Furthermore, the Module contract utilizes the `CREATE2` opcode in its `_deploy` function for deploying contracts. This opcode
+ * allows creating a contract with a deterministic address, which is calculated in the `_calcAddress` function. This approach provides
+ * flexibility and advanced patterns in contract interactions, like the ability to show a contract’s address before it is mined.
  */
 abstract contract Module is IModule {
     mapping(address moduleAddress => ModuleRecord) internal _modules;
