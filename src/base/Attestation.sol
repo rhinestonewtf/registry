@@ -25,7 +25,7 @@ struct AttestationsResult {
 }
 
 /**
- * @title Module
+ * @title Attestation
  *
  * @author zeroknots
  */
@@ -34,11 +34,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     using Address for address payable;
     using ModuleDeploymentLib for address;
 
-    mapping(bytes32 uid => AttestationRecord attestation)
-        internal _attestations;
-    mapping(address module => mapping(address authority => bytes32 attestationId))
+    mapping(address module => mapping(address authority => AttestationRecord attestation))
         internal _moduleToAuthorityToAttestations;
 
+    // mapping(bytes32 uid => AttestationRecord attestation) internal _attestations;
     // Instance of Hashi's Yaho contract.
     Yaho public yaho;
     // Instance of Hashi's Yaru contract.
@@ -252,9 +251,9 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         messageIds = new bytes32[](length);
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
-            AttestationRecord memory attestationRecord = _attestations[
+            AttestationRecord memory attestationRecord = _getAttestation(
                 attestationIds[i]
-            ];
+            );
             _resolvePropagation(attestationRecord, to, toChainId, moduleOnL2);
             if (attestationRecord.uid == EMPTY_UID) {
                 revert InvalidAttestation();
@@ -286,9 +285,9 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         address moduleOnL2
     ) public returns (Message[] memory messages, bytes32[] memory messageIds) {
         // Get the attestation record for the contract and the authority.
-        AttestationRecord memory attestationRecord = _attestations[
+        AttestationRecord memory attestationRecord = _getAttestation(
             attestationId
-        ];
+        );
         bytes32 codeHash = attestationRecord.subject.codeHash();
 
         _resolvePropagation(attestationRecord, to, toChainId, moduleOnL2);
@@ -340,24 +339,23 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         // check if refUID exists on this L2 registry
         if (attestation.refUID != EMPTY_UID) {
             // check if refUID exists on this L2 registry
-            if (_attestations[attestation.refUID].uid == EMPTY_UID) {
+            if (_getAttestation(attestation.refUID).uid == EMPTY_UID) {
                 revert InvalidAttestationRefUID(attestation.refUID);
             }
         }
 
         // check if attestationId already exists on this L2 registry
-        AttestationRecord storage existingRecord = _attestations[
+        AttestationRecord storage existingRecord = _getAttestation(
             attestation.uid
-        ];
+        );
         if (existingRecord.revocationTime != 0) revert InvalidAttestation();
         // can not propagate attestations that were commited natively after the original attestation was created
         if (existingRecord.time > attestation.time) revert InvalidAttestation();
 
         // Store the attestation
-        _attestations[attestation.uid] = attestation;
         _moduleToAuthorityToAttestations[attestation.subject][
             attestation.attester
-        ] = attestation.uid;
+        ] = attestation;
         // Emit an event for the attestation
         emit Attested(
             attestation.subject,
@@ -556,12 +554,13 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             });
 
             // Look for the first non-existing UID (and use a bump seed/nonce in the rare case of a conflict).
-            bytes32 uid = _newUID(attestation);
+            bytes32 uid = _getAttestationID(request.subject, attester);
             attestation.uid = uid;
 
             // saving into contract storage
-            _attestations[uid] = attestation;
-            _moduleToAuthorityToAttestations[request.subject][attester] = uid;
+            _moduleToAuthorityToAttestations[request.subject][
+                attester
+            ] = attestation;
 
             if (request.refUID != 0) {
                 // Ensure that we aren't trying to attest to a non-existing referenced UID.
@@ -623,7 +622,9 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         for (uint256 i; i < length; i = uncheckedInc(i)) {
             RevocationRequestData memory request = data[i];
 
-            AttestationRecord storage attestation = _attestations[request.uid];
+            AttestationRecord storage attestation = _getAttestation(
+                request.uid
+            );
 
             // Ensure that we aren't attempting to revoke a non-existing attestation.
             if (attestation.uid == EMPTY_UID) {
@@ -830,7 +831,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         uint256 bump;
         while (true) {
             uid = _getUID(attestation, bump);
-            if (_attestations[uid].uid == EMPTY_UID) {
+            if (_getAttestation(uid).uid == EMPTY_UID) {
                 return uid;
             }
 
@@ -966,7 +967,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     }
 
     function isAttestationValid(bytes32 uid) public view returns (bool) {
-        return _attestations[uid].uid != 0;
+        return _getAttestation(uid).uid != 0;
     }
 
     // Modifier that checks the validity of the caller and sender.
@@ -1022,7 +1023,32 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     function _getAttestation(
         address module,
         address authority
-    ) internal view virtual returns (bytes32) {
+    ) internal view virtual returns (AttestationRecord storage) {
         return _moduleToAuthorityToAttestations[module][authority];
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                              Attestation ID 
+    //////////////////////////////////////////////////////////////*/
+
+    function _getAttestationID(
+        address module,
+        address attester
+    ) internal view returns (bytes32 id) {
+        AttestationRecord storage attestation = _getAttestation(
+            module,
+            attester
+        );
+        assembly {
+            id := attestation.slot
+        }
+    }
+
+    function _getAttestation(
+        bytes32 id
+    ) internal pure returns (AttestationRecord storage attestation) {
+        assembly {
+            attestation.slot := id
+        }
     }
 }
