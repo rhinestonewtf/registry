@@ -37,7 +37,7 @@ contract ValueResolverTest is BaseTest {
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
             schema: schema,
             data: attData,
-            signature: signature,
+            signature: abi.encode(signature),
             attester: vm.addr(auth1k)
         });
 

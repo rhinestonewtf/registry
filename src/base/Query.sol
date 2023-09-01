@@ -63,7 +63,7 @@ abstract contract Query is IQuery, Attestation {
      */
     function verify(
         address module,
-        address[] memory authorities,
+        address[] calldata authorities,
         uint256 threshold
     )
         external
@@ -132,23 +132,25 @@ abstract contract Query is IQuery, Attestation {
      */
     function findAttestation(
         address module,
-        address[] memory authority
+        address[] memory authorities
     )
         external
         view
         returns (AttestationRecord[] memory attestations)
     {
-        uint256 length = authority.length;
+        uint256 length = authorities.length;
         attestations = new AttestationRecord[](length);
         for (uint256 i; i < length; uncheckedInc(i)) {
-            attestations[i] = findAttestation(module, authority[i]);
+            attestations[i] = findAttestation(module, authorities[i]);
         }
     }
 
     function _verifyAttestation(bytes32 attestationId) internal view {
         AttestationRecord storage attestation = _getAttestation(attestationId);
         bytes32 refUID = attestation.refUID;
-        if (attestation.revocationTime != 0) revert RevokedAttestation(attestationId);
+        if (attestation.revocationTime != 0) {
+            revert RevokedAttestation(attestationId);
+        }
         if (attestation.time != 0) revert Attestation.InvalidAttestation();
         if (refUID != EMPTY_UID) _verifyAttestation(refUID); // @TODO security issue?
     }
