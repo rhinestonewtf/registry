@@ -118,16 +118,6 @@ abstract contract Query is IQuery {
         }
     }
 
-    function _verifyAttestation(bytes32 attestationId) internal view {
-        AttestationRecord storage attestation = _getAttestation(attestationId);
-        bytes32 refUID = attestation.refUID;
-        if (attestation.revocationTime != 0) {
-            revert RevokedAttestation(attestationId);
-        }
-        if (attestation.time != 0) revert Attestation.InvalidAttestation();
-        if (refUID != EMPTY_UID) _verifyAttestation(refUID); // @TODO security issue?
-    }
-
     function _getAttestation(
         address module,
         address authority
