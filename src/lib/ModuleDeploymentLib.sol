@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
+
 // A library that provides functions related to registry operations.
 // @author zeroknots
 
@@ -25,7 +26,8 @@ library ModuleDeploymentLib {
     function deploy(
         bytes memory createCode,
         bytes memory params,
-        uint256 salt
+        uint256 salt,
+        uint256 value
     )
         internal
         returns (address moduleAddress, bytes32 initCodeHash, bytes32 contractCodeHash)
@@ -36,7 +38,7 @@ library ModuleDeploymentLib {
         initCodeHash = keccak256(initCode);
 
         assembly {
-            moduleAddress := create2(0, add(initCode, 0x20), mload(initCode), salt)
+            moduleAddress := create2(value, add(initCode, 0x20), mload(initCode), salt)
             // If the contract was not created successfully, the transaction is reverted.
             if iszero(extcodesize(moduleAddress)) { revert(0, 0) }
             contractCodeHash := extcodehash(moduleAddress)

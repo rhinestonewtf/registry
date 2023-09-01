@@ -25,6 +25,7 @@ interface IModule {
         bytes32 schemaId
     )
         external
+        payable
         returns (address moduleAddr);
 
     // function register(bytes32 schemaId, address moduleAddress, bytes calldata data) external;
