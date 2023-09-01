@@ -840,24 +840,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     }
 
     /**
-     * @notice Converts an array of bytes32 to an array of uint256
-     *
-     * @dev Iterates over the input array and converts each bytes32 to uint256
-     *
-     * @param array The array of bytes32 to convert
-     *
-     * @return array2 The converted array of uint256
-     */
-    function _toUint256Array(bytes32[] memory array) internal pure returns (uint256[] memory) {
-        uint256 length = array.length;
-        uint256[] memory array2 = new uint256[](length);
-        for (uint256 i; i < length; ++i) {
-            array2[i] = uint256(array[i]);
-        }
-        return array2;
-    }
-
-    /**
      * @dev Refunds remaining ETH amount to the attester.
      *
      * @param remainingValue The remaining ETH amount that was not sent to the resolver.
@@ -943,13 +925,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             bool valid = resolver.propagation(attestation, msg.sender, to, toChainId, moduleOnL2);
             if (valid) return valid;
             else revert InvalidPropagation();
-        }
-    }
-
-    function _enforceOnlySchemaOwner(bytes32 schemaUID) internal view {
-        address schemaOwner = getSchema(schemaUID).schemaOwner;
-        if (schemaOwner != msg.sender) {
-            revert AccessDenied();
         }
     }
 
