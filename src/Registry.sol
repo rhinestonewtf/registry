@@ -33,13 +33,13 @@ contract Registry is Schema, Query, Attestation, Module {
         return super.getBridges(uid);
     }
 
-    function getSchema(bytes32 uid)
+    function getSchema(bytes32 schemaUID)
         public
         view
         override(Attestation, Module, Schema)
         returns (SchemaRecord memory)
     {
-        return super.getSchema(uid);
+        return super.getSchema(schemaUID);
     }
 
     function _getAttestation(

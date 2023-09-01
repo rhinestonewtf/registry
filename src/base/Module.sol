@@ -50,14 +50,14 @@ abstract contract Module is IModule {
         bytes calldata deployParams,
         uint256 salt,
         bytes calldata data,
-        bytes32 schemaId
+        bytes32 schemaUID
     )
         external
         returns (address moduleAddr)
     {
-        // Check if the provided schemaId exists
-        SchemaRecord memory schema = getSchema(schemaId);
-        if (schemaId != schema.uid) revert InvalidSchema();
+        // Check if the provided schemaUID exists
+        SchemaRecord memory schema = getSchema(schemaUID);
+        if (schemaUID != schema.uid) revert InvalidSchema();
 
         bytes32 contractCodeHash; //  Hash of contract bytecode
         bytes32 deployParamsHash; // Hash of contract deployment parameters
@@ -71,10 +71,10 @@ abstract contract Module is IModule {
     // this function might be removed in the future.
     // could be a security risk
     // TODO
-    function register(bytes32 schemaId, address moduleAddress, bytes calldata data) external {
-        // Check if the provided schemaId exists
-        SchemaRecord memory schema = getSchema(schemaId);
-        if (schemaId != schema.uid) revert InvalidSchema();
+    function register(bytes32 schemaUID, address moduleAddress, bytes calldata data) external {
+        // Check if the provided schemaUID exists
+        SchemaRecord memory schema = getSchema(schemaUID);
+        if (schemaUID != schema.uid) revert InvalidSchema();
 
         // get codehash of depoyed contract
         bytes32 contractCodeHash = moduleAddress.codeHash();
@@ -85,7 +85,7 @@ abstract contract Module is IModule {
 
     function _register(
         address moduleAddress,
-        address sender,
+        address deployer,
         SchemaRecord memory schema,
         bytes32 codeHash,
         bytes32 deployParamsHash,
@@ -102,8 +102,8 @@ abstract contract Module is IModule {
             implementation: moduleAddress,
             codeHash: codeHash,
             deployParamsHash: deployParamsHash,
-            schemaId: schema.uid,
-            sender: sender,
+            schemaUID: schema.uid,
+            deployer: deployer,
             data: data
         });
 
@@ -119,10 +119,12 @@ abstract contract Module is IModule {
         private
     {
         if (address(resolver) == address(0)) return;
-        if (resolver.moduleRegistration(moduleRegistration) == false) revert InvalidDeployment();
+        if (resolver.moduleRegistration(moduleRegistration) == false) {
+            revert InvalidDeployment();
+        }
     }
 
-    function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory);
+    function getSchema(bytes32 schemaUID) public view virtual returns (SchemaRecord memory);
 
     function _getModule(address moduleAddress)
         internal

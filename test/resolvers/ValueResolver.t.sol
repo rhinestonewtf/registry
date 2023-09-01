@@ -15,11 +15,11 @@ contract ValueResolverTest is BaseTest {
     }
 
     function testValueResolver() public {
-        bytes32 schema =
+        bytes32 schemaUID =
             instancel1.registerSchema("TokenizedResolver", ISchemaResolver(address(resolver)), true);
 
         address module = instancel1.deployAndRegister(
-            schema, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")
+            schemaUID, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")
         );
 
         AttestationRequestData memory attData = AttestationRequestData({
@@ -33,9 +33,9 @@ contract ValueResolverTest is BaseTest {
         });
 
         EIP712Signature memory signature =
-            RegistryTestLib.signAttestation(instancel1, schema, auth1k, attData);
+            RegistryTestLib.signAttestation(instancel1, schemaUID, auth1k, attData);
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
-            schema: schema,
+            schemaUID: schemaUID,
             data: attData,
             signature: abi.encode(signature),
             attester: vm.addr(auth1k)

@@ -92,19 +92,19 @@ abstract contract EIP712Verifier is EIP712 {
 
     function getAttestationDigest(
         AttestationRequestData memory attData,
-        bytes32 schemaUid,
+        bytes32 schemaUID,
         uint256 nonce
     )
         public
         view
         returns (bytes32 digest)
     {
-        digest = _attestationDigest(attData, schemaUid, nonce);
+        digest = _attestationDigest(attData, schemaUID, nonce);
     }
 
     function getAttestationDigest(
         AttestationRequestData memory attData,
-        bytes32 schemaUid,
+        bytes32 schemaUID,
         address attester
     )
         public
@@ -112,12 +112,12 @@ abstract contract EIP712Verifier is EIP712 {
         returns (bytes32 digest)
     {
         uint256 nonce = getNonce(attester) + 1;
-        digest = _attestationDigest(attData, schemaUid, nonce);
+        digest = _attestationDigest(attData, schemaUID, nonce);
     }
 
     function _attestationDigest(
         AttestationRequestData memory data,
-        bytes32 schemaUid,
+        bytes32 schemaUID,
         uint256 nonce
     )
         private
@@ -128,7 +128,7 @@ abstract contract EIP712Verifier is EIP712 {
             keccak256(
                 abi.encode(
                     ATTEST_TYPEHASH,
-                    schemaUid,
+                    schemaUID,
                     data.subject,
                     data.expirationTime,
                     data.revocable,
@@ -149,7 +149,7 @@ abstract contract EIP712Verifier is EIP712 {
         AttestationRequestData memory data = request.data;
 
         uint256 nonce = _newNonce(request.attester);
-        bytes32 digest = _attestationDigest(data, request.schema, nonce);
+        bytes32 digest = _attestationDigest(data, request.schemaUID, nonce);
         _verifySignature(digest, request.signature, request.attester);
     }
 
@@ -161,7 +161,7 @@ abstract contract EIP712Verifier is EIP712 {
 
     function getRevocationDigest(
         RevocationRequestData memory revData,
-        bytes32 schemaUid,
+        bytes32 schemaUID,
         address revoker
     )
         public
@@ -169,11 +169,11 @@ abstract contract EIP712Verifier is EIP712 {
         returns (bytes32 digest)
     {
         uint256 nonce = getNonce(revoker) + 1;
-        digest = _revocationDigest(schemaUid, revData.uid, nonce);
+        digest = _revocationDigest(schemaUID, revData.uid, nonce);
     }
 
     function _revocationDigest(
-        bytes32 schemaUid,
+        bytes32 schemaUID,
         bytes32 revocationId,
         uint256 nonce
     )
@@ -182,7 +182,7 @@ abstract contract EIP712Verifier is EIP712 {
         returns (bytes32 digest)
     {
         digest =
-            _hashTypedDataV4(keccak256(abi.encode(REVOKE_TYPEHASH, schemaUid, revocationId, nonce)));
+            _hashTypedDataV4(keccak256(abi.encode(REVOKE_TYPEHASH, schemaUID, revocationId, nonce)));
     }
 
     /**
@@ -194,7 +194,7 @@ abstract contract EIP712Verifier is EIP712 {
         RevocationRequestData memory data = request.data;
 
         uint256 nonce = _newNonce(request.revoker);
-        bytes32 digest = _revocationDigest(request.schema, data.uid, nonce);
+        bytes32 digest = _revocationDigest(request.schemaUID, data.uid, nonce);
         _verifySignature(digest, request.signature, request.revoker);
     }
 

@@ -20,22 +20,22 @@ contract AttestationPropagationL2Test is AttestationTest {
     }
 
     function testPropagateWithHashi() public {
-        bytes32 schemaId =
+        bytes32 schemaUID =
             instancel1.registerSchema("Propagation Test", ISchemaResolver(address(0)), true);
-        bytes32 schemaId2 =
+        bytes32 schemaUID2 =
             instancel2.registerSchema("Propagation Test", ISchemaResolver(address(0)), true);
 
-        assertEq(schemaId, schemaId2);
+        assertEq(schemaUID, schemaUID2);
 
         bytes memory bytecode = type(MockModuleWithArgs).creationCode;
         address moduleAddr = instancel1.deployAndRegister({
-            schemaId: schemaId,
+            schemaUID: schemaUID,
             bytecode: bytecode,
             constructorArgs: abi.encode(313_131_123)
         });
-        attestationUid1 = instancel1.mockAttestation(schemaId, auth1k, moduleAddr);
+        attestationUid1 = instancel1.mockAttestation(schemaUID, auth1k, moduleAddr);
 
-        instancel2.registry.register({ schemaId: schemaId2, moduleAddress: moduleAddr, data: "" });
+        instancel2.registry.register({ schemaUID: schemaUID2, moduleAddress: moduleAddr, data: "" });
         (Message[] memory messages, bytes32[] memory messageIdsBytes32) = instancel1
             .registry
             .propagateAttest({
@@ -63,25 +63,25 @@ contract AttestationPropagationL2Test is AttestationTest {
     }
 
     function testPropagateMultipleAttestations() public {
-        bytes32 schemaId =
+        bytes32 schemaUID =
             instancel1.registerSchema("Propagation Test", ISchemaResolver(address(0)), true);
-        bytes32 schemaId2 =
+        bytes32 schemaUID2 =
             instancel2.registerSchema("Propagation Test", ISchemaResolver(address(0)), true);
 
-        assertEq(schemaId, schemaId2);
+        assertEq(schemaUID, schemaUID2);
 
         bytes memory bytecode = type(MockModuleWithArgs).creationCode;
         address moduleAddr = instancel1.deployAndRegister({
-            schemaId: schemaId,
+            schemaUID: schemaUID,
             bytecode: bytecode,
             constructorArgs: abi.encode(313_131_123)
         });
-        attestationUid1 = instancel1.mockAttestation(schemaId, auth1k, moduleAddr);
-        bytes32 attestation2 = instancel1.mockAttestation(schemaId, 1, moduleAddr);
-        bytes32 attestation3 = instancel1.mockAttestation(schemaId, 2, moduleAddr);
-        bytes32 attestation4 = instancel1.mockAttestation(schemaId, 3, moduleAddr);
+        attestationUid1 = instancel1.mockAttestation(schemaUID, auth1k, moduleAddr);
+        bytes32 attestation2 = instancel1.mockAttestation(schemaUID, 1, moduleAddr);
+        bytes32 attestation3 = instancel1.mockAttestation(schemaUID, 2, moduleAddr);
+        bytes32 attestation4 = instancel1.mockAttestation(schemaUID, 3, moduleAddr);
 
-        instancel2.registry.register({ schemaId: schemaId2, moduleAddress: moduleAddr, data: "" });
+        instancel2.registry.register({ schemaUID: schemaUID2, moduleAddress: moduleAddr, data: "" });
 
         bytes32[] memory attestationIds = new bytes32[](4);
         attestationIds[0] = attestationUid1;

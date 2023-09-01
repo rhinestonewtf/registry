@@ -102,7 +102,7 @@ contract AttestationTest is BaseTest {
         EIP712Signature memory sig = EIP712Signature({ v: 27, r: "", s: "" });
 
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
-            schema: defaultSchema1,
+            schemaUID: defaultSchema1,
             data: attData,
             signature: abi.encode(sig),
             attester: address(attester)
@@ -136,7 +136,9 @@ contract AttestationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](
+            2
+        );
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -149,7 +151,7 @@ contract AttestationTest is BaseTest {
 
         MultiDelegatedAttestationRequest[] memory reqs = new MultiDelegatedAttestationRequest[](1);
         MultiDelegatedAttestationRequest memory req1 = MultiDelegatedAttestationRequest({
-            schema: defaultSchema1,
+            schemaUID: defaultSchema1,
             data: attArray,
             attester: vm.addr(auth1k),
             signatures: sigsBytes

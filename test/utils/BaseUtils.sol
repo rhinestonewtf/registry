@@ -52,7 +52,7 @@ struct HashiEnv {
 library RegistryTestLib {
     function mockAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        bytes32 schemaUID,
         uint256 attesterKey,
         address moduleAddr
     )
@@ -68,21 +68,22 @@ library RegistryTestLib {
             data: abi.encode(true),
             value: 0
         });
-        return newAttestation(instance, schemaId, attesterKey, attData);
+        return newAttestation(instance, schemaUID, attesterKey, attData);
     }
 
     function newAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        bytes32 schemaUID,
         uint256 attesterKey,
         AttestationRequestData memory attData
     )
         public
         returns (bytes32 attestationUid)
     {
-        EIP712Signature memory signature = signAttestation(instance, schemaId, attesterKey, attData);
+        EIP712Signature memory signature =
+            signAttestation(instance, schemaUID, attesterKey, attData);
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
-            schema: schemaId,
+            schemaUID: schemaUID,
             data: attData,
             signature: abi.encode(signature),
             attester: getAddr(attesterKey)
@@ -93,7 +94,7 @@ library RegistryTestLib {
 
     function signAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        bytes32 schemaUID,
         uint256 attesterPk,
         AttestationRequestData memory attData
     )
@@ -104,7 +105,7 @@ library RegistryTestLib {
         uint256 nonce = instance.registry.getNonce(getAddr(attesterPk)) + 1;
         bytes32 digest = instance.registry.getAttestationDigest({
             attData: attData,
-            schemaUid: schemaId,
+            schemaUID: schemaUID,
             nonce: nonce
         });
 
@@ -114,7 +115,7 @@ library RegistryTestLib {
 
     function signAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        bytes32 schemaUID,
         uint256 attesterPk,
         AttestationRequestData[] memory attData
     )
@@ -129,7 +130,7 @@ library RegistryTestLib {
         for (uint256 i = 0; i < attData.length; i++) {
             bytes32 digest = instance.registry.getAttestationDigest({
                 attData: attData[i],
-                schemaUid: schemaId,
+                schemaUID: schemaUID,
                 nonce: nonce + i
             });
 
@@ -141,7 +142,7 @@ library RegistryTestLib {
     function revokeAttestation(
         RegistryInstance memory instance,
         bytes32 attestationUid,
-        bytes32 schemaId,
+        bytes32 schemaUID,
         uint256 attesterPk
     )
         public
@@ -150,13 +151,13 @@ library RegistryTestLib {
             RevocationRequestData({ uid: attestationUid, value: 0 });
 
         bytes32 digest =
-            instance.registry.getRevocationDigest(revoke, schemaId, getAddr(attesterPk));
+            instance.registry.getRevocationDigest(revoke, schemaUID, getAddr(attesterPk));
 
         (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
         EIP712Signature memory signature = EIP712Signature({ v: v, r: r, s: s });
 
         DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
-            schema: schemaId,
+            schemaUID: schemaUID,
             data: revoke,
             signature: abi.encode(signature),
             revoker: getAddr(attesterPk)
@@ -171,14 +172,14 @@ library RegistryTestLib {
         bool revocable
     )
         internal
-        returns (bytes32 schemaId)
+        returns (bytes32 schemaUID)
     {
         return instance.registry.registerSchema(abiString, resolver, revocable);
     }
 
     function deployAndRegister(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        bytes32 schemaUID,
         bytes memory bytecode,
         bytes memory constructorArgs
     )
@@ -190,7 +191,7 @@ library RegistryTestLib {
             deployParams: constructorArgs,
             salt: 0,
             data: "",
-            schemaId: schemaId
+            schemaUID: schemaUID
         });
     }
 }
@@ -243,13 +244,7 @@ contract RegistryTestTools {
     {
         RegistryInstance memory instance;
 
-        Registry registry = new Registry(
-            yaho,
-            yaru,
-            l1Registry,
-            name,
-            "0.0.1"
-        );
+        Registry registry = new Registry(yaho, yaru, l1Registry, name, "0.0.1");
 
         instance = RegistryInstance(registry, name, yaho, yaru);
         return instance;

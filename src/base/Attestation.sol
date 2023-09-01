@@ -89,7 +89,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         );
         requests[0] = request.data;
 
-        return _attest(request.schema, requests, msg.sender, msg.value, true).uids[0];
+        return _attest(request.schemaUID, requests, msg.sender, msg.value, true).uids[0];
     }
 
     function multiAttest(MultiAttestationRequest[] calldata multiRequests)
@@ -114,7 +114,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             // Process the current batch of attestations.
             MultiAttestationRequest calldata multiRequest = multiRequests[i];
             AttestationsResult memory res =
-                _attest(multiRequest.schema, multiRequest.data, msg.sender, availableValue, last);
+                _attest(multiRequest.schemaUID, multiRequest.data, msg.sender, availableValue, last);
 
             // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
             availableValue -= res.usedValue;
@@ -143,7 +143,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         AttestationRequestData[] memory data = new AttestationRequestData[](1);
         data[0] = delegatedRequest.data;
 
-        return _attest(delegatedRequest.schema, data, delegatedRequest.attester, msg.value, true)
+        return _attest(delegatedRequest.schemaUID, data, delegatedRequest.attester, msg.value, true)
             .uids[0];
     }
 
@@ -191,7 +191,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             for (uint256 j; j < dataLength; j = uncheckedInc(j)) {
                 _verifyAttest(
                     DelegatedAttestationRequest({
-                        schema: multiDelegatedRequest.schema,
+                        schemaUID: multiDelegatedRequest.schemaUID,
                         data: data[j],
                         signature: multiDelegatedRequest.signatures[j],
                         attester: multiDelegatedRequest.attester
@@ -201,7 +201,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
             // Process the current batch of attestations.
             AttestationsResult memory res = _attest(
-                multiDelegatedRequest.schema,
+                multiDelegatedRequest.schemaUID,
                 data,
                 multiDelegatedRequest.attester,
                 availableValue,
@@ -311,7 +311,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         }
 
         // check if schemaId exists on this L2 registry
-        if (getSchema(attestation.schema).uid == EMPTY_UID) {
+        if (getSchema(attestation.schemaUID).uid == EMPTY_UID) {
             revert WrongSchema();
         }
 
@@ -335,7 +335,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             attestation.uid;
         // Emit an event for the attestation
         emit Attested(
-            attestation.subject, attestation.attester, attestation.uid, attestation.schema
+            attestation.subject, attestation.attester, attestation.uid, attestation.schemaUID
         );
     }
 
@@ -345,7 +345,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         );
         requests[0] = request.data;
 
-        _revoke(request.schema, requests, msg.sender, msg.value, true);
+        _revoke(request.schemaUID, requests, msg.sender, msg.value, true);
     }
 
     function multiRevoke(MultiRevocationRequest[] calldata multiRequests) external payable {
@@ -368,7 +368,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
             // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
             availableValue -=
-                _revoke(multiRequest.schema, multiRequest.data, msg.sender, availableValue, last);
+                _revoke(multiRequest.schemaUID, multiRequest.data, msg.sender, availableValue, last);
         }
     }
 
@@ -381,7 +381,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         RevocationRequestData[] memory data = new RevocationRequestData[](1);
         data[0] = request.data;
 
-        _revoke(request.schema, data, request.revoker, msg.value, true);
+        _revoke(request.schemaUID, data, request.revoker, msg.value, true);
     }
 
     /**
@@ -420,7 +420,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             for (uint256 j; j < dataLength; j = uncheckedInc(j)) {
                 _verifyRevoke(
                     DelegatedRevocationRequest({
-                        schema: multiDelegatedRequest.schema,
+                        schemaUID: multiDelegatedRequest.schemaUID,
                         data: data[j],
                         signature: multiDelegatedRequest.signatures[j],
                         revoker: multiDelegatedRequest.revoker
@@ -430,7 +430,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
             // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
             availableValue -= _revoke(
-                multiDelegatedRequest.schema,
+                multiDelegatedRequest.schemaUID,
                 data,
                 multiDelegatedRequest.revoker,
                 availableValue,
@@ -497,13 +497,13 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             }
 
             // Ensure that attestation for a module is using the modules schemaId
-            if (_getModule(request.subject).schemaId != schemaUID) {
+            if (_getModule(request.subject).schemaUID != schemaUID) {
                 revert InvalidAttestation();
             }
 
             AttestationRecord memory attestation = AttestationRecord({
                 uid: EMPTY_UID,
-                schema: schemaUID,
+                schemaUID: schemaUID,
                 refUID: request.refUID,
                 time: timeNow,
                 expirationTime: request.expirationTime,
@@ -547,7 +547,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     /**
      * @dev Revokes an existing attestation to a specific schema.
      *
-     * @param schema The unique identifier of the schema that was used to attest.
+     * @param schemaUID The unique identifier of the schema that was used to attest.
      * @param data The arguments of the revocation requests.
      * @param revoker The revoking account.
      * @param availableValue The total available ETH amount that can be sent to the resolver.
@@ -556,7 +556,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
      * @return Returns the total sent ETH amount.
      */
     function _revoke(
-        bytes32 schema,
+        bytes32 schemaUID,
         RevocationRequestData[] memory data,
         address revoker,
         uint256 availableValue,
@@ -566,7 +566,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         returns (uint256)
     {
         // Ensure that a non-existing schema ID wasn't passed by accident.
-        SchemaRecord memory schemaRecord = getSchema(schema);
+        SchemaRecord memory schemaRecord = getSchema(schemaUID);
         if (schemaRecord.uid == EMPTY_UID) {
             revert InvalidSchema();
         }
@@ -588,7 +588,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             }
 
             // Ensure that a wrong schema ID wasn't passed by accident.
-            if (attestation.schema != schema) {
+            if (attestation.schemaUID != schemaUID) {
                 revert InvalidSchema();
             }
 
@@ -613,7 +613,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             attestations[i] = attestation;
             values[i] = request.value;
 
-            emit Revoked(attestation.subject, revoker, request.uid, attestation.schema);
+            emit Revoked(attestation.subject, revoker, request.uid, attestation.schemaUID);
         }
 
         return _resolveAttestations(schemaRecord, attestations, values, true, availableValue, last);
@@ -779,7 +779,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
      * @inheritdoc IAttestation
      */
     function predictAttestationUID(
-        bytes32 schema,
+        bytes32 schemaUID,
         address attester,
         AttestationRequestData memory request
     )
@@ -789,7 +789,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     {
         AttestationRecord memory attestation = AttestationRecord({
             uid: EMPTY_UID,
-            schema: schema,
+            schemaUID: schemaUID,
             refUID: request.refUID,
             time: _time(),
             expirationTime: request.expirationTime,
@@ -821,7 +821,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     {
         return keccak256(
             abi.encodePacked(
-                attestation.schema,
+                attestation.schemaUID,
                 attestation.subject,
                 attestation.attester,
                 // attestation.time, <-- makes UIDs unpredictable. is removing this a security issue?
@@ -933,7 +933,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         private
         returns (bool)
     {
-        ISchemaResolver resolver = getSchema(attestation.schema).resolver;
+        ISchemaResolver resolver = getSchema(attestation.schemaUID).resolver;
         if (address(resolver) != address(0)) {
             bool valid = resolver.propagation(attestation, msg.sender, to, toChainId, moduleOnL2);
             if (valid) return valid;
@@ -941,8 +941,8 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         }
     }
 
-    function _enforceOnlySchemaOwner(bytes32 schema) internal view {
-        address schemaOwner = getSchema(schema).schemaOwner;
+    function _enforceOnlySchemaOwner(bytes32 schemaUID) internal view {
+        address schemaOwner = getSchema(schemaUID).schemaOwner;
         if (schemaOwner != msg.sender) {
             revert AccessDenied();
         }
