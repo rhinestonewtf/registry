@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import "../eip712/EIP712Verifier.sol";
 import "../interface/IAttestation.sol";
 import "./Schema.sol";
 import "./Module.sol";
 
-import {ModuleDeploymentLib} from "../lib/ModuleDeploymentLib.sol";
+import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
 
 // Hashi's contract to dispatch messages to L2
 import "hashi/Yaho.sol";
@@ -15,7 +15,9 @@ import "hashi/Yaho.sol";
 // Hashi's contract to receive messages from L1
 import "hashi/Yaru.sol";
 
-import {AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc} from "../Common.sol";
+import {
+    AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
+} from "../Common.sol";
 
 import "forge-std/console2.sol";
 
@@ -34,10 +36,9 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     using Address for address payable;
     using ModuleDeploymentLib for address;
 
-    mapping(bytes32 uid => AttestationRecord attestation)
-        internal _attestations;
-    mapping(address module => mapping(address authority => bytes32 attestationId))
-        internal _moduleToAuthorityToAttestations;
+    mapping(bytes32 uid => AttestationRecord attestation) internal _attestations;
+    mapping(address module => mapping(address authority => bytes32 attestationId)) internal
+        _moduleToAuthorityToAttestations;
 
     // Instance of Hashi's Yaho contract.
     Yaho public yaho;
@@ -53,10 +54,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     error InsufficientValue();
     error InvalidAttestation();
     error InvalidAttestationRefUID(bytes32 missingRefUID);
-    error IncompatibleAttestation(
-        bytes32 sourceCodeHash,
-        bytes32 targetCodeHash
-    );
+    error IncompatibleAttestation(bytes32 sourceCodeHash, bytes32 targetCodeHash);
     error InvalidPropagation();
     error InvalidAttestations();
     error InvalidExpirationTime();
@@ -77,29 +75,28 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         address _l1Registry,
         string memory name,
         string memory version
-    ) EIP712Verifier(name, version) {
+    )
+        EIP712Verifier(name, version)
+    {
         yaho = _yaho;
         yaru = _yaru;
         l1Registry = _l1Registry;
     }
 
-    function attest(
-        AttestationRequest calldata request
-    ) external payable returns (bytes32) {
+    function attest(AttestationRequest calldata request) external payable returns (bytes32) {
         AttestationRequestData[] memory requests = new AttestationRequestData[](
             1
         );
         requests[0] = request.data;
 
-        return
-            _attest(request.schema, requests, msg.sender, msg.value, true).uids[
-                0
-            ];
+        return _attest(request.schema, requests, msg.sender, msg.value, true).uids[0];
     }
 
-    function multiAttest(
-        MultiAttestationRequest[] calldata multiRequests
-    ) external payable returns (bytes32[] memory) {
+    function multiAttest(MultiAttestationRequest[] calldata multiRequests)
+        external
+        payable
+        returns (bytes32[] memory)
+    {
         uint256 length = multiRequests.length;
         // Since a multi-attest call is going to make multiple attestations for multiple schemas, we'd need to collect
         // all the returned UIDs into a single list.
@@ -116,13 +113,8 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
             // Process the current batch of attestations.
             MultiAttestationRequest calldata multiRequest = multiRequests[i];
-            AttestationsResult memory res = _attest(
-                multiRequest.schema,
-                multiRequest.data,
-                msg.sender,
-                availableValue,
-                last
-            );
+            AttestationsResult memory res =
+                _attest(multiRequest.schema, multiRequest.data, msg.sender, availableValue, last);
 
             // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
             availableValue -= res.usedValue;
@@ -141,30 +133,28 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     /**
      * @inheritdoc IAttestation
      */
-    function attest(
-        DelegatedAttestationRequest calldata delegatedRequest
-    ) external payable returns (bytes32 attestationId) {
+    function attest(DelegatedAttestationRequest calldata delegatedRequest)
+        external
+        payable
+        returns (bytes32 attestationId)
+    {
         _verifyAttest(delegatedRequest);
 
         AttestationRequestData[] memory data = new AttestationRequestData[](1);
         data[0] = delegatedRequest.data;
 
-        return
-            _attest(
-                delegatedRequest.schema,
-                data,
-                delegatedRequest.attester,
-                msg.value,
-                true
-            ).uids[0];
+        return _attest(delegatedRequest.schema, data, delegatedRequest.attester, msg.value, true)
+            .uids[0];
     }
 
     /**
      * @inheritdoc IAttestation
      */
-    function multiAttest(
-        MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests
-    ) external payable returns (bytes32[] memory attestationIds) {
+    function multiAttest(MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests)
+        external
+        payable
+        returns (bytes32[] memory attestationIds)
+    {
         uint256 length = multiDelegatedRequests.length;
 
         // Since a multi-attest call is going to make multiple attestations for multiple schemas, we'd need to collect
@@ -187,16 +177,13 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 last = i == length - 1;
             }
 
-            MultiDelegatedAttestationRequest
-                calldata multiDelegatedRequest = multiDelegatedRequests[i];
+            MultiDelegatedAttestationRequest calldata multiDelegatedRequest =
+                multiDelegatedRequests[i];
             AttestationRequestData[] calldata data = multiDelegatedRequest.data;
             uint256 dataLength = data.length;
 
             // Ensure that no inputs are missing.
-            if (
-                dataLength == 0 ||
-                dataLength != multiDelegatedRequest.signatures.length
-            ) {
+            if (dataLength == 0 || dataLength != multiDelegatedRequest.signatures.length) {
                 revert InvalidLength();
             }
 
@@ -252,9 +239,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         messageIds = new bytes32[](length);
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
-            AttestationRecord memory attestationRecord = _attestations[
-                attestationIds[i]
-            ];
+            AttestationRecord memory attestationRecord = _attestations[attestationIds[i]];
             _resolvePropagation(attestationRecord, to, toChainId, moduleOnL2);
             if (attestationRecord.uid == EMPTY_UID) {
                 revert InvalidAttestation();
@@ -267,11 +252,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 moduleOnL2
             );
             // Prepare the message for dispatch.
-            messages[i] = Message({
-                to: to,
-                toChainId: toChainId,
-                data: callData
-            });
+            messages[i] = Message({ to: to, toChainId: toChainId, data: callData });
         }
         messageIds = yaho.dispatchMessages(messages);
     }
@@ -284,11 +265,12 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         uint256 toChainId,
         bytes32 attestationId,
         address moduleOnL2
-    ) public returns (Message[] memory messages, bytes32[] memory messageIds) {
+    )
+        public
+        returns (Message[] memory messages, bytes32[] memory messageIds)
+    {
         // Get the attestation record for the contract and the authority.
-        AttestationRecord memory attestationRecord = _attestations[
-            attestationId
-        ];
+        AttestationRecord memory attestationRecord = _attestations[attestationId];
         bytes32 codeHash = attestationRecord.subject.codeHash();
 
         _resolvePropagation(attestationRecord, to, toChainId, moduleOnL2);
@@ -299,19 +281,12 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
         // Encode the attestation record into a data payload.
         bytes memory callReceiveFnOnL2 = abi.encodeWithSelector(
-            this.attestByPropagation.selector,
-            attestationRecord,
-            codeHash,
-            moduleOnL2
+            this.attestByPropagation.selector, attestationRecord, codeHash, moduleOnL2
         );
 
         // Prepare the message for dispatch.
         messages = new Message[](1);
-        messages[0] = Message({
-            to: to,
-            toChainId: toChainId,
-            data: callReceiveFnOnL2
-        });
+        messages[0] = Message({ to: to, toChainId: toChainId, data: callReceiveFnOnL2 });
 
         messageIds = new bytes32[](1);
         // Dispatch message to selected L2
@@ -325,7 +300,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         AttestationRecord calldata attestation,
         bytes32 codeHash,
         address moduleAddress
-    ) external onlyHashi {
+    )
+        external
+        onlyHashi
+    {
         // Check if the code hash from sending chain matches the hash of the module address
         // if codeHash does not match, the attestation is invalid
         if (codeHash != moduleAddress.codeHash()) {
@@ -346,24 +324,18 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         }
 
         // check if attestationId already exists on this L2 registry
-        AttestationRecord storage existingRecord = _attestations[
-            attestation.uid
-        ];
+        AttestationRecord storage existingRecord = _attestations[attestation.uid];
         if (existingRecord.revocationTime != 0) revert InvalidAttestation();
         // can not propagate attestations that were commited natively after the original attestation was created
         if (existingRecord.time > attestation.time) revert InvalidAttestation();
 
         // Store the attestation
         _attestations[attestation.uid] = attestation;
-        _moduleToAuthorityToAttestations[attestation.subject][
-            attestation.attester
-        ] = attestation.uid;
+        _moduleToAuthorityToAttestations[attestation.subject][attestation.attester] =
+            attestation.uid;
         // Emit an event for the attestation
         emit Attested(
-            attestation.subject,
-            attestation.attester,
-            attestation.uid,
-            attestation.schema
+            attestation.subject, attestation.attester, attestation.uid, attestation.schema
         );
     }
 
@@ -376,9 +348,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         _revoke(request.schema, requests, msg.sender, msg.value, true);
     }
 
-    function multiRevoke(
-        MultiRevocationRequest[] calldata multiRequests
-    ) external payable {
+    function multiRevoke(MultiRevocationRequest[] calldata multiRequests) external payable {
         // We are keeping track of the total available ETH amount that can be sent to resolvers and will keep deducting
         // from it to verify that there isn't any attempt to send too much ETH to resolvers. Please note that unless
         // some ETH was stuck in the contract by accident (which shouldn't happen in normal conditions), it won't be
@@ -397,22 +367,15 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             MultiRevocationRequest calldata multiRequest = multiRequests[i];
 
             // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
-            availableValue -= _revoke(
-                multiRequest.schema,
-                multiRequest.data,
-                msg.sender,
-                availableValue,
-                last
-            );
+            availableValue -=
+                _revoke(multiRequest.schema, multiRequest.data, msg.sender, availableValue, last);
         }
     }
 
     /**
      * @inheritdoc IAttestation
      */
-    function revoke(
-        DelegatedRevocationRequest calldata request
-    ) external payable {
+    function revoke(DelegatedRevocationRequest calldata request) external payable {
         _verifyRevoke(request);
 
         RevocationRequestData[] memory data = new RevocationRequestData[](1);
@@ -424,9 +387,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     /**
      * @inheritdoc IAttestation
      */
-    function multiRevoke(
-        MultiDelegatedRevocationRequest[] calldata multiDelegatedRequests
-    ) external payable {
+    function multiRevoke(MultiDelegatedRevocationRequest[] calldata multiDelegatedRequests)
+        external
+        payable
+    {
         // We are keeping track of the total available ETH amount that can be sent to resolvers and will keep deducting
         // from it to verify that there isn't any attempt to send too much ETH to resolvers. Please note that unless
         // some ETH was stuck in the contract by accident (which shouldn't happen in normal conditions), it won't be
@@ -443,16 +407,12 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 last = i == length - 1;
             }
 
-            MultiDelegatedRevocationRequest
-                memory multiDelegatedRequest = multiDelegatedRequests[i];
+            MultiDelegatedRevocationRequest memory multiDelegatedRequest = multiDelegatedRequests[i];
             RevocationRequestData[] memory data = multiDelegatedRequest.data;
             uint256 dataLength = data.length;
 
             // Ensure that no inputs are missing.
-            if (
-                dataLength == 0 ||
-                dataLength != multiDelegatedRequest.signatures.length
-            ) {
+            if (dataLength == 0 || dataLength != multiDelegatedRequest.signatures.length) {
                 revert InvalidLength();
             }
 
@@ -496,7 +456,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         address attester,
         uint256 availableValue,
         bool last
-    ) private returns (AttestationsResult memory res) {
+    )
+        private
+        returns (AttestationsResult memory res)
+    {
         uint256 length = data.length;
 
         res.uids = new bytes32[](length);
@@ -519,10 +482,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             AttestationRequestData memory request = data[i];
 
             // Ensure that either no expiration time was set or that it was set in the future.
-            if (
-                request.expirationTime != NO_EXPIRATION_TIME &&
-                request.expirationTime <= timeNow
-            ) {
+            if (request.expirationTime != NO_EXPIRATION_TIME && request.expirationTime <= timeNow) {
                 revert InvalidExpirationTime();
             }
 
@@ -578,14 +538,8 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             emit Attested(request.subject, attester, uid, schemaUID);
         }
 
-        res.usedValue = _resolveAttestations(
-            schemaRecord,
-            attestations,
-            values,
-            false,
-            availableValue,
-            last
-        );
+        res.usedValue =
+            _resolveAttestations(schemaRecord, attestations, values, false, availableValue, last);
 
         return res;
     }
@@ -607,7 +561,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         address revoker,
         uint256 availableValue,
         bool last
-    ) private returns (uint256) {
+    )
+        private
+        returns (uint256)
+    {
         // Ensure that a non-existing schema ID wasn't passed by accident.
         SchemaRecord memory schemaRecord = getSchema(schema);
         if (schemaRecord.uid == EMPTY_UID) {
@@ -656,23 +613,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             attestations[i] = attestation;
             values[i] = request.value;
 
-            emit Revoked(
-                attestation.subject,
-                revoker,
-                request.uid,
-                attestation.schema
-            );
+            emit Revoked(attestation.subject, revoker, request.uid, attestation.schema);
         }
 
-        return
-            _resolveAttestations(
-                schemaRecord,
-                attestations,
-                values,
-                true,
-                availableValue,
-                last
-            );
+        return _resolveAttestations(schemaRecord, attestations, values, true, availableValue, last);
     }
 
     /**
@@ -694,7 +638,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         bool isRevocation,
         uint256 availableValue,
         bool last
-    ) private returns (uint256) {
+    )
+        private
+        returns (uint256)
+    {
         ISchemaResolver resolver = schemaRecord.resolver;
         if (address(resolver) == address(0)) {
             // Ensure that we don't accept payments if there is no resolver.
@@ -721,10 +668,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         }
 
         if (isRevocation) {
-            if (!resolver.revoke{value: value}(attestation)) {
+            if (!resolver.revoke{ value: value }(attestation)) {
                 revert InvalidRevocation();
             }
-        } else if (!resolver.attest{value: value}(attestation)) {
+        } else if (!resolver.attest{ value: value }(attestation)) {
             revert InvalidAttestation();
         }
 
@@ -754,18 +701,15 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         bool isRevocation,
         uint256 availableValue,
         bool last
-    ) private returns (uint256) {
+    )
+        private
+        returns (uint256)
+    {
         uint256 length = attestations.length;
         if (length == 1) {
-            return
-                _resolveAttestation(
-                    schemaRecord,
-                    attestations[0],
-                    values[0],
-                    isRevocation,
-                    availableValue,
-                    last
-                );
+            return _resolveAttestation(
+                schemaRecord, attestations[0], values[0], isRevocation, availableValue, last
+            );
         }
 
         ISchemaResolver resolver = schemaRecord.resolver;
@@ -803,17 +747,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         }
 
         if (isRevocation) {
-            if (
-                !resolver.multiRevoke{value: totalUsedValue}(
-                    attestations,
-                    values
-                )
-            ) {
+            if (!resolver.multiRevoke{ value: totalUsedValue }(attestations, values)) {
                 revert InvalidRevocations();
             }
-        } else if (
-            !resolver.multiAttest{value: totalUsedValue}(attestations, values)
-        ) {
+        } else if (!resolver.multiAttest{ value: totalUsedValue }(attestations, values)) {
             revert InvalidAttestations();
         }
 
@@ -824,9 +761,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         return totalUsedValue;
     }
 
-    function _newUID(
-        AttestationRecord memory attestation
-    ) private view returns (bytes32 uid) {
+    function _newUID(AttestationRecord memory attestation) private view returns (bytes32 uid) {
         uint256 bump;
         while (true) {
             uid = _getUID(attestation, bump);
@@ -847,7 +782,11 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         bytes32 schema,
         address attester,
         AttestationRequestData memory request
-    ) external view returns (bytes32 uid) {
+    )
+        external
+        view
+        returns (bytes32 uid)
+    {
         AttestationRecord memory attestation = AttestationRecord({
             uid: EMPTY_UID,
             schema: schema,
@@ -875,21 +814,24 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     function _getUID(
         AttestationRecord memory attestation,
         uint256 bump
-    ) private pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    attestation.schema,
-                    attestation.subject,
-                    attestation.attester,
-                    // attestation.time, <-- makes UIDs unpredictable. is removing this a security issue?
-                    attestation.expirationTime,
-                    attestation.revocable,
-                    attestation.refUID,
-                    attestation.data,
-                    bump
-                )
-            );
+    )
+        private
+        pure
+        returns (bytes32)
+    {
+        return keccak256(
+            abi.encodePacked(
+                attestation.schema,
+                attestation.subject,
+                attestation.attester,
+                // attestation.time, <-- makes UIDs unpredictable. is removing this a security issue?
+                attestation.expirationTime,
+                attestation.revocable,
+                attestation.refUID,
+                attestation.data,
+                bump
+            )
+        );
     }
 
     /**
@@ -901,9 +843,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
      *
      * @return array2 The converted array of uint256
      */
-    function _toUint256Array(
-        bytes32[] memory array
-    ) internal pure returns (uint256[] memory) {
+    function _toUint256Array(bytes32[] memory array) internal pure returns (uint256[] memory) {
         uint256 length = array.length;
         uint256[] memory array2 = new uint256[](length);
         for (uint256 i; i < length; ++i) {
@@ -945,7 +885,11 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     function _mergeUIDs(
         bytes32[][] memory uidLists,
         uint256 uidsCount
-    ) private pure returns (bytes32[] memory) {
+    )
+        private
+        pure
+        returns (bytes32[] memory)
+    {
         bytes32[] memory uids = new bytes32[](uidsCount);
 
         uint256 currentIndex = 0;
@@ -985,16 +929,13 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         address to,
         uint256 toChainId,
         address moduleOnL2
-    ) private returns (bool) {
+    )
+        private
+        returns (bool)
+    {
         ISchemaResolver resolver = getSchema(attestation.schema).resolver;
         if (address(resolver) != address(0)) {
-            bool valid = resolver.propagation(
-                attestation,
-                msg.sender,
-                to,
-                toChainId,
-                moduleOnL2
-            );
+            bool valid = resolver.propagation(attestation, msg.sender, to, toChainId, moduleOnL2);
             if (valid) return valid;
             else revert InvalidPropagation();
         }
@@ -1007,22 +948,25 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         }
     }
 
-    function getSchema(
-        bytes32 uid
-    ) public view virtual returns (SchemaRecord memory);
+    function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory);
 
-    function getBridges(
-        bytes32 uid
-    ) public view virtual returns (address[] memory);
+    function getBridges(bytes32 uid) public view virtual returns (address[] memory);
 
-    function _getModule(
-        address moduleAddress
-    ) internal view virtual returns (ModuleRecord storage);
+    function _getModule(address moduleAddress)
+        internal
+        view
+        virtual
+        returns (ModuleRecord storage);
 
     function _getAttestation(
         address module,
         address authority
-    ) internal view virtual returns (bytes32) {
+    )
+        internal
+        view
+        virtual
+        returns (bytes32)
+    {
         return _moduleToAuthorityToAttestations[module][authority];
     }
 }

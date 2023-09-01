@@ -29,27 +29,21 @@ contract MockRegistry is IQuery {
         external
         view
         override
-        returns (bool verified)
     {
-        return true;
+        return;
     }
 
-    function verifyWithRevert(bytes32 attestationId)
-        external
-        view
-        override
-        returns (bool verified)
-    { }
-
-    function verifyWithRevert(
-        bytes32[] memory attestationIds,
+    function verifyUnsafe(
+        address module,
+        address[] memory authorities,
         uint256 threshold
     )
         external
         view
         override
-        returns (bool verified)
-    { }
+    {
+        return;
+    }
 
     function findAttestation(
         address module,

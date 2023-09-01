@@ -2,6 +2,7 @@
 pragma solidity ^0.8.19;
 
 import { AttestationRecord } from "../Common.sol";
+
 /**
  * Query interface allows for the verification of attestations
  * with potential for reversion in case of invalid attestation.
@@ -11,6 +12,9 @@ import { AttestationRecord } from "../Common.sol";
 
 interface IQuery {
     error RevokedAttestation(bytes32 attestationId);
+    error AttestationNotFound();
+    error InsufficientAttestations();
+
     /**
      * Verify an attestation associated with a given module and authority.
      *
@@ -30,11 +34,12 @@ interface IQuery {
 
     /**
      * Verify a set of attestations associated with a given module and a list of authorities.
+     * @dev Will revert if threshold is not met.
+     * @dev Will revert if any of the attestations have been revoked (even if threshold is met)!
      *
      * @param module The address of the module to verify
      * @param authorities The list of authorities issuing the attestations
      * @param threshold The minimum number of valid attestations required
-     * @return verified True if the number of valid attestations is at least the threshold
      */
     function verify(
         address module,
@@ -42,31 +47,24 @@ interface IQuery {
         uint256 threshold
     )
         external
-        view
-        returns (bool verified);
+        view;
 
     /**
-     * Verify an attestation using its id. Revert if the attestation is invalid.
+     * Verify a set of attestations associated with a given module and a list of authorities.
+     * @dev Will revert if threshold is not met.
+     * @dev Will NOT revert if any of the attestations have been revoked.
      *
-     * @param attestationId The id of the attestation to verify
-     * @return verified True if the attestation is valid
-     */
-    function verifyWithRevert(bytes32 attestationId) external view returns (bool verified);
-
-    /**
-     * Verify a set of attestations using their ids. Revert if any attestation is invalid.
-     *
-     * @param attestationIds The ids of the attestations to verify
+     * @param module The address of the module to verify
+     * @param authorities The list of authorities issuing the attestations
      * @param threshold The minimum number of valid attestations required
-     * @return verified True if the number of valid attestations is at least the threshold
      */
-    function verifyWithRevert(
-        bytes32[] memory attestationIds,
+    function verifyUnsafe(
+        address module,
+        address[] memory authorities,
         uint256 threshold
     )
         external
-        view
-        returns (bool verified);
+        view;
 
     /**
      * Find an attestation associated with a given module and authority.
