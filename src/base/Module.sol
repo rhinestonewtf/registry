@@ -53,6 +53,7 @@ abstract contract Module is IModule {
         bytes32 schemaId
     )
         external
+        payable
         returns (address moduleAddr)
     {
         // Check if the provided schemaId exists
@@ -61,7 +62,8 @@ abstract contract Module is IModule {
 
         bytes32 contractCodeHash; //  Hash of contract bytecode
         bytes32 deployParamsHash; // Hash of contract deployment parameters
-        (moduleAddr, deployParamsHash, contractCodeHash) = code.deploy(deployParams, salt);
+        (moduleAddr, deployParamsHash, contractCodeHash) =
+            code.deploy(deployParams, salt, msg.value);
 
         _register(moduleAddr, msg.sender, schema, contractCodeHash, deployParamsHash, data);
 
@@ -119,7 +121,9 @@ abstract contract Module is IModule {
         private
     {
         if (address(resolver) == address(0)) return;
-        if (resolver.moduleRegistration(moduleRegistration) == false) revert InvalidDeployment();
+        if (resolver.moduleRegistration(moduleRegistration) == false) {
+            revert InvalidDeployment();
+        }
     }
 
     function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory);
