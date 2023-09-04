@@ -29,6 +29,8 @@ abstract contract Query is IQuery {
 
         listedAt = attestation.expirationTime < block.timestamp ? attestation.time : 0;
         revokedAt = attestation.revocationTime;
+        if (listedAt == 0) revert AttestationNotFound();
+        if (revokedAt != 0) revert RevokedAttestation(uid);
     }
 
     /**
@@ -41,49 +43,46 @@ abstract contract Query is IQuery {
     )
         external
         view
-        returns (bool verified)
     {
-        uint256 length = authorities.length;
-        if (length < threshold || threshold == 0) threshold = length;
+        uint256 authoritiesLength = authorities.length;
+        if (authoritiesLength < threshold || threshold == 0) {
+            threshold = authoritiesLength;
+        }
 
-        for (uint256 i; i < length; uncheckedInc(i)) {
-            if (threshold == 0) return true;
+        for (uint256 i; i < authoritiesLength; uncheckedInc(i)) {
+            if (threshold == 0) return;
             (uint256 listedAt, uint256 revokedAt) = check(module, authorities[i]);
-            if (revokedAt != 0) return false;
+            if (revokedAt != 0) revert RevokedAttestation("tbd");
             if (listedAt == NO_EXPIRATION_TIME) continue;
             --threshold;
         }
-        return false;
+        revert InsufficientAttestations();
     }
 
     /**
      * @inheritdoc IQuery
      */
-    function verifyWithRevert(bytes32 attestationId) public view returns (bool verified) {
-        _verifyAttestation(attestationId);
-        verified = true;
-    }
-
-    /**
-     * @inheritdoc IQuery
-     */
-    function verifyWithRevert(
-        bytes32[] memory attestationIds,
+    function verifyUnsafe(
+        address module,
+        address[] calldata authorities,
         uint256 threshold
     )
         external
         view
-        returns (bool verified)
     {
-        uint256 length = attestationIds.length;
-        if (length < threshold || threshold == 0) threshold = length;
+        uint256 authoritiesLength = authorities.length;
+        if (authoritiesLength < threshold || threshold == 0) {
+            threshold = authoritiesLength;
+        }
 
-        for (uint256 i; i < length; uncheckedInc(i)) {
-            if (threshold == 0) return true;
-            verifyWithRevert(attestationIds[i]);
+        for (uint256 i; i < authoritiesLength; uncheckedInc(i)) {
+            if (threshold == 0) return;
+            (uint256 listedAt, uint256 revokedAt) = check(module, authorities[i]);
+            if (revokedAt != 0) continue;
+            if (listedAt == NO_EXPIRATION_TIME) continue;
             --threshold;
         }
-        return false;
+        revert InsufficientAttestations();
     }
 
     /**
@@ -117,16 +116,6 @@ abstract contract Query is IQuery {
         for (uint256 i; i < length; uncheckedInc(i)) {
             attestations[i] = findAttestation(module, authorities[i]);
         }
-    }
-
-    function _verifyAttestation(bytes32 attestationId) internal view {
-        AttestationRecord storage attestation = _getAttestation(attestationId);
-        bytes32 refUID = attestation.refUID;
-        if (attestation.revocationTime != 0) {
-            revert RevokedAttestation(attestationId);
-        }
-        if (attestation.time != 0) revert Attestation.InvalidAttestation();
-        if (refUID != EMPTY_UID) _verifyAttestation(refUID); // @TODO security issue?
     }
 
     function _getAttestation(
