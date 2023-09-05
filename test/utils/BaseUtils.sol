@@ -71,6 +71,18 @@ library RegistryTestLib {
         return newAttestation(instance, schemaId, attesterKey, attData);
     }
 
+    function mockAttestation(
+        RegistryInstance memory instance,
+        bytes32 schemaId,
+        uint256 attesterKey,
+        AttestationRequestData memory attData
+    )
+        public
+        returns (bytes32 attestationUid)
+    {
+        return newAttestation(instance, schemaId, attesterKey, attData);
+    }
+
     function newAttestation(
         RegistryInstance memory instance,
         bytes32 schemaId,
@@ -243,13 +255,7 @@ contract RegistryTestTools {
     {
         RegistryInstance memory instance;
 
-        Registry registry = new Registry(
-            yaho,
-            yaru,
-            l1Registry,
-            name,
-            "0.0.1"
-        );
+        Registry registry = new Registry(yaho, yaru, l1Registry, name, "0.0.1");
 
         instance = RegistryInstance(registry, name, yaho, yaru);
         return instance;

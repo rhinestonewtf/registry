@@ -24,13 +24,14 @@ abstract contract Query is IQuery {
         view
         returns (uint48 listedAt, uint48 revokedAt)
     {
-        bytes32 uid = _getAttestation(module, authority);
-        AttestationRecord storage attestation = _getAttestation(uid);
+        AttestationRecord storage attestation = _findAttestation(module, authority);
 
-        listedAt = attestation.expirationTime < block.timestamp ? attestation.time : 0;
-        revokedAt = attestation.revocationTime;
+        uint48 expirationTime = attestation.expirationTime;
+        listedAt = expirationTime != 0 && expirationTime < block.timestamp ? 0 : attestation.time;
         if (listedAt == 0) revert AttestationNotFound();
-        if (revokedAt != 0) revert RevokedAttestation(uid);
+
+        revokedAt = attestation.revocationTime;
+        if (revokedAt != 0) revert RevokedAttestation(attestation.uid);
     }
 
     /**
@@ -49,13 +50,25 @@ abstract contract Query is IQuery {
             threshold = authoritiesLength;
         }
 
-        for (uint256 i; i < authoritiesLength; uncheckedInc(i)) {
-            if (threshold == 0) return;
-            (uint256 listedAt, uint256 revokedAt) = check(module, authorities[i]);
-            if (revokedAt != 0) revert RevokedAttestation("tbd");
-            if (listedAt == NO_EXPIRATION_TIME) continue;
-            --threshold;
+        uint256 timeNow = block.timestamp;
+
+        for (uint256 i; i < authoritiesLength; i = uncheckedInc(i)) {
+            AttestationRecord storage attestation = _findAttestation(module, authorities[i]);
+
+            if (attestation.revocationTime != 0) {
+                revert RevokedAttestation(attestation.uid);
+            }
+
+            uint48 expirationTime = attestation.expirationTime;
+            if (expirationTime != 0 && expirationTime < timeNow) {
+                revert AttestationNotFound();
+            }
+
+            if (attestation.time == 0) continue;
+
+            if (threshold != 0) --threshold;
         }
+        if (threshold == 0) return;
         revert InsufficientAttestations();
     }
 
@@ -75,14 +88,33 @@ abstract contract Query is IQuery {
             threshold = authoritiesLength;
         }
 
-        for (uint256 i; i < authoritiesLength; uncheckedInc(i)) {
+        uint256 timeNow = block.timestamp;
+
+        for (uint256 i; i < authoritiesLength; i = uncheckedInc(i)) {
             if (threshold == 0) return;
-            (uint256 listedAt, uint256 revokedAt) = check(module, authorities[i]);
-            if (revokedAt != 0) continue;
-            if (listedAt == NO_EXPIRATION_TIME) continue;
+            AttestationRecord storage attestation = _findAttestation(module, authorities[i]);
+
+            if (attestation.revocationTime != 0) continue;
+
+            uint48 expirationTime = attestation.expirationTime;
+            uint48 listedAt = expirationTime != 0 && expirationTime < timeNow ? 0 : attestation.time;
+            if (listedAt == 0) continue;
+
             --threshold;
         }
         revert InsufficientAttestations();
+    }
+
+    function _findAttestation(
+        address module,
+        address authority
+    )
+        internal
+        view
+        returns (AttestationRecord storage attestation)
+    {
+        bytes32 attestionId = _getAttestation(module, authority);
+        attestation = _getAttestation(attestionId);
     }
 
     /**
@@ -111,9 +143,9 @@ abstract contract Query is IQuery {
         view
         returns (AttestationRecord[] memory attestations)
     {
-        uint256 length = authorities.length;
-        attestations = new AttestationRecord[](length);
-        for (uint256 i; i < length; uncheckedInc(i)) {
+        uint256 authoritiesLength = authorities.length;
+        attestations = new AttestationRecord[](authoritiesLength);
+        for (uint256 i; i < authoritiesLength; i = uncheckedInc(i)) {
             attestations[i] = findAttestation(module, authorities[i]);
         }
     }
