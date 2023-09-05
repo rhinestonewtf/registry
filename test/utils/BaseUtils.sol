@@ -62,7 +62,6 @@ library RegistryTestLib {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: moduleAddr,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
@@ -167,13 +166,12 @@ library RegistryTestLib {
     function registerSchema(
         RegistryInstance memory instance,
         string memory abiString,
-        ISchemaResolver resolver,
-        bool revocable
+        ISchemaResolver resolver
     )
         internal
         returns (bytes32 schemaId)
     {
-        return instance.registry.registerSchema(abiString, resolver, revocable);
+        return instance.registry.registerSchema(abiString, resolver);
     }
 
     function deployAndRegister(
@@ -243,13 +241,7 @@ contract RegistryTestTools {
     {
         RegistryInstance memory instance;
 
-        Registry registry = new Registry(
-            yaho,
-            yaru,
-            l1Registry,
-            name,
-            "0.0.1"
-        );
+        Registry registry = new Registry(yaho, yaru, l1Registry, name, "0.0.1");
 
         instance = RegistryInstance(registry, name, yaho, yaru);
         return instance;

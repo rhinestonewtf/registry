@@ -63,7 +63,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     error InvalidRevocation();
     error InvalidRevocations();
     error InvalidVerifier();
-    error Irrevocable();
     error NotPayable();
     error WrongSchema();
     error InvalidSender(address moduleAddr, address sender); // Emitted when the sender address is invalid.
@@ -486,11 +485,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 revert InvalidExpirationTime();
             }
 
-            // Ensure that we aren't trying to make a revocable attestation for a non-revocable schema.
-            if (!schemaRecord.revocable && request.revocable) {
-                revert Irrevocable();
-            }
-
             // Ensure that attestation is for module that was registered.
             if (_getModule(request.subject).implementation == address(0)) {
                 revert InvalidAttestation();
@@ -510,7 +504,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 revocationTime: 0,
                 subject: request.subject,
                 attester: attester,
-                revocable: request.revocable,
                 propagateable: request.propagateable,
                 data: request.data
             });
@@ -595,12 +588,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             // Allow only original attesters to revoke their attestations.
             if (attestation.attester != revoker) {
                 revert AccessDenied();
-            }
-
-            // Please note that also checking whether the schema itself is revocable is unnecessary, since it's not possible to
-            // make revocable attestations to an irrevocable schema.
-            if (!attestation.revocable) {
-                revert Irrevocable();
             }
 
             // Ensure that we aren't trying to revoke the same attestation twice.
@@ -796,7 +783,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             revocationTime: 0,
             subject: request.subject,
             attester: attester,
-            revocable: request.revocable,
             propagateable: request.propagateable,
             data: request.data
         });
@@ -826,7 +812,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 attestation.attester,
                 // attestation.time, <-- makes UIDs unpredictable. is removing this a security issue?
                 attestation.expirationTime,
-                attestation.revocable,
                 attestation.refUID,
                 attestation.data,
                 bump

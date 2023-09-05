@@ -131,7 +131,6 @@ abstract contract EIP712Verifier is EIP712 {
                     schemaUid,
                     data.subject,
                     data.expirationTime,
-                    data.revocable,
                     data.refUID,
                     keccak256(data.data),
                     nonce
