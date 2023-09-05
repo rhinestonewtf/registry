@@ -24,7 +24,7 @@ abstract contract Query is IQuery {
         view
         returns (uint48 listedAt, uint48 revokedAt)
     {
-        AttestationRecord memory attestation = findAttestation(module, authority);
+        AttestationRecord storage attestation = _findAttestation(module, authority);
 
         uint48 expirationTime = attestation.expirationTime;
         listedAt = expirationTime != 0 && expirationTime < block.timestamp ? 0 : attestation.time;
@@ -52,8 +52,8 @@ abstract contract Query is IQuery {
 
         uint256 timeNow = block.timestamp;
 
-        for (uint256 i; i < authoritiesLength; ++i) {
-            AttestationRecord memory attestation = findAttestation(module, authorities[i]);
+        for (uint256 i; i < authoritiesLength; i = uncheckedInc(i)) {
+            AttestationRecord storage attestation = _findAttestation(module, authorities[i]);
 
             if (attestation.revocationTime != 0) {
                 revert RevokedAttestation(attestation.uid);
@@ -90,8 +90,9 @@ abstract contract Query is IQuery {
 
         uint256 timeNow = block.timestamp;
 
-        for (uint256 i; i < authoritiesLength; ++i) {
-            AttestationRecord memory attestation = findAttestation(module, authorities[i]);
+        for (uint256 i; i < authoritiesLength; i = uncheckedInc(i)) {
+            if (threshold == 0) return;
+            AttestationRecord storage attestation = _findAttestation(module, authorities[i]);
 
             if (attestation.revocationTime != 0) continue;
 
@@ -99,10 +100,21 @@ abstract contract Query is IQuery {
             uint48 listedAt = expirationTime != 0 && expirationTime < timeNow ? 0 : attestation.time;
             if (listedAt == 0) continue;
 
-            if (threshold != 0) --threshold;
+            --threshold;
         }
-        if (threshold == 0) return;
         revert InsufficientAttestations();
+    }
+
+    function _findAttestation(
+        address module,
+        address authority
+    )
+        internal
+        view
+        returns (AttestationRecord storage attestation)
+    {
+        bytes32 attestionId = _getAttestation(module, authority);
+        attestation = _getAttestation(attestionId);
     }
 
     /**
@@ -131,9 +143,9 @@ abstract contract Query is IQuery {
         view
         returns (AttestationRecord[] memory attestations)
     {
-        uint256 length = authorities.length;
-        attestations = new AttestationRecord[](length);
-        for (uint256 i; i < length; uncheckedInc(i)) {
+        uint256 authoritiesLength = authorities.length;
+        attestations = new AttestationRecord[](authoritiesLength);
+        for (uint256 i; i < authoritiesLength; i = uncheckedInc(i)) {
             attestations[i] = findAttestation(module, authorities[i]);
         }
     }
