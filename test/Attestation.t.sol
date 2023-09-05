@@ -39,7 +39,6 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory chainedAttestation = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: attestationUid1, //  <-- here is the reference
             data: abi.encode(true),
@@ -55,7 +54,6 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory referencingOtherModule = AttestationRequestData({
             subject: defaultModule2, // <-- here is the reference of the wrong module
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: attestationUid1, //  <-- here is the reference
             data: abi.encode(true),
@@ -92,7 +90,6 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
@@ -119,7 +116,6 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData1 = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
@@ -129,14 +125,15 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData2 = AttestationRequestData({
             subject: anotherModule,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](
+            2
+        );
         attArray[0] = attData1;
         attArray[1] = attData2;
 
