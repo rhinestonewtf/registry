@@ -16,7 +16,7 @@ contract ModuleTest is BaseTest {
     }
 
     function testDeployWithArgs() public returns (bytes32 schemaUID, address moduleAddr) {
-        schemaUID = instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)), true);
+        schemaUID = instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)));
 
         bytes memory bytecode = type(MockModuleWithArgs).creationCode;
         moduleAddr = instancel1.deployAndRegister({
@@ -27,7 +27,7 @@ contract ModuleTest is BaseTest {
     }
 
     function testDeployNoArgs() public returns (bytes32 schemaUID, address moduleAddr) {
-        schemaUID = instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)), true);
+        schemaUID = instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)));
 
         bytes memory bytecode = type(MockModule).creationCode;
         moduleAddr = instancel1.deployAndRegister({
@@ -39,8 +39,7 @@ contract ModuleTest is BaseTest {
 
     function testNonexistingModule() public {
         // TODO
-        bytes32 schemaUID =
-            instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)), true);
+        bytes32 schemaUID = instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)));
 
         address module = makeAddr("doesntExist");
         vm.expectRevert();
@@ -48,8 +47,7 @@ contract ModuleTest is BaseTest {
     }
 
     function testReRegisterModule() public {
-        bytes32 schemaUID =
-            instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)), true);
+        bytes32 schemaUID = instancel1.registerSchema("Test ABI 123", ISchemaResolver(address(0)));
 
         bytes memory bytecode = type(MockModule).creationCode;
         address moduleAddr = instancel1.deployAndRegister({

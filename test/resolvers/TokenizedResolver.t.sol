@@ -14,14 +14,17 @@ contract TokenizedResolverTest is BaseTest {
     function setUp() public override {
         super.setUp();
         token = new MockERC20("test", "test", 8);
-        resolver = new TokenizedResolver(address(instancel1.registry), address(token));
+        resolver = new TokenizedResolver(
+            address(instancel1.registry),
+            address(token)
+        );
 
         token.mint(vm.addr(auth1k), 10_000);
     }
 
     function testTokenizedResolver() public {
         bytes32 schema =
-            instancel1.registerSchema("TokenizedResolver", ISchemaResolver(address(resolver)), true);
+            instancel1.registerSchema("TokenizedResolver", ISchemaResolver(address(resolver)));
 
         address module = instancel1.deployAndRegister(
             schema, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")
@@ -30,7 +33,6 @@ contract TokenizedResolverTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: "",
             data: abi.encode(true),

@@ -28,6 +28,7 @@ abstract contract RegistryIntegration {
         trustedAttesters = _trustedAttester;
         threshold = _threshold;
     }
+
     /**
      * @notice Internal function that checks the registry for a contract's status
      *
@@ -38,7 +39,8 @@ abstract contract RegistryIntegration {
      */
 
     function _checkRegistry(address _contract) internal view returns (bool validCheck) {
-        return registry.verify(_contract, trustedAttesters, threshold);
+        registry.verify(_contract, trustedAttesters, threshold);
+        return true;
     }
 
     /**

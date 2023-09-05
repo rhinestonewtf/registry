@@ -17,7 +17,6 @@ import "hashi/Yaru.sol";
 struct AttestationRequestData {
     address subject; // The subject of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
-    bool revocable; // Whether the attestation is revocable.
     bool propagateable; // Whether the attestation is propagateable to L2s.
     bytes32 refUID; // The UID of the related attestation.
     bytes data; // Custom attestation data.

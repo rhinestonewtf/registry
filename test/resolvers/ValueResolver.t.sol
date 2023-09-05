@@ -16,7 +16,7 @@ contract ValueResolverTest is BaseTest {
 
     function testValueResolver() public {
         bytes32 schemaUID =
-            instancel1.registerSchema("TokenizedResolver", ISchemaResolver(address(resolver)), true);
+            instancel1.registerSchema("TokenizedResolver", ISchemaResolver(address(resolver)));
 
         address module = instancel1.deployAndRegister(
             schemaUID, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")
@@ -25,7 +25,6 @@ contract ValueResolverTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: "",
             data: abi.encode(true),

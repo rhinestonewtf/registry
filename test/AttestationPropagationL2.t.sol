@@ -21,9 +21,9 @@ contract AttestationPropagationL2Test is AttestationTest {
 
     function testPropagateWithHashi() public {
         bytes32 schemaUID =
-            instancel1.registerSchema("Propagation Test", ISchemaResolver(address(0)), true);
+            instancel1.registerSchema("Propagation Test", ISchemaResolver(address(0)));
         bytes32 schemaUID2 =
-            instancel2.registerSchema("Propagation Test", ISchemaResolver(address(0)), true);
+            instancel2.registerSchema("Propagation Test", ISchemaResolver(address(0)));
 
         assertEq(schemaUID, schemaUID2);
 
@@ -64,9 +64,9 @@ contract AttestationPropagationL2Test is AttestationTest {
 
     function testPropagateMultipleAttestations() public {
         bytes32 schemaUID =
-            instancel1.registerSchema("Propagation Test", ISchemaResolver(address(0)), true);
+            instancel1.registerSchema("Propagation Test", ISchemaResolver(address(0)));
         bytes32 schemaUID2 =
-            instancel2.registerSchema("Propagation Test", ISchemaResolver(address(0)), true);
+            instancel2.registerSchema("Propagation Test", ISchemaResolver(address(0)));
 
         assertEq(schemaUID, schemaUID2);
 
@@ -176,7 +176,7 @@ contract AttestationPropagationL2Test is AttestationTest {
     }
 
     function testPropagateAttestationL2NonexistingSchema() public {
-        bytes32 newSchema = instancel1.registerSchema("New", ISchemaResolver(address(0)), true);
+        bytes32 newSchema = instancel1.registerSchema("New", ISchemaResolver(address(0)));
         address module = instancel1.deployAndRegister(
             newSchema, type(MockModuleWithArgs).creationCode, abi.encode(428)
         );
@@ -212,8 +212,8 @@ contract AttestationPropagationL2Test is AttestationTest {
     }
 
     function testPropagateAttestationL2NonExistingRefUID() public {
-        bytes32 newSchema = instancel1.registerSchema("New", ISchemaResolver(address(0)), true);
-        bytes32 newSchema2 = instancel2.registerSchema("New", ISchemaResolver(address(0)), true);
+        bytes32 newSchema = instancel1.registerSchema("New", ISchemaResolver(address(0)));
+        bytes32 newSchema2 = instancel2.registerSchema("New", ISchemaResolver(address(0)));
         address module = instancel1.deployAndRegister(
             newSchema, type(MockModuleWithArgs).creationCode, abi.encode(428)
         );
@@ -221,7 +221,6 @@ contract AttestationPropagationL2Test is AttestationTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: "non-existing-ref-uid",
             data: abi.encode(true),
@@ -234,7 +233,6 @@ contract AttestationPropagationL2Test is AttestationTest {
         attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
@@ -247,7 +245,6 @@ contract AttestationPropagationL2Test is AttestationTest {
         attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: attestationUid,
             data: abi.encode(true),
@@ -359,7 +356,7 @@ contract AttestationPropagationL2Test is AttestationTest {
     }
 
     function testPropagateNonExistingSchema() public {
-        bytes32 newSchema = instancel1.registerSchema("New", ISchemaResolver(address(0)), true);
+        bytes32 newSchema = instancel1.registerSchema("New", ISchemaResolver(address(0)));
         address module = instancel1.deployAndRegister(
             newSchema, type(MockModuleWithArgs).creationCode, abi.encode(428)
         );
@@ -367,7 +364,6 @@ contract AttestationPropagationL2Test is AttestationTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: "non-existing-ref-uid",
             data: abi.encode(true),
@@ -380,7 +376,6 @@ contract AttestationPropagationL2Test is AttestationTest {
         attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
@@ -393,7 +388,6 @@ contract AttestationPropagationL2Test is AttestationTest {
         attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: attestationUid,
             data: abi.encode(true),

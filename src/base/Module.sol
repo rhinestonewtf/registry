@@ -45,6 +45,7 @@ abstract contract Module is IModule {
         bytes32 schemaUID
     )
         external
+        payable
         returns (address moduleAddr)
     {
         // Check if the provided schemaUID exists
@@ -53,7 +54,8 @@ abstract contract Module is IModule {
 
         bytes32 contractCodeHash; //  Hash of contract bytecode
         bytes32 deployParamsHash; // Hash of contract deployment parameters
-        (moduleAddr, deployParamsHash, contractCodeHash) = code.deploy(deployParams, salt);
+        (moduleAddr, deployParamsHash, contractCodeHash) =
+            code.deploy(deployParams, salt, msg.value);
 
         _register(moduleAddr, msg.sender, schema, contractCodeHash, deployParamsHash, data);
 

@@ -43,8 +43,7 @@ abstract contract Schema is ISchema {
      */
     function registerSchema(
         string calldata schema,
-        ISchemaResolver resolver,
-        bool revocable
+        ISchemaResolver resolver
     )
         external
         returns (bytes32)
@@ -53,7 +52,6 @@ abstract contract Schema is ISchema {
             uid: EMPTY_UID,
             schema: schema,
             resolver: resolver,
-            revocable: revocable,
             schemaOwner: msg.sender,
             bridges: new address[](0)
         });
@@ -114,9 +112,7 @@ abstract contract Schema is ISchema {
      * @return schema UID.
      */
     function _getUID(SchemaRecord memory schemaRecord) private pure returns (bytes32) {
-        return keccak256(
-            abi.encodePacked(schemaRecord.schema, schemaRecord.schemaOwner, schemaRecord.revocable)
-        );
+        return keccak256(abi.encodePacked(schemaRecord.schema, schemaRecord.schemaOwner));
     }
 
     /**

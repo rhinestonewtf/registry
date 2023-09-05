@@ -62,13 +62,24 @@ library RegistryTestLib {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: moduleAddr,
             expirationTime: uint48(0),
-            revocable: true,
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
             value: 0
         });
         return newAttestation(instance, schemaUID, attesterKey, attData);
+    }
+
+    function mockAttestation(
+        RegistryInstance memory instance,
+        bytes32 schemaId,
+        uint256 attesterKey,
+        AttestationRequestData memory attData
+    )
+        public
+        returns (bytes32 attestationUid)
+    {
+        return newAttestation(instance, schemaId, attesterKey, attData);
     }
 
     function newAttestation(
@@ -168,13 +179,12 @@ library RegistryTestLib {
     function registerSchema(
         RegistryInstance memory instance,
         string memory abiString,
-        ISchemaResolver resolver,
-        bool revocable
+        ISchemaResolver resolver
     )
         internal
         returns (bytes32 schemaUID)
     {
-        return instance.registry.registerSchema(abiString, resolver, revocable);
+        return instance.registry.registerSchema(abiString, resolver);
     }
 
     function deployAndRegister(

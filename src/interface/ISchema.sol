@@ -11,7 +11,6 @@ import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
 struct SchemaRecord {
     bytes32 uid; // The unique identifier of the schema.
     ISchemaResolver resolver; // Optional schema resolver.
-    bool revocable; // Whether the schema allows revocations explicitly.
     string schema; // Custom specification of the schema (e.g., an ABI).
     address schemaOwner; // The address of the account used to register the schema.
     address[] bridges; // bridges that must be used for L2 propagation
@@ -45,14 +44,12 @@ interface ISchema {
      *
      * @param schema The schema data schema.
      * @param resolver An optional schema resolver.
-     * @param revocable Whether the schema allows revocations explicitly.
      *
      * @return The UID of the new schema.
      */
     function registerSchema(
         string calldata schema,
-        ISchemaResolver resolver,
-        bool revocable
+        ISchemaResolver resolver
     )
         external
         returns (bytes32);
