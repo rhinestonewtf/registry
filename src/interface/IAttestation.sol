@@ -21,13 +21,14 @@ struct AttestationRequestData {
     bytes32 refUID; // The UID of the related attestation.
     bytes data; // Custom attestation data.
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
+    bytes32 schemaUID; // The unique identifier of the schema.
 }
 
 /**
  * @dev A struct representing the full arguments of the attestation request.
  */
 struct AttestationRequest {
-    bytes32 schema; // The unique identifier of the schema.
+    bytes32 schemaUID; // The unique identifier of the schema.
     AttestationRequestData data; // The arguments of the attestation request.
 }
 
@@ -35,7 +36,7 @@ struct AttestationRequest {
  * @dev A struct representing the full arguments of the full delegated attestation request.
  */
 struct DelegatedAttestationRequest {
-    bytes32 schema; // The unique identifier of the schema.
+    bytes32 schemaUID; // The unique identifier of the schema.
     AttestationRequestData data; // The arguments of the attestation request.
     bytes signature; // The EIP712 signature data.
     address attester; // The attesting account.
@@ -45,7 +46,7 @@ struct DelegatedAttestationRequest {
  * @dev A struct representing the full arguments of the multi attestation request.
  */
 struct MultiAttestationRequest {
-    bytes32 schema; // The unique identifier of the schema.
+    bytes32 schemaUID; // The unique identifier of the schema.
     AttestationRequestData[] data; // The arguments of the attestation request.
 }
 
@@ -53,7 +54,7 @@ struct MultiAttestationRequest {
  * @dev A struct representing the full arguments of the delegated multi attestation request.
  */
 struct MultiDelegatedAttestationRequest {
-    bytes32 schema; // The unique identifier of the schema.
+    bytes32 schemaUID; // The unique identifier of the schema.
     AttestationRequestData[] data; // The arguments of the attestation requests.
     bytes[] signatures; // The EIP712 signatures data. Please note that the signatures are assumed to be signed with increasing nonces.
     address attester; // The attesting account.
@@ -63,7 +64,8 @@ struct MultiDelegatedAttestationRequest {
  * @dev A struct representing the arguments of the revocation request.
  */
 struct RevocationRequestData {
-    bytes32 uid; // The UID of the attestation to revoke.
+    address subject; // The UID of the attestation to revoke.
+    address attester;
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
 }
 
@@ -71,7 +73,7 @@ struct RevocationRequestData {
  * @dev A struct representing the full arguments of the revocation request.
  */
 struct RevocationRequest {
-    bytes32 schema; // The unique identifier of the schema.
+    bytes32 schemaUID; // The unique identifier of the schema.
     RevocationRequestData data; // The arguments of the revocation request.
 }
 
@@ -79,7 +81,7 @@ struct RevocationRequest {
  * @dev A struct representing the arguments of the full delegated revocation request.
  */
 struct DelegatedRevocationRequest {
-    bytes32 schema; // The unique identifier of the schema.
+    bytes32 schemaUID; // The unique identifier of the schema.
     RevocationRequestData data; // The arguments of the revocation request.
     bytes signature; // The EIP712 signature data.
     address revoker; // The revoking account.
@@ -89,7 +91,7 @@ struct DelegatedRevocationRequest {
  * @dev A struct representing the full arguments of the multi revocation request.
  */
 struct MultiRevocationRequest {
-    bytes32 schema; // The unique identifier of the schema.
+    bytes32 schemaUID; // The unique identifier of the schema.
     RevocationRequestData[] data; // The arguments of the revocation request.
 }
 
@@ -97,7 +99,7 @@ struct MultiRevocationRequest {
  * @dev A struct representing the full arguments of the delegated multi revocation request.
  */
 struct MultiDelegatedRevocationRequest {
-    bytes32 schema; // The unique identifier of the schema.
+    bytes32 schemaUID; // The unique identifier of the schema.
     RevocationRequestData[] data; // The arguments of the revocation requests.
     bytes[] signatures; // The EIP712 signatures data. Please note that the signatures are assumed to be signed with increasing nonces.
     address revoker; // The revoking account.
@@ -109,24 +111,18 @@ interface IAttestation {
      *
      * @param subject The subject of the attestation.
      * @param attester The attesting account.
-     * @param uid The UID of the attestation.
      * @param schema The UID of the schema.
      */
-    event Attested(
-        address indexed subject, address indexed attester, bytes32 uid, bytes32 indexed schema
-    );
+    event Attested(address indexed subject, address indexed attester, bytes32 indexed schema);
 
     /**
      * @dev Emitted when an attestation has been revoked.
      *
      * @param subject The subject of the attestation.
      * @param attester The attesting account.
-     * @param uid The UID the revoked attestation.
      * @param schema The UID of the schema.
      */
-    event Revoked(
-        address indexed subject, address indexed attester, bytes32 uid, bytes32 indexed schema
-    );
+    event Revoked(address indexed subject, address indexed attester, bytes32 indexed schema);
 
     /**
      * @dev Emitted when a data has been timestamped.
@@ -250,21 +246,18 @@ interface IAttestation {
         external
         payable;
 
-    /**
-     * @notice Predicts Attestation UID for a given request
-     *
-     * @dev The function returns the UID of the attestation that would be issued for the given request
-     *
-     * @param schema The schema of the attestation
-     * @param attester The attester of the attestation
-     * @param request The request data
-     */
-    function predictAttestationUID(
-        bytes32 schema,
-        address attester,
-        AttestationRequestData memory request
-    )
-        external
-        view
-        returns (bytes32 uid);
+    // /**
+    //  * @notice Predicts Attestation UID for a given request
+    //  *
+    //  * @dev The function returns the UID of the attestation that would be issued for the given request
+    //  *
+    //  * @param schema The schema of the attestation
+    //  * @param attester The attester of the attestation
+    //  * @param request The request data
+    //  */
+    // function predictAttestationUID(
+    //     bytes32 schema,
+    //     address attester,
+    //     AttestationRequestData memory request
+    // ) external view returns (bytes32 uid);
 }

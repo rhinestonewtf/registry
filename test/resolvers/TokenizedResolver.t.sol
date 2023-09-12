@@ -36,7 +36,8 @@ contract TokenizedResolverTest is BaseTest {
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
-            value: 0
+            value: 0,
+            schemaUID: schema
         });
 
         vm.prank(vm.addr(auth1k));

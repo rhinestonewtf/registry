@@ -65,7 +65,8 @@ library RegistryTestLib {
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
-            value: 0
+            value: 0,
+            schemaUID: schemaId
         });
         return newAttestation(instance, schemaId, attesterKey, attData);
     }
@@ -93,7 +94,7 @@ library RegistryTestLib {
     {
         EIP712Signature memory signature = signAttestation(instance, schemaId, attesterKey, attData);
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
-            schema: schemaId,
+            schemaUID: schemaId,
             data: attData,
             signature: abi.encode(signature),
             attester: getAddr(attesterKey)
@@ -151,14 +152,14 @@ library RegistryTestLib {
 
     function revokeAttestation(
         RegistryInstance memory instance,
-        bytes32 attestationUid,
+        address module,
         bytes32 schemaId,
         uint256 attesterPk
     )
         public
     {
         RevocationRequestData memory revoke =
-            RevocationRequestData({ uid: attestationUid, value: 0 });
+            RevocationRequestData({ subject: module, attester: getAddr(attesterPk), value: 0 });
 
         bytes32 digest =
             instance.registry.getRevocationDigest(revoke, schemaId, getAddr(attesterPk));
@@ -167,7 +168,7 @@ library RegistryTestLib {
         EIP712Signature memory signature = EIP712Signature({ v: v, r: r, s: s });
 
         DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
-            schema: schemaId,
+            schemaUID: schemaId,
             data: revoke,
             signature: abi.encode(signature),
             revoker: getAddr(attesterPk)
@@ -188,7 +189,7 @@ library RegistryTestLib {
 
     function deployAndRegister(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        bytes32 referrerUID,
         bytes memory bytecode,
         bytes memory constructorArgs
     )
@@ -200,7 +201,7 @@ library RegistryTestLib {
             deployParams: constructorArgs,
             salt: 0,
             data: "",
-            schemaId: schemaId
+            referrerUID: referrerUID
         });
     }
 }

@@ -2,12 +2,13 @@
 pragma solidity ^0.8.19;
 
 import { IModule } from "../interface/IModule.sol";
-import { InvalidSchema } from "../Common.sol";
+import { InvalidReferrer } from "../Common.sol";
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
-import { ISchema, SchemaRecord } from "../interface/ISchema.sol";
+import { ISchema, SchemaRecord, Referrer } from "../interface/ISchema.sol";
 import { Schema } from "./Schema.sol";
 import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
 import { AttestationRecord, ModuleRecord } from "../Common.sol";
+import { IReferrerResolver } from "../resolver/IReferrerResolver.sol";
 
 /**
  * @title Module
@@ -50,22 +51,24 @@ abstract contract Module is IModule {
         bytes calldata deployParams,
         uint256 salt,
         bytes calldata data,
-        bytes32 schemaId
+        bytes32 referrerUID
     )
         external
         payable
         returns (address moduleAddr)
     {
         // Check if the provided schemaId exists
-        SchemaRecord memory schema = getSchema(schemaId);
-        if (schemaId != schema.uid) revert InvalidSchema();
+        Referrer memory referrer = getReferrer(referrerUID);
+        if (referrer.schemaOwner == address(0)) revert InvalidReferrer();
 
         bytes32 contractCodeHash; //  Hash of contract bytecode
         bytes32 deployParamsHash; // Hash of contract deployment parameters
         (moduleAddr, deployParamsHash, contractCodeHash) =
             code.deploy(deployParams, salt, msg.value);
 
-        _register(moduleAddr, msg.sender, schema, contractCodeHash, deployParamsHash, data);
+        _register(
+            moduleAddr, msg.sender, referrer, referrerUID, contractCodeHash, deployParamsHash, data
+        );
 
         emit ModuleRegistration(moduleAddr, contractCodeHash); // Emit a deployment event
     }
@@ -73,14 +76,14 @@ abstract contract Module is IModule {
     // this function might be removed in the future.
     // could be a security risk
     // TODO
-    function register(bytes32 schemaId, address moduleAddress, bytes calldata data) external {
+    function register(bytes32 referrerUID, address moduleAddress, bytes calldata data) external {
         // Check if the provided schemaId exists
-        SchemaRecord memory schema = getSchema(schemaId);
-        if (schemaId != schema.uid) revert InvalidSchema();
+        Referrer memory referrer = getReferrer(referrerUID);
+        if (referrer.schemaOwner == address(0)) revert InvalidReferrer();
 
         // get codehash of depoyed contract
         bytes32 contractCodeHash = moduleAddress.codeHash();
-        _register(moduleAddress, address(0), schema, contractCodeHash, "", data);
+        _register(moduleAddress, address(0), referrer, referrerUID, contractCodeHash, "", data);
 
         emit ModuleRegistration(moduleAddress, contractCodeHash); // Emit a registration event
     }
@@ -88,7 +91,8 @@ abstract contract Module is IModule {
     function _register(
         address moduleAddress,
         address sender,
-        SchemaRecord memory schema,
+        Referrer memory referrer,
+        bytes32 referrerUID,
         bytes32 codeHash,
         bytes32 deployParamsHash,
         bytes calldata data
@@ -99,23 +103,24 @@ abstract contract Module is IModule {
         if (_modules[moduleAddress].implementation != address(0)) {
             revert AlreadyRegistered(moduleAddress);
         }
+
         // Store module data in _modules mapping
         ModuleRecord memory moduleRegistration = ModuleRecord({
             implementation: moduleAddress,
             codeHash: codeHash,
             deployParamsHash: deployParamsHash,
-            schemaId: schema.uid,
+            referrerUID: referrerUID,
             sender: sender,
             data: data
         });
 
-        _resolveRegistration(schema.resolver, moduleRegistration);
+        _resolveRegistration(referrer.resolver, moduleRegistration);
 
         _modules[moduleAddress] = moduleRegistration;
     }
 
     function _resolveRegistration(
-        ISchemaResolver resolver,
+        IReferrerResolver resolver,
         ModuleRecord memory moduleRegistration
     )
         private
@@ -126,7 +131,7 @@ abstract contract Module is IModule {
         }
     }
 
-    function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory);
+    function getReferrer(bytes32 uid) public view virtual returns (Referrer memory);
 
     function _getModule(address moduleAddress)
         internal

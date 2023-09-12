@@ -28,13 +28,14 @@ contract ValueResolverTest is BaseTest {
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
-            value: 1 ether
+            value: 1 ether,
+            schemaUID: schema
         });
 
         EIP712Signature memory signature =
             RegistryTestLib.signAttestation(instancel1, schema, auth1k, attData);
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
-            schema: schema,
+            schemaUID: schema,
             data: attData,
             signature: abi.encode(signature),
             attester: vm.addr(auth1k)

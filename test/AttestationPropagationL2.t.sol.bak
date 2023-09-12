@@ -20,30 +20,43 @@ contract AttestationPropagationL2Test is AttestationTest {
     }
 
     function testPropagateWithHashi() public {
-        bytes32 schemaId =
-            instancel1.registerSchema("Propagation Test", ISchemaResolver(address(0)));
-        bytes32 schemaId2 =
-            instancel2.registerSchema("Propagation Test", ISchemaResolver(address(0)));
+        bytes32 schemaId = instancel1.registerSchema(
+            "Propagation Test",
+            ISchemaResolver(address(0))
+        );
+        bytes32 schemaId2 = instancel2.registerSchema(
+            "Propagation Test",
+            ISchemaResolver(address(0))
+        );
 
         assertEq(schemaId, schemaId2);
 
         bytes memory bytecode = type(MockModuleWithArgs).creationCode;
         address moduleAddr = instancel1.deployAndRegister({
-            schemaId: schemaId,
+            referrerUID: schemaId,
             bytecode: bytecode,
             constructorArgs: abi.encode(313_131_123)
         });
-        attestationUid1 = instancel1.mockAttestation(schemaId, auth1k, moduleAddr);
+        attestationUid1 = instancel1.mockAttestation(
+            schemaId,
+            auth1k,
+            moduleAddr
+        );
 
-        instancel2.registry.register({ schemaId: schemaId2, moduleAddress: moduleAddr, data: "" });
-        (Message[] memory messages, bytes32[] memory messageIdsBytes32) = instancel1
-            .registry
-            .propagateAttest({
-            to: address(instancel2.registry),
-            toChainId: 0,
-            attestationId: attestationUid1,
-            moduleOnL2: moduleAddr
+        instancel2.registry.register({
+            referrerUID: schemaId2,
+            moduleAddress: moduleAddr,
+            data: ""
         });
+        (
+            Message[] memory messages,
+            bytes32[] memory messageIdsBytes32
+        ) = instancel1.registry.propagateAttest({
+                to: address(instancel2.registry),
+                toChainId: 0,
+                attestationId: attestationUid1,
+                moduleOnL2: moduleAddr
+            });
 
         uint256[] memory messageIds = toUint256Array(messageIdsBytes32);
         address[] memory adapters = new address[](1);
@@ -51,7 +64,11 @@ contract AttestationPropagationL2Test is AttestationTest {
 
         address[] memory destinationAdapters = new address[](1);
         destinationAdapters[0] = address(hashiEnv.ambAdapter);
-        instancel1.yaho.relayMessagesToAdapters(messageIds, adapters, destinationAdapters);
+        instancel1.yaho.relayMessagesToAdapters(
+            messageIds,
+            adapters,
+            destinationAdapters
+        );
 
         address[] memory senders = new address[](1);
         senders[0] = address(instancel1.registry);
@@ -59,29 +76,58 @@ contract AttestationPropagationL2Test is AttestationTest {
         IOracleAdapter[] memory oracleAdapter = new IOracleAdapter[](1);
         oracleAdapter[0] = IOracleAdapter(address(hashiEnv.ambAdapter));
 
-        instancel2.yaru.executeMessages(messages, messageIds, senders, oracleAdapter);
+        instancel2.yaru.executeMessages(
+            messages,
+            messageIds,
+            senders,
+            oracleAdapter
+        );
     }
 
     function testPropagateMultipleAttestations() public {
-        bytes32 schemaId =
-            instancel1.registerSchema("Propagation Test", ISchemaResolver(address(0)));
-        bytes32 schemaId2 =
-            instancel2.registerSchema("Propagation Test", ISchemaResolver(address(0)));
+        bytes32 schemaId = instancel1.registerSchema(
+            "Propagation Test",
+            ISchemaResolver(address(0))
+        );
+        bytes32 schemaId2 = instancel2.registerSchema(
+            "Propagation Test",
+            ISchemaResolver(address(0))
+        );
 
         assertEq(schemaId, schemaId2);
 
         bytes memory bytecode = type(MockModuleWithArgs).creationCode;
         address moduleAddr = instancel1.deployAndRegister({
-            schemaId: schemaId,
+            referrerUID: schemaId,
             bytecode: bytecode,
             constructorArgs: abi.encode(313_131_123)
         });
-        attestationUid1 = instancel1.mockAttestation(schemaId, auth1k, moduleAddr);
-        bytes32 attestation2 = instancel1.mockAttestation(schemaId, 1, moduleAddr);
-        bytes32 attestation3 = instancel1.mockAttestation(schemaId, 2, moduleAddr);
-        bytes32 attestation4 = instancel1.mockAttestation(schemaId, 3, moduleAddr);
+        attestationUid1 = instancel1.mockAttestation(
+            schemaId,
+            auth1k,
+            moduleAddr
+        );
+        bytes32 attestation2 = instancel1.mockAttestation(
+            schemaId,
+            1,
+            moduleAddr
+        );
+        bytes32 attestation3 = instancel1.mockAttestation(
+            schemaId,
+            2,
+            moduleAddr
+        );
+        bytes32 attestation4 = instancel1.mockAttestation(
+            schemaId,
+            3,
+            moduleAddr
+        );
 
-        instancel2.registry.register({ schemaId: schemaId2, moduleAddress: moduleAddr, data: "" });
+        instancel2.registry.register({
+            referrerUID: schemaId2,
+            moduleAddress: moduleAddr,
+            data: ""
+        });
 
         bytes32[] memory attestationIds = new bytes32[](4);
         attestationIds[0] = attestationUid1;
@@ -89,14 +135,15 @@ contract AttestationPropagationL2Test is AttestationTest {
         attestationIds[2] = attestation3;
         attestationIds[3] = attestation4;
 
-        (Message[] memory messages, bytes32[] memory messageIdsBytes32) = instancel1
-            .registry
-            .propagateAttest({
-            to: address(instancel2.registry),
-            toChainId: 0,
-            attestationIds: attestationIds,
-            moduleOnL2: moduleAddr
-        });
+        (
+            Message[] memory messages,
+            bytes32[] memory messageIdsBytes32
+        ) = instancel1.registry.propagateAttest({
+                to: address(instancel2.registry),
+                toChainId: 0,
+                attestationIds: attestationIds,
+                moduleOnL2: moduleAddr
+            });
 
         assertEq(messages.length, 4);
 
@@ -107,7 +154,11 @@ contract AttestationPropagationL2Test is AttestationTest {
 
         address[] memory destinationAdapters = new address[](1);
         destinationAdapters[0] = address(hashiEnv.ambAdapter);
-        instancel1.yaho.relayMessagesToAdapters(messageIds, adapters, destinationAdapters);
+        instancel1.yaho.relayMessagesToAdapters(
+            messageIds,
+            adapters,
+            destinationAdapters
+        );
 
         address[] memory senders = new address[](4);
         senders[0] = address(instancel1.registry);
@@ -118,7 +169,12 @@ contract AttestationPropagationL2Test is AttestationTest {
         IOracleAdapter[] memory oracleAdapter = new IOracleAdapter[](1);
         oracleAdapter[0] = IOracleAdapter(address(hashiEnv.ambAdapter));
 
-        instancel2.yaru.executeMessages(messages, messageIds, senders, oracleAdapter);
+        instancel2.yaru.executeMessages(
+            messages,
+            messageIds,
+            senders,
+            oracleAdapter
+        );
     }
 
     function testPropagateChainedAttestations() public {
@@ -126,21 +182,26 @@ contract AttestationPropagationL2Test is AttestationTest {
         attestationIds[0] = attestationUid1;
         attestationIds[1] = attestationUid2;
 
-        (Message[] memory messages, bytes32[] memory messageIdsBytes32) = instancel1
-            .registry
-            .propagateAttest({
-            to: address(instancel2.registry),
-            toChainId: 0,
-            attestationIds: attestationIds,
-            moduleOnL2: defaultModule1
-        });
+        (
+            Message[] memory messages,
+            bytes32[] memory messageIdsBytes32
+        ) = instancel1.registry.propagateAttest({
+                to: address(instancel2.registry),
+                toChainId: 0,
+                attestationIds: attestationIds,
+                moduleOnL2: defaultModule1
+            });
         uint256[] memory messageIds = toUint256Array(messageIdsBytes32);
         address[] memory adapters = new address[](1);
         adapters[0] = address(hashiEnv.ambMessageRelay);
 
         address[] memory destinationAdapters = new address[](1);
         destinationAdapters[0] = address(hashiEnv.ambAdapter);
-        instancel1.yaho.relayMessagesToAdapters(messageIds, adapters, destinationAdapters);
+        instancel1.yaho.relayMessagesToAdapters(
+            messageIds,
+            adapters,
+            destinationAdapters
+        );
 
         address[] memory senders = new address[](2);
         senders[0] = address(instancel1.registry);
@@ -149,7 +210,12 @@ contract AttestationPropagationL2Test is AttestationTest {
         IOracleAdapter[] memory oracleAdapter = new IOracleAdapter[](1);
         oracleAdapter[0] = IOracleAdapter(address(hashiEnv.ambAdapter));
 
-        instancel2.yaru.executeMessages(messages, messageIds, senders, oracleAdapter);
+        instancel2.yaru.executeMessages(
+            messages,
+            messageIds,
+            senders,
+            oracleAdapter
+        );
     }
 
     function testPropagateTwice() public {
@@ -161,8 +227,9 @@ contract AttestationPropagationL2Test is AttestationTest {
         testPropagateChainedAttestations();
         instancel1.revokeAttestation(attestationUid1, defaultSchema1, auth1k);
         testPropagateChainedAttestations();
-        AttestationRecord memory attestation =
-            instancel2.registry.findAttestation(defaultModule1, vm.addr(auth1k));
+        AttestationRecord memory attestation = instancel2
+            .registry
+            .findAttestation(defaultModule1, vm.addr(auth1k));
         assertTrue(attestation.revocationTime != 0);
     }
 
@@ -170,26 +237,37 @@ contract AttestationPropagationL2Test is AttestationTest {
         testPropagateChainedAttestations();
         instancel1.revokeAttestation(attestationUid1, defaultSchema1, auth1k);
         testPropagateChainedAttestations();
-        AttestationRecord memory attestation =
-            instancel2.registry.findAttestation(defaultModule1, vm.addr(auth1k));
+        AttestationRecord memory attestation = instancel2
+            .registry
+            .findAttestation(defaultModule1, vm.addr(auth1k));
         assertTrue(attestation.revocationTime != 0);
     }
 
     function testPropagateAttestationL2NonexistingSchema() public {
-        bytes32 newSchema = instancel1.registerSchema("New", ISchemaResolver(address(0)));
-        address module = instancel1.deployAndRegister(
-            newSchema, type(MockModuleWithArgs).creationCode, abi.encode(428)
+        bytes32 newSchema = instancel1.registerSchema(
+            "New",
+            ISchemaResolver(address(0))
         );
-        bytes32 attestationUid = instancel1.mockAttestation(newSchema, auth1k, module);
+        address module = instancel1.deployAndRegister(
+            newSchema,
+            type(MockModuleWithArgs).creationCode,
+            abi.encode(428)
+        );
+        bytes32 attestationUid = instancel1.mockAttestation(
+            newSchema,
+            auth1k,
+            module
+        );
 
-        (Message[] memory messages, bytes32[] memory messageIdsBytes32) = instancel1
-            .registry
-            .propagateAttest({
-            to: address(instancel2.registry),
-            toChainId: 0,
-            attestationId: attestationUid,
-            moduleOnL2: module
-        });
+        (
+            Message[] memory messages,
+            bytes32[] memory messageIdsBytes32
+        ) = instancel1.registry.propagateAttest({
+                to: address(instancel2.registry),
+                toChainId: 0,
+                attestationId: attestationUid,
+                moduleOnL2: module
+            });
 
         uint256[] memory messageIds = toUint256Array(messageIdsBytes32);
         address[] memory adapters = new address[](1);
@@ -197,7 +275,11 @@ contract AttestationPropagationL2Test is AttestationTest {
 
         address[] memory destinationAdapters = new address[](1);
         destinationAdapters[0] = address(hashiEnv.ambAdapter);
-        instancel1.yaho.relayMessagesToAdapters(messageIds, adapters, destinationAdapters);
+        instancel1.yaho.relayMessagesToAdapters(
+            messageIds,
+            adapters,
+            destinationAdapters
+        );
 
         address[] memory senders = new address[](1);
         senders[0] = address(instancel1.registry);
@@ -206,16 +288,33 @@ contract AttestationPropagationL2Test is AttestationTest {
         oracleAdapter[0] = IOracleAdapter(address(hashiEnv.ambAdapter));
 
         vm.expectRevert(
-            abi.encodeWithSelector(Yaru.CallFailed.selector, address(instancel2.yaru), 0)
+            abi.encodeWithSelector(
+                Yaru.CallFailed.selector,
+                address(instancel2.yaru),
+                0
+            )
         );
-        instancel2.yaru.executeMessages(messages, messageIds, senders, oracleAdapter);
+        instancel2.yaru.executeMessages(
+            messages,
+            messageIds,
+            senders,
+            oracleAdapter
+        );
     }
 
     function testPropagateAttestationL2NonExistingRefUID() public {
-        bytes32 newSchema = instancel1.registerSchema("New", ISchemaResolver(address(0)));
-        bytes32 newSchema2 = instancel2.registerSchema("New", ISchemaResolver(address(0)));
+        bytes32 newSchema = instancel1.registerSchema(
+            "New",
+            ISchemaResolver(address(0))
+        );
+        bytes32 newSchema2 = instancel2.registerSchema(
+            "New",
+            ISchemaResolver(address(0))
+        );
         address module = instancel1.deployAndRegister(
-            newSchema, type(MockModuleWithArgs).creationCode, abi.encode(428)
+            newSchema,
+            type(MockModuleWithArgs).creationCode,
+            abi.encode(428)
         );
 
         AttestationRequestData memory attData = AttestationRequestData({
@@ -239,7 +338,11 @@ contract AttestationPropagationL2Test is AttestationTest {
             value: 0
         });
 
-        bytes32 attestationUid = instancel1.newAttestation(newSchema, auth1k, attData);
+        bytes32 attestationUid = instancel1.newAttestation(
+            newSchema,
+            auth1k,
+            attData
+        );
         assertTrue(attestationUid != bytes32(0));
 
         attData = AttestationRequestData({
@@ -256,14 +359,15 @@ contract AttestationPropagationL2Test is AttestationTest {
 
         vm.etch(module, "asdfqqwerasdf");
 
-        (Message[] memory messages, bytes32[] memory messageIdsBytes32) = instancel1
-            .registry
-            .propagateAttest({
-            to: address(instancel2.registry),
-            toChainId: 0,
-            attestationId: attestationUid2,
-            moduleOnL2: module
-        });
+        (
+            Message[] memory messages,
+            bytes32[] memory messageIdsBytes32
+        ) = instancel1.registry.propagateAttest({
+                to: address(instancel2.registry),
+                toChainId: 0,
+                attestationId: attestationUid2,
+                moduleOnL2: module
+            });
 
         uint256[] memory messageIds = toUint256Array(messageIdsBytes32);
         address[] memory adapters = new address[](1);
@@ -271,7 +375,11 @@ contract AttestationPropagationL2Test is AttestationTest {
 
         address[] memory destinationAdapters = new address[](1);
         destinationAdapters[0] = address(hashiEnv.ambAdapter);
-        instancel1.yaho.relayMessagesToAdapters(messageIds, adapters, destinationAdapters);
+        instancel1.yaho.relayMessagesToAdapters(
+            messageIds,
+            adapters,
+            destinationAdapters
+        );
 
         address[] memory senders = new address[](1);
         senders[0] = address(instancel1.registry);
@@ -282,9 +390,18 @@ contract AttestationPropagationL2Test is AttestationTest {
         // vm.expectRevert(
         //     abi.encodeWithSelector(Attestation.InvalidAttestationRefUID.selector, attestationUid));
         vm.expectRevert(
-            abi.encodeWithSelector(Yaru.CallFailed.selector, address(instancel2.yaru), 0)
+            abi.encodeWithSelector(
+                Yaru.CallFailed.selector,
+                address(instancel2.yaru),
+                0
+            )
         );
-        instancel2.yaru.executeMessages(messages, messageIds, senders, oracleAdapter);
+        instancel2.yaru.executeMessages(
+            messages,
+            messageIds,
+            senders,
+            oracleAdapter
+        );
     }
 
     function testPropagateIncompatibleBytecode() public {
@@ -292,14 +409,15 @@ contract AttestationPropagationL2Test is AttestationTest {
         attestationIds[0] = attestationUid1;
         attestationIds[1] = attestationUid2;
 
-        (Message[] memory messages, bytes32[] memory messageIdsBytes32) = instancel1
-            .registry
-            .propagateAttest({
-            to: address(instancel2.registry),
-            toChainId: 0,
-            attestationIds: attestationIds,
-            moduleOnL2: defaultModule1
-        });
+        (
+            Message[] memory messages,
+            bytes32[] memory messageIdsBytes32
+        ) = instancel1.registry.propagateAttest({
+                to: address(instancel2.registry),
+                toChainId: 0,
+                attestationIds: attestationIds,
+                moduleOnL2: defaultModule1
+            });
 
         bytes32 moduleHashBefore = defaultModule1.codeHash();
         vm.etch(defaultModule1, "asdfasdfasdf");
@@ -312,7 +430,11 @@ contract AttestationPropagationL2Test is AttestationTest {
 
         address[] memory destinationAdapters = new address[](1);
         destinationAdapters[0] = address(hashiEnv.ambAdapter);
-        instancel1.yaho.relayMessagesToAdapters(messageIds, adapters, destinationAdapters);
+        instancel1.yaho.relayMessagesToAdapters(
+            messageIds,
+            adapters,
+            destinationAdapters
+        );
 
         address[] memory senders = new address[](2);
         senders[0] = address(instancel1.registry);
@@ -322,9 +444,18 @@ contract AttestationPropagationL2Test is AttestationTest {
         oracleAdapter[0] = IOracleAdapter(address(hashiEnv.ambAdapter));
 
         vm.expectRevert(
-            abi.encodeWithSelector(Yaru.CallFailed.selector, address(instancel2.yaru), 0)
+            abi.encodeWithSelector(
+                Yaru.CallFailed.selector,
+                address(instancel2.yaru),
+                0
+            )
         );
-        instancel2.yaru.executeMessages(messages, messageIds, senders, oracleAdapter);
+        instancel2.yaru.executeMessages(
+            messages,
+            messageIds,
+            senders,
+            oracleAdapter
+        );
     }
 
     function testPropagateNonExistingAttestation() public {
@@ -337,15 +468,18 @@ contract AttestationPropagationL2Test is AttestationTest {
         bytes32 moduleHashAfter = defaultModule1.codeHash();
         assertTrue(moduleHashBefore != moduleHashAfter);
 
-        vm.expectRevert(abi.encodeWithSelector(Attestation.InvalidAttestation.selector));
-        (Message[] memory messages, bytes32[] memory messageIdsBytes32) = instancel1
-            .registry
-            .propagateAttest({
-            to: address(instancel2.registry),
-            toChainId: 0,
-            attestationIds: attestationIds,
-            moduleOnL2: defaultModule1
-        });
+        vm.expectRevert(
+            abi.encodeWithSelector(Attestation.InvalidAttestation.selector)
+        );
+        (
+            Message[] memory messages,
+            bytes32[] memory messageIdsBytes32
+        ) = instancel1.registry.propagateAttest({
+                to: address(instancel2.registry),
+                toChainId: 0,
+                attestationIds: attestationIds,
+                moduleOnL2: defaultModule1
+            });
     }
 
     function testNonOwnerPropagate() public {
@@ -356,9 +490,14 @@ contract AttestationPropagationL2Test is AttestationTest {
     }
 
     function testPropagateNonExistingSchema() public {
-        bytes32 newSchema = instancel1.registerSchema("New", ISchemaResolver(address(0)));
+        bytes32 newSchema = instancel1.registerSchema(
+            "New",
+            ISchemaResolver(address(0))
+        );
         address module = instancel1.deployAndRegister(
-            newSchema, type(MockModuleWithArgs).creationCode, abi.encode(428)
+            newSchema,
+            type(MockModuleWithArgs).creationCode,
+            abi.encode(428)
         );
 
         AttestationRequestData memory attData = AttestationRequestData({
@@ -382,7 +521,11 @@ contract AttestationPropagationL2Test is AttestationTest {
             value: 0
         });
 
-        bytes32 attestationUid = instancel1.newAttestation(newSchema, auth1k, attData);
+        bytes32 attestationUid = instancel1.newAttestation(
+            newSchema,
+            auth1k,
+            attData
+        );
         assertTrue(attestationUid != bytes32(0));
 
         attData = AttestationRequestData({
@@ -399,14 +542,15 @@ contract AttestationPropagationL2Test is AttestationTest {
 
         vm.etch(module, "asdfqqwerasdf");
 
-        (Message[] memory messages, bytes32[] memory messageIdsBytes32) = instancel1
-            .registry
-            .propagateAttest({
-            to: address(instancel2.registry),
-            toChainId: 0,
-            attestationId: attestationUid2,
-            moduleOnL2: module
-        });
+        (
+            Message[] memory messages,
+            bytes32[] memory messageIdsBytes32
+        ) = instancel1.registry.propagateAttest({
+                to: address(instancel2.registry),
+                toChainId: 0,
+                attestationId: attestationUid2,
+                moduleOnL2: module
+            });
 
         uint256[] memory messageIds = toUint256Array(messageIdsBytes32);
         address[] memory adapters = new address[](1);
@@ -414,7 +558,11 @@ contract AttestationPropagationL2Test is AttestationTest {
 
         address[] memory destinationAdapters = new address[](1);
         destinationAdapters[0] = address(hashiEnv.ambAdapter);
-        instancel1.yaho.relayMessagesToAdapters(messageIds, adapters, destinationAdapters);
+        instancel1.yaho.relayMessagesToAdapters(
+            messageIds,
+            adapters,
+            destinationAdapters
+        );
 
         address[] memory senders = new address[](1);
         senders[0] = address(instancel1.registry);
@@ -425,12 +573,23 @@ contract AttestationPropagationL2Test is AttestationTest {
         // vm.expectRevert(
         //     abi.encodeWithSelector(Attestation.InvalidAttestationRefUID.selector, attestationUid));
         vm.expectRevert(
-            abi.encodeWithSelector(Yaru.CallFailed.selector, address(instancel2.yaru), 0)
+            abi.encodeWithSelector(
+                Yaru.CallFailed.selector,
+                address(instancel2.yaru),
+                0
+            )
         );
-        instancel2.yaru.executeMessages(messages, messageIds, senders, oracleAdapter);
+        instancel2.yaru.executeMessages(
+            messages,
+            messageIds,
+            senders,
+            oracleAdapter
+        );
     }
 
-    function toUint256Array(bytes32[] memory array) internal pure returns (uint256[] memory) {
+    function toUint256Array(
+        bytes32[] memory array
+    ) internal pure returns (uint256[] memory) {
         uint256[] memory array2 = new uint256[](array.length);
         for (uint256 i; i < array.length; ++i) {
             array2[i] = uint256(array[i]);

@@ -3,15 +3,20 @@
 pragma solidity ^0.8.0;
 
 import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
+import { IReferrerResolver } from "../resolver/IReferrerResolver.sol";
 
 /**
  * @title A struct representing a record for a submitted schema.
  * Inspired by schema definitions of EAS (Ethereum Attestation Service)
  */
 struct SchemaRecord {
-    bytes32 uid; // The unique identifier of the schema.
-    ISchemaResolver resolver; // Optional schema resolver.
     string schema; // Custom specification of the schema (e.g., an ABI).
+    ISchemaResolver resolver; // Optional schema resolver.
+        // @TODO: do we need an owner?
+}
+
+struct Referrer {
+    IReferrerResolver resolver; // Optional schema resolver.
     address schemaOwner; // The address of the account used to register the schema.
     address[] bridges; // bridges that must be used for L2 propagation
 }
@@ -29,7 +34,9 @@ interface ISchema {
      * @param uid The schema UID.
      * @param registerer The address of the account used to register the schema.
      */
-    event Registered(bytes32 indexed uid, address registerer);
+    event SchemaRegistered(bytes32 indexed uid, address registerer);
+
+    event ReferrerRegistered(bytes32 indexed uid, address registerer);
 
     /**
      * @dev Emitted when a new schema resolver
@@ -37,7 +44,9 @@ interface ISchema {
      * @param uid The schema UID.
      * @param resolver The address of the resolver.
      */
-    event NewResolver(bytes32 indexed uid, address resolver);
+    event NewSchemaResolver(bytes32 indexed uid, address resolver);
+
+    event NewReferrerResolver(bytes32 indexed uid, address resolver);
 
     /**
      * @dev Submits and reserves a new schema

@@ -11,7 +11,7 @@ import { AttestationRecord } from "../Common.sol";
  */
 
 interface IQuery {
-    error RevokedAttestation(bytes32 attestationId);
+    error RevokedAttestation(address attester);
     error AttestationNotFound();
     error InsufficientAttestations();
 
@@ -88,7 +88,7 @@ interface IQuery {
      * @param authority The address of the authority issuing the attestation
      * @return attestations The attestations associated with the module and authority
      */
-    function findAttestation(
+    function findAttestations(
         address module,
         address[] memory authority
     )

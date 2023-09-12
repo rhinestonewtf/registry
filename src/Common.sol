@@ -10,6 +10,7 @@ uint64 constant NO_EXPIRATION_TIME = 0;
 
 error AccessDenied();
 error InvalidSchema();
+error InvalidReferrer();
 error InvalidLength();
 error InvalidSignature();
 error NotFound();
@@ -28,8 +29,8 @@ struct EIP712Signature {
  * inspired by EAS (Ethereum Attestation Service)
  */
 struct AttestationRecord {
-    bytes32 uid; // A unique identifier of the attestation.
-    bytes32 schema; // The unique identifier of the schema.
+    // bytes32 uid; // A unique identifier of the attestation.
+    bytes32 schemaUID; // The unique identifier of the schema.
     bytes32 refUID; // The UID of the related attestation.
     address subject; // The recipient of the attestation i.e. module
     address attester; // The attester/sender of the attestation.
@@ -45,7 +46,7 @@ struct ModuleRecord {
     address implementation; // The deployed contract address
     bytes32 codeHash; // The hash of the contract code
     bytes32 deployParamsHash; // The hash of the parameters used to deploy the contract
-    bytes32 schemaId; // The id of the schema related to this module
+    bytes32 referrerUID; // The id of the schema related to this module
     address sender; // The address of the sender who deployed the contract
     bytes data; // Additional data related to the contract deployment
 }

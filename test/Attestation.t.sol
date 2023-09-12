@@ -24,7 +24,7 @@ contract AttestationTest is BaseTest {
 
     function testRevokeAttestation() public {
         bytes32 attestationUid = testCreateAttestation();
-        instancel1.revokeAttestation(attestationUid, defaultSchema1, auth1k);
+        instancel1.revokeAttestation(defaultModule1, defaultSchema1, auth1k);
         AttestationRecord memory attestation =
             instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
         assertTrue(attestation.revocationTime != 0);
@@ -42,7 +42,8 @@ contract AttestationTest is BaseTest {
             propagateable: true,
             refUID: attestationUid1, //  <-- here is the reference
             data: abi.encode(true),
-            value: 0
+            value: 0,
+            schemaUID: defaultSchema1
         });
 
         attestationUid2 = instancel1.newAttestation(defaultSchema1, auth2k, chainedAttestation);
@@ -57,7 +58,8 @@ contract AttestationTest is BaseTest {
             propagateable: true,
             refUID: attestationUid1, //  <-- here is the reference
             data: abi.encode(true),
-            value: 0
+            value: 0,
+            schemaUID: defaultSchema1
         });
 
         vm.expectRevert(abi.encodeWithSelector(Attestation.InvalidAttestation.selector));
@@ -72,7 +74,7 @@ contract AttestationTest is BaseTest {
         returns (bytes32 revokedAttestation, bytes32 chainedAttestation)
     {
         (bytes32 attestationUid1, bytes32 attestationUid2) = testCreateChainedAttestation();
-        instancel1.revokeAttestation(attestationUid1, defaultSchema1, auth1k);
+        instancel1.revokeAttestation(defaultModule1, defaultSchema1, auth1k);
         AttestationRecord memory attestation =
             instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
         assertTrue(attestation.revocationTime != 0);
@@ -93,13 +95,14 @@ contract AttestationTest is BaseTest {
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
-            value: 0
+            value: 0,
+            schemaUID: defaultSchema1
         });
 
         EIP712Signature memory sig = EIP712Signature({ v: 27, r: "", s: "" });
 
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
-            schema: defaultSchema1,
+            schemaUID: defaultSchema1,
             data: attData,
             signature: abi.encode(sig),
             attester: address(attester)
@@ -119,7 +122,8 @@ contract AttestationTest is BaseTest {
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
-            value: 0
+            value: 0,
+            schemaUID: defaultSchema1
         });
 
         AttestationRequestData memory attData2 = AttestationRequestData({
@@ -128,7 +132,8 @@ contract AttestationTest is BaseTest {
             propagateable: true,
             refUID: "",
             data: abi.encode(true),
-            value: 0
+            value: 0,
+            schemaUID: defaultSchema1
         });
 
         AttestationRequestData[] memory attArray = new AttestationRequestData[](
@@ -146,7 +151,7 @@ contract AttestationTest is BaseTest {
 
         MultiDelegatedAttestationRequest[] memory reqs = new MultiDelegatedAttestationRequest[](1);
         MultiDelegatedAttestationRequest memory req1 = MultiDelegatedAttestationRequest({
-            schema: defaultSchema1,
+            schemaUID: defaultSchema1,
             data: attArray,
             attester: vm.addr(auth1k),
             signatures: sigsBytes

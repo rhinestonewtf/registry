@@ -18,20 +18,20 @@ abstract contract Query is IQuery {
      */
     function check(
         address module,
-        address authority
+        address attester
     )
         public
         view
         returns (uint48 listedAt, uint48 revokedAt)
     {
-        AttestationRecord storage attestation = _findAttestation(module, authority);
+        AttestationRecord storage attestation = _getAttestation(module, attester);
 
         uint48 expirationTime = attestation.expirationTime;
         listedAt = expirationTime != 0 && expirationTime < block.timestamp ? 0 : attestation.time;
         if (listedAt == 0) revert AttestationNotFound();
 
         revokedAt = attestation.revocationTime;
-        if (revokedAt != 0) revert RevokedAttestation(attestation.uid);
+        if (revokedAt != 0) revert RevokedAttestation(attestation.attester);
     }
 
     /**
@@ -39,24 +39,24 @@ abstract contract Query is IQuery {
      */
     function verify(
         address module,
-        address[] calldata authorities,
+        address[] calldata attesters,
         uint256 threshold
     )
         external
         view
     {
-        uint256 authoritiesLength = authorities.length;
-        if (authoritiesLength < threshold || threshold == 0) {
-            threshold = authoritiesLength;
+        uint256 attestersLength = attesters.length;
+        if (attestersLength < threshold || threshold == 0) {
+            threshold = attestersLength;
         }
 
         uint256 timeNow = block.timestamp;
 
-        for (uint256 i; i < authoritiesLength; i = uncheckedInc(i)) {
-            AttestationRecord storage attestation = _findAttestation(module, authorities[i]);
+        for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
+            AttestationRecord storage attestation = _getAttestation(module, attesters[i]);
 
             if (attestation.revocationTime != 0) {
-                revert RevokedAttestation(attestation.uid);
+                revert RevokedAttestation(attestation.attester);
             }
 
             uint48 expirationTime = attestation.expirationTime;
@@ -77,22 +77,22 @@ abstract contract Query is IQuery {
      */
     function verifyUnsafe(
         address module,
-        address[] calldata authorities,
+        address[] calldata attesters,
         uint256 threshold
     )
         external
         view
     {
-        uint256 authoritiesLength = authorities.length;
-        if (authoritiesLength < threshold || threshold == 0) {
-            threshold = authoritiesLength;
+        uint256 attestersLength = attesters.length;
+        if (attestersLength < threshold || threshold == 0) {
+            threshold = attestersLength;
         }
 
         uint256 timeNow = block.timestamp;
 
-        for (uint256 i; i < authoritiesLength; i = uncheckedInc(i)) {
+        for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
             if (threshold == 0) return;
-            AttestationRecord storage attestation = _findAttestation(module, authorities[i]);
+            AttestationRecord storage attestation = _getAttestation(module, attesters[i]);
 
             if (attestation.revocationTime != 0) continue;
 
@@ -105,61 +105,42 @@ abstract contract Query is IQuery {
         revert InsufficientAttestations();
     }
 
-    function _findAttestation(
-        address module,
-        address authority
-    )
-        internal
-        view
-        returns (AttestationRecord storage attestation)
-    {
-        bytes32 attestionId = _getAttestation(module, authority);
-        attestation = _getAttestation(attestionId);
-    }
-
     /**
      * @inheritdoc IQuery
      */
     function findAttestation(
         address module,
-        address authority
+        address attesters
     )
         public
         view
         returns (AttestationRecord memory attestation)
     {
-        bytes32 attestionId = _getAttestation(module, authority);
-        attestation = _getAttestation(attestionId);
+        attestation = _getAttestation(module, attesters);
     }
 
     /**
      * @inheritdoc IQuery
      */
-    function findAttestation(
+    function findAttestations(
         address module,
-        address[] memory authorities
+        address[] memory attesters
     )
         external
         view
         returns (AttestationRecord[] memory attestations)
     {
-        uint256 authoritiesLength = authorities.length;
-        attestations = new AttestationRecord[](authoritiesLength);
-        for (uint256 i; i < authoritiesLength; i = uncheckedInc(i)) {
-            attestations[i] = findAttestation(module, authorities[i]);
+        uint256 attesterssLength = attesters.length;
+        attestations = new AttestationRecord[](attesterssLength);
+        for (uint256 i; i < attesterssLength; i = uncheckedInc(i)) {
+            attestations[i] = findAttestation(module, attesters[i]);
         }
     }
 
     function _getAttestation(
         address module,
-        address authority
+        address attester
     )
-        internal
-        view
-        virtual
-        returns (bytes32);
-
-    function _getAttestation(bytes32 attestationId)
         internal
         view
         virtual

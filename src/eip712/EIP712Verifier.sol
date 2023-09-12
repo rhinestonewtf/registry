@@ -31,7 +31,7 @@ abstract contract EIP712Verifier is EIP712 {
         keccak256("Attest(bytes32,address,uint48,bool,bytes32,bytes32,uint256)");
 
     // The hash of the data type used to relay calls to the revoke function. It's the value of
-    bytes32 private constant REVOKE_TYPEHASH = keccak256("Revoke(bytes32,bytes32,uint256)");
+    bytes32 private constant REVOKE_TYPEHASH = keccak256("Revoke(bytes32,address,address,uint256)");
 
     // bytes4(keccak256("isValidSignature(bytes32,bytes)")
     bytes4 private constant ERC1271_RETURN_VALID_SIGNATURE = 0x1626ba7e;
@@ -148,7 +148,7 @@ abstract contract EIP712Verifier is EIP712 {
         AttestationRequestData memory data = request.data;
 
         uint256 nonce = _newNonce(request.attester);
-        bytes32 digest = _attestationDigest(data, request.schema, nonce);
+        bytes32 digest = _attestationDigest(data, request.schemaUID, nonce);
         _verifySignature(digest, request.signature, request.attester);
     }
 
@@ -168,20 +168,22 @@ abstract contract EIP712Verifier is EIP712 {
         returns (bytes32 digest)
     {
         uint256 nonce = getNonce(revoker) + 1;
-        digest = _revocationDigest(schemaUid, revData.uid, nonce);
+        digest = _revocationDigest(schemaUid, revData.subject, revData.attester, nonce);
     }
 
     function _revocationDigest(
         bytes32 schemaUid,
-        bytes32 revocationId,
+        address subject,
+        address attester,
         uint256 nonce
     )
         private
         view
         returns (bytes32 digest)
     {
-        digest =
-            _hashTypedDataV4(keccak256(abi.encode(REVOKE_TYPEHASH, schemaUid, revocationId, nonce)));
+        digest = _hashTypedDataV4(
+            keccak256(abi.encode(REVOKE_TYPEHASH, schemaUid, subject, attester, nonce))
+        );
     }
 
     /**
@@ -193,7 +195,7 @@ abstract contract EIP712Verifier is EIP712 {
         RevocationRequestData memory data = request.data;
 
         uint256 nonce = _newNonce(request.revoker);
-        bytes32 digest = _revocationDigest(request.schema, data.uid, nonce);
+        bytes32 digest = _revocationDigest(request.schemaUID, data.subject, data.attester, nonce);
         _verifySignature(digest, request.signature, request.revoker);
     }
 

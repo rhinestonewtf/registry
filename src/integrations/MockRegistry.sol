@@ -55,7 +55,7 @@ contract MockRegistry is IQuery {
         returns (AttestationRecord memory attestation)
     { }
 
-    function findAttestation(
+    function findAttestations(
         address module,
         address[] memory authority
     )
