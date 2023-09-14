@@ -2,9 +2,9 @@
 pragma solidity ^0.8.19;
 
 import { IModule } from "../interface/IModule.sol";
-import { InvalidResolver } from "../Common.sol";
+import { InvalidResolver, ResolverUID } from "../Common.sol";
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
-import { ISchema, SchemaRecord, SchemaResolver } from "../interface/ISchema.sol";
+import { ISchema, SchemaRecord, ResolverRecord } from "../interface/ISchema.sol";
 import { Schema } from "./Schema.sol";
 import { AttestationRecord, ModuleRecord } from "../Common.sol";
 import { ISchemaValidator } from "../resolver/ISchemaValidator.sol";
@@ -51,15 +51,15 @@ abstract contract Module is IModule {
         bytes calldata deployParams,
         uint256 salt,
         bytes calldata data,
-        bytes32 referrerUID
+        ResolverUID resolverUID
     )
         external
         payable
         returns (address moduleAddr)
     {
         // Check if the provided schemaId exists
-        SchemaResolver memory resolver = getSchemaResolver(referrerUID);
-        // if (resolver.schemaOwner == address(0)) revert InvalidResolver();
+        ResolverRecord memory resolver = getResolver(resolverUID);
+        if (resolver.schemaOwner == address(0)) revert InvalidResolver();
 
         bytes32 contractCodeHash; //  Hash of contract bytecode
         bytes32 deployParamsHash; // Hash of contract deployment parameters
@@ -67,7 +67,7 @@ abstract contract Module is IModule {
             code.deploy(deployParams, salt, msg.value);
 
         _register(
-            moduleAddr, msg.sender, resolver, referrerUID, contractCodeHash, deployParamsHash, data
+            moduleAddr, msg.sender, resolver, resolverUID, contractCodeHash, deployParamsHash, data
         );
 
         emit ModuleRegistration(moduleAddr, contractCodeHash); // Emit a deployment event
@@ -76,14 +76,20 @@ abstract contract Module is IModule {
     // this function might be removed in the future.
     // could be a security risk
     // TODO
-    function register(bytes32 referrerUID, address moduleAddress, bytes calldata data) external {
+    function register(
+        ResolverUID resolverUID,
+        address moduleAddress,
+        bytes calldata data
+    )
+        external
+    {
         // Check if the provided schemaId exists
-        SchemaResolver memory resolver = getSchemaResolver(referrerUID);
-        // if (resolver.schemaOwner == address(0)) revert InvalidResolver();
+        ResolverRecord memory resolver = getResolver(resolverUID);
+        if (resolver.schemaOwner == address(0)) revert InvalidResolver();
 
         // get codehash of depoyed contract
         bytes32 contractCodeHash = moduleAddress.codeHash();
-        _register(moduleAddress, address(0), resolver, referrerUID, contractCodeHash, "", data);
+        _register(moduleAddress, address(0), resolver, resolverUID, contractCodeHash, "", data);
 
         emit ModuleRegistration(moduleAddress, contractCodeHash); // Emit a registration event
     }
@@ -91,8 +97,8 @@ abstract contract Module is IModule {
     function _register(
         address moduleAddress,
         address sender,
-        SchemaResolver memory referrer,
-        bytes32 resolverUID,
+        ResolverRecord memory resolver,
+        ResolverUID resolverUID,
         bytes32 codeHash,
         bytes32 deployParamsHash,
         bytes calldata data
@@ -112,7 +118,7 @@ abstract contract Module is IModule {
             data: data
         });
 
-        _resolveRegistration(referrer.resolver, moduleRegistration);
+        _resolveRegistration(resolver.resolver, moduleRegistration);
 
         _modules[moduleAddress] = moduleRegistration;
     }
@@ -129,7 +135,7 @@ abstract contract Module is IModule {
         }
     }
 
-    function getSchemaResolver(bytes32 uid) public view virtual returns (SchemaResolver memory);
+    function getResolver(ResolverUID uid) public view virtual returns (ResolverRecord memory);
 
     function _getModule(address moduleAddress)
         internal
@@ -138,5 +144,9 @@ abstract contract Module is IModule {
         returns (ModuleRecord storage)
     {
         return _modules[moduleAddress];
+    }
+
+    function getModule(address moduleAddress) public returns (ModuleRecord memory) {
+        return _getModule(moduleAddress);
     }
 }

@@ -37,9 +37,9 @@ contract BaseTest is Test, RegistryTestTools {
     uint256 auth1k;
     uint256 auth2k;
 
-    bytes32 defaultSchema1;
-    bytes32 defaultSchema2;
-    bytes32 defaultResolver;
+    SchemaUID defaultSchema1;
+    SchemaUID defaultSchema2;
+    ResolverUID defaultResolver;
     address defaultModule1;
     address defaultModule2;
 
@@ -52,13 +52,6 @@ contract BaseTest is Test, RegistryTestTools {
             yaru: Yaru(address(0)),
             l1Registry: address(0)
         });
-        instancel2 = _setupInstance({
-            name: "RegistryL2",
-            yaho: Yaho(address(0)),
-            yaru: hashiEnv.yaru,
-            l1Registry: address(instancel1.registry)
-        });
-
         (, auth1k) = makeAddrAndKey("auth1");
         (, auth2k) = makeAddrAndKey("auth2");
 
@@ -67,24 +60,11 @@ contract BaseTest is Test, RegistryTestTools {
         DebugResolver debugResolver = new DebugResolver(address(instancel1.registry));
         defaultResolver = instancel1.registerResolver(ISchemaResolver(address(debugResolver)));
 
-        instancel2.registerSchema("Test ABI", ISchemaValidator(address(0)));
-        instancel2.registerSchema("Test ABI2", ISchemaValidator(address(0)));
         defaultModule1 = instancel1.deployAndRegister(
-            defaultSchema1, type(MockModuleWithArgs).creationCode, abi.encode(1234)
+            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1234)
         );
         defaultModule2 = instancel1.deployAndRegister(
-            defaultSchema2, type(MockModuleWithArgs).creationCode, abi.encode(5678)
+            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(5678)
         );
-
-        instancel2.registry.register({
-            referrerUID: defaultResolver,
-            moduleAddress: defaultModule1,
-            data: ""
-        });
-        instancel2.registry.register({
-            referrerUID: defaultResolver,
-            moduleAddress: defaultModule2,
-            data: ""
-        });
     }
 }

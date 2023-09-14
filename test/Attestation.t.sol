@@ -18,7 +18,7 @@ contract AttestationTest is BaseTest {
     }
 
     function testCreateAttestation() public {
-        instancel1.mockAttestation(defaultSchema1, defaultResolver, auth1k, defaultModule1);
+        instancel1.mockAttestation(defaultSchema1, auth1k, defaultModule1);
     }
 
     function testRevokeAttestation() public {
@@ -41,8 +41,7 @@ contract AttestationTest is BaseTest {
             subject: defaultModule1,
             expirationTime: uint48(0),
             data: abi.encode(true),
-            value: 0,
-            resolverUID: defaultResolver
+            value: 0
         });
 
         EIP712Signature memory sig = EIP712Signature({ v: 27, r: "", s: "" });
@@ -59,23 +58,21 @@ contract AttestationTest is BaseTest {
 
     function testMultiAttest() public {
         address anotherModule = instancel1.deployAndRegister(
-            defaultSchema1, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
+            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
         AttestationRequestData memory attData1 = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
             data: abi.encode(true),
-            value: 0,
-            resolverUID: defaultResolver
+            value: 0
         });
 
         AttestationRequestData memory attData2 = AttestationRequestData({
             subject: anotherModule,
             expirationTime: uint48(0),
             data: abi.encode(true),
-            value: 0,
-            resolverUID: defaultResolver
+            value: 0
         });
 
         AttestationRequestData[] memory attArray = new AttestationRequestData[](

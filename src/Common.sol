@@ -8,6 +8,32 @@ bytes32 constant EMPTY_UID = 0;
 // A zero expiration represents an non-expiring attestation.
 uint64 constant NO_EXPIRATION_TIME = 0;
 
+type SchemaUID is bytes32;
+
+using { schemaEq as == } for SchemaUID global;
+using { schemaNotEq as != } for SchemaUID global;
+
+function schemaEq(SchemaUID uid1, SchemaUID uid) pure returns (bool) {
+    return SchemaUID.unwrap(uid1) == SchemaUID.unwrap(uid);
+}
+
+function schemaNotEq(SchemaUID uid1, SchemaUID uid) pure returns (bool) {
+    return SchemaUID.unwrap(uid1) != SchemaUID.unwrap(uid);
+}
+
+type ResolverUID is bytes32;
+
+using { resolverEq as == } for ResolverUID global;
+using { resolverNotEq as != } for ResolverUID global;
+
+function resolverEq(ResolverUID uid1, ResolverUID uid2) pure returns (bool) {
+    return ResolverUID.unwrap(uid1) == ResolverUID.unwrap(uid2);
+}
+
+function resolverNotEq(ResolverUID uid1, ResolverUID uid2) pure returns (bool) {
+    return ResolverUID.unwrap(uid1) != ResolverUID.unwrap(uid2);
+}
+
 error AccessDenied();
 error InvalidSchema();
 error InvalidResolver();
@@ -30,7 +56,7 @@ struct EIP712Signature {
  * inspired by EAS (Ethereum Attestation Service)
  */
 struct AttestationRecord {
-    bytes32 schemaUID; // The unique identifier of the schema.
+    SchemaUID schemaUID; // The unique identifier of the schema.
     address subject; // The recipient of the attestation i.e. module
     address attester; // The attester/sender of the attestation.
     uint48 time; // The time when the attestation was created (Unix timestamp).
@@ -41,7 +67,7 @@ struct AttestationRecord {
 
 // Struct that represents Module artefact.
 struct ModuleRecord {
-    bytes32 resolverUID;
+    ResolverUID resolverUID;
     address implementation; // The deployed contract address
     address sender; // The address of the sender who deployed the contract
     bytes data; // Additional data related to the contract deployment

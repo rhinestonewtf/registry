@@ -15,20 +15,19 @@ contract ValueResolverTest is BaseTest {
     }
 
     function testValueResolver() public {
-        bytes32 schema =
+        SchemaUID schema =
             instancel1.registerSchema("TokenizedResolver", ISchemaValidator(address(0)));
-        bytes32 resolverUID = instancel1.registerResolver(ISchemaResolver(address(resolver)));
+        ResolverUID resolverUID = instancel1.registerResolver(ISchemaResolver(address(resolver)));
 
         address module = instancel1.deployAndRegister(
-            schema, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")
+            resolverUID, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")
         );
 
         AttestationRequestData memory attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
             data: abi.encode(true),
-            value: 1 ether,
-            resolverUID: resolverUID
+            value: 1 ether
         });
 
         EIP712Signature memory signature =

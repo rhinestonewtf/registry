@@ -21,15 +21,15 @@ contract SchemaTest is BaseTest {
     }
 
     function testRegisterSchema() public {
-        bytes32 schemaId = instancel1.registerSchema("Test ABI 2", ISchemaValidator(address(0)));
-        assertTrue(schemaId != bytes32(0), "schemaId should not be empty");
+        SchemaUID schemaId = instancel1.registerSchema("Test ABI 2", ISchemaValidator(address(0)));
+        assertTrue(SchemaUID.unwrap(schemaId) != bytes32(0), "schemaId should not be empty");
     }
 
     function testRegisterSchemaWitSameSchema() public {
-        bytes32 schemaId = instancel1.registerSchema("same", ISchemaValidator(address(0)));
+        SchemaUID schemaId = instancel1.registerSchema("same", ISchemaValidator(address(0)));
 
         vm.expectRevert(abi.encodeWithSelector(ISchema.AlreadyExists.selector));
-        bytes32 schemaId2 = instancel1.registerSchema("same", ISchemaValidator(address(0)));
+        SchemaUID schemaId2 = instancel1.registerSchema("same", ISchemaValidator(address(0)));
     }
 
     function testSameUIDOnL2() public {

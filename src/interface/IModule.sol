@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
+import { ResolverUID } from "../Common.sol";
+
 interface IModule {
     // Event triggered when a contract is deployed.
     event ModuleRegistration(address indexed implementation, bytes32 codeHash);
@@ -22,7 +24,7 @@ interface IModule {
         bytes calldata deployParams,
         uint256 salt,
         bytes calldata data,
-        bytes32 schemaId
+        ResolverUID resolver
     )
         external
         payable

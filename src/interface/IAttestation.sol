@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import { AttestationRecord, EIP712Signature } from "../Common.sol";
+import { AttestationRecord, EIP712Signature, SchemaUID } from "../Common.sol";
 // Hashi's contract to dispatch messages to L2
 import "hashi/Yaho.sol";
 
@@ -18,7 +18,6 @@ struct AttestationRequestData {
     address subject; // The subject of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
-    bytes32 resolverUID;
     bytes data; // Custom attestation data.
 }
 
@@ -26,7 +25,7 @@ struct AttestationRequestData {
  * @dev A struct representing the full arguments of the attestation request.
  */
 struct AttestationRequest {
-    bytes32 schemaUID; // The unique identifier of the schema.
+    SchemaUID schemaUID; // The unique identifier of the schema.
     AttestationRequestData data; // The arguments of the attestation request.
 }
 
@@ -34,7 +33,7 @@ struct AttestationRequest {
  * @dev A struct representing the full arguments of the full delegated attestation request.
  */
 struct DelegatedAttestationRequest {
-    bytes32 schemaUID; // The unique identifier of the schema.
+    SchemaUID schemaUID; // The unique identifier of the schema.
     AttestationRequestData data; // The arguments of the attestation request.
     bytes signature; // The EIP712 signature data.
     address attester; // The attesting account.
@@ -44,7 +43,7 @@ struct DelegatedAttestationRequest {
  * @dev A struct representing the full arguments of the multi attestation request.
  */
 struct MultiAttestationRequest {
-    bytes32 schemaUID; // The unique identifier of the schema.
+    SchemaUID schemaUID; // The unique identifier of the schema.
     AttestationRequestData[] data; // The arguments of the attestation request.
 }
 
@@ -52,7 +51,7 @@ struct MultiAttestationRequest {
  * @dev A struct representing the full arguments of the delegated multi attestation request.
  */
 struct MultiDelegatedAttestationRequest {
-    bytes32 schemaUID; // The unique identifier of the schema.
+    SchemaUID schemaUID; // The unique identifier of the schema.
     AttestationRequestData[] data; // The arguments of the attestation requests.
     bytes[] signatures; // The EIP712 signatures data. Please note that the signatures are assumed to be signed with increasing nonces.
     address attester; // The attesting account.
@@ -71,7 +70,7 @@ struct RevocationRequestData {
  * @dev A struct representing the full arguments of the revocation request.
  */
 struct RevocationRequest {
-    bytes32 schemaUID; // The unique identifier of the schema.
+    SchemaUID schemaUID; // The unique identifier of the schema.
     RevocationRequestData data; // The arguments of the revocation request.
 }
 
@@ -79,7 +78,7 @@ struct RevocationRequest {
  * @dev A struct representing the arguments of the full delegated revocation request.
  */
 struct DelegatedRevocationRequest {
-    bytes32 schemaUID; // The unique identifier of the schema.
+    SchemaUID schemaUID; // The unique identifier of the schema.
     RevocationRequestData data; // The arguments of the revocation request.
     bytes signature; // The EIP712 signature data.
     address revoker; // The revoking account.
@@ -89,7 +88,7 @@ struct DelegatedRevocationRequest {
  * @dev A struct representing the full arguments of the multi revocation request.
  */
 struct MultiRevocationRequest {
-    bytes32 schemaUID; // The unique identifier of the schema.
+    SchemaUID schemaUID; // The unique identifier of the schema.
     RevocationRequestData[] data; // The arguments of the revocation request.
 }
 
@@ -97,7 +96,7 @@ struct MultiRevocationRequest {
  * @dev A struct representing the full arguments of the delegated multi revocation request.
  */
 struct MultiDelegatedRevocationRequest {
-    bytes32 schemaUID; // The unique identifier of the schema.
+    SchemaUID schemaUID; // The unique identifier of the schema.
     RevocationRequestData[] data; // The arguments of the revocation requests.
     bytes[] signatures; // The EIP712 signatures data. Please note that the signatures are assumed to be signed with increasing nonces.
     address revoker; // The revoking account.
@@ -111,7 +110,7 @@ interface IAttestation {
      * @param attester The attesting account.
      * @param schema The UID of the schema.
      */
-    event Attested(address indexed subject, address indexed attester, bytes32 indexed schema);
+    event Attested(address indexed subject, address indexed attester, SchemaUID indexed schema);
 
     /**
      * @dev Emitted when an attestation has been revoked.
@@ -120,7 +119,7 @@ interface IAttestation {
      * @param attester The attesting account.
      * @param schema The UID of the schema.
      */
-    event Revoked(address indexed subject, address indexed attester, bytes32 indexed schema);
+    event Revoked(address indexed subject, address indexed attester, SchemaUID indexed schema);
 
     /**
      * @dev Emitted when a data has been timestamped.

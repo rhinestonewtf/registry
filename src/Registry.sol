@@ -24,16 +24,17 @@ contract Registry is Schema, Query, Attestation, Module {
                             Helper Functions
     //////////////////////////////////////////////////////////////*/
 
-    // @TODO
-    function setResolver(bytes32 uid, ISchemaResolver resolver) external override { }
+    function getSchema(SchemaUID uid) public view override(Schema) returns (SchemaRecord memory) {
+        return super.getSchema(uid);
+    }
 
-    function getSchema(bytes32 uid)
-        public
+    function _getSchema(SchemaUID uid)
+        internal
         view
         override(Attestation, Schema)
-        returns (SchemaRecord memory)
+        returns (SchemaRecord storage)
     {
-        return super.getSchema(uid);
+        return super._getSchema(uid);
     }
 
     function _getAttestation(
@@ -49,14 +50,14 @@ contract Registry is Schema, Query, Attestation, Module {
         return super._getAttestation(module, attester);
     }
 
-    function getSchemaResolver(bytes32 uid)
+    function getResolver(ResolverUID uid)
         public
         view
         virtual
         override(Attestation, Module, Schema)
-        returns (SchemaResolver memory)
+        returns (ResolverRecord memory)
     {
-        return super.getSchemaResolver(uid);
+        return super.getResolver(uid);
     }
 
     function _getModule(address moduleAddress)

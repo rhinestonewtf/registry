@@ -2,8 +2,10 @@
 
 pragma solidity 0.8.19;
 
-import { EMPTY_UID, AccessDenied, _time, InvalidResolver } from "../Common.sol";
-import { ISchema, SchemaRecord, SchemaResolver } from "../interface/ISchema.sol";
+import {
+    EMPTY_UID, AccessDenied, _time, InvalidResolver, SchemaUID, ResolverUID
+} from "../Common.sol";
+import { ISchema, SchemaRecord, ResolverRecord, SchemaLib } from "../interface/ISchema.sol";
 
 import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
 import { ISchemaValidator } from "../resolver/ISchemaValidator.sol";
@@ -17,10 +19,6 @@ import "forge-std/console2.sol";
  * @dev The Schema contract serves as a crucial component of a broader system for managing "schemas" within a
  * blockchain ecosystem. It provides functionality to register, retrieve and manage schemas. This contract is a
  * concrete implementation of the ISchema interface.
- *
- * @dev A schema in this context is a defined structure that represents a record for a submitted schema,
- * encompassing its unique identifier (UID), resolver (optional), revocability status, specification, owner's address,
- * and associated bridges for Layer 2 (L2) propagation.
  *
  * @dev The main functionality of the Schema contract includes the registration of new schemas (`registerSchema` function)
  * and the retrieval of existing schemas (`getSchema` function). It also offers additional management features such as
@@ -37,13 +35,16 @@ import "forge-std/console2.sol";
  * retrieve, and manage schemas in a controlled and structured manner.
  */
 abstract contract Schema is ISchema {
+    using SchemaLib for SchemaRecord;
+    using SchemaLib for ResolverRecord;
     // The version of the contract.
+
     string public constant VERSION = "0.1";
 
     // The global mapping between schema records and their IDs.
-    mapping(bytes32 uid => SchemaRecord schemaRecord) private _schemas;
+    mapping(SchemaUID uid => SchemaRecord schemaRecord) private _schemas;
 
-    mapping(bytes32 uid => SchemaResolver resolver) private _resolvers;
+    mapping(ResolverUID uid => ResolverRecord resolverRecord) private _resolvers;
 
     /**
      * @inheritdoc ISchema
@@ -53,13 +54,13 @@ abstract contract Schema is ISchema {
         ISchemaValidator validator
     )
         external
-        returns (bytes32)
+        returns (SchemaUID)
     {
         SchemaRecord memory schemaRecord =
             SchemaRecord({ validator: validator, registeredAt: _time(), schema: schema });
 
         // Computing a unique ID for the schema using its properties
-        bytes32 uid = _getUID(schemaRecord);
+        SchemaUID uid = schemaRecord.getUID();
 
         // @TODO: better way to make this check?
         // Checking if a schema with this UID already exists
@@ -79,15 +80,13 @@ abstract contract Schema is ISchema {
         return uid;
     }
 
-    function registerSchemaResolver(ISchemaResolver resolver) external returns (bytes32) {
-        if (address(resolver) == address(0)) revert InvalidResolver();
-        SchemaResolver memory _resolver =
-            SchemaResolver({ resolver: resolver, schemaOwner: msg.sender });
+    function registerSchemaResolver(ISchemaResolver _resolver) external returns (ResolverUID) {
+        if (address(_resolver) == address(0)) revert InvalidResolver();
+        ResolverRecord memory resolver =
+            ResolverRecord({ resolver: _resolver, schemaOwner: msg.sender });
 
         // Computing a unique ID for the schema using its properties
-        bytes32 uid = _getUID(_resolver);
-        console2.log("registering schema resolver:", address(resolver));
-        console2.logBytes32(uid);
+        ResolverUID uid = resolver.getUID();
 
         // Checking if a schema with this UID already exists -> resolver can never be address(0)
         if (address(_resolvers[uid].resolver) != address(0)) {
@@ -95,7 +94,7 @@ abstract contract Schema is ISchema {
         }
 
         // Storing schema in the _schemas mapping
-        _resolvers[uid] = _resolver;
+        _resolvers[uid] = resolver;
 
         emit SchemaResolverRegistered(uid, msg.sender);
 
@@ -103,13 +102,13 @@ abstract contract Schema is ISchema {
     }
 
     function setSchemaResolver(
-        bytes32 uid,
+        ResolverUID uid,
         ISchemaResolver resolver
     )
         external
         onlySchemaOwner(uid)
     {
-        SchemaResolver storage referrer = _resolvers[uid];
+        ResolverRecord storage referrer = _resolvers[uid];
         referrer.resolver = resolver;
         emit NewSchemaResolver(uid, address(resolver));
     }
@@ -117,36 +116,16 @@ abstract contract Schema is ISchema {
     /**
      * @inheritdoc ISchema
      */
-    function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory) {
+    function getSchema(SchemaUID uid) public view virtual returns (SchemaRecord memory) {
         return _schemas[uid];
     }
 
-    function getSchemaResolver(bytes32 uid) public view virtual returns (SchemaResolver memory) {
-        console2.log("looking up resolver uid");
-        console2.logBytes32(uid);
+    function _getSchema(SchemaUID uid) internal view virtual returns (SchemaRecord storage) {
+        return _schemas[uid];
+    }
+
+    function getResolver(ResolverUID uid) public view virtual returns (ResolverRecord memory) {
         return _resolvers[uid];
-    }
-
-    /**
-     * @dev Calculates a UID for a given schema.
-     *
-     * @param schemaRecord The input schema.
-     *
-     * @return schema UID.
-     */
-    function _getUID(SchemaRecord memory schemaRecord) private pure returns (bytes32) {
-        return keccak256(abi.encodePacked(schemaRecord.schema, address(schemaRecord.validator)));
-    }
-
-    function _getUID(SchemaResolver memory referrer) private pure returns (bytes32) {
-        return keccak256(
-            abi.encodePacked(
-                // @zeroknots: this breaks when resolver is changed
-                // I think being able to change the resolver would make a lot of sense
-                referrer.schemaOwner,
-                address(referrer.resolver)
-            )
-        );
     }
 
     /**
@@ -154,7 +133,7 @@ abstract contract Schema is ISchema {
      *
      * @param uid The UID of the schema.
      */
-    modifier onlySchemaOwner(bytes32 uid) {
+    modifier onlySchemaOwner(ResolverUID uid) {
         _onlySchemaOwner(uid);
         _;
     }
@@ -164,7 +143,7 @@ abstract contract Schema is ISchema {
      *
      * @param uid The UID of the schema.
      */
-    function _onlySchemaOwner(bytes32 uid) private view {
+    function _onlySchemaOwner(ResolverUID uid) private view {
         if (_resolvers[uid].schemaOwner != msg.sender) {
             revert AccessDenied();
         }

@@ -18,7 +18,7 @@ import {
     RevocationRequestData
 } from "../interface/IAttestation.sol";
 
-import { EIP712Signature, InvalidSignature } from "../Common.sol";
+import { EIP712Signature, InvalidSignature, SchemaUID } from "../Common.sol";
 
 /**
  * @title EIP712 typed signatures verifier for EAS delegated attestations.
@@ -92,7 +92,7 @@ abstract contract EIP712Verifier is EIP712 {
 
     function getAttestationDigest(
         AttestationRequestData memory attData,
-        bytes32 schemaUid,
+        SchemaUID schemaUid,
         uint256 nonce
     )
         public
@@ -104,7 +104,7 @@ abstract contract EIP712Verifier is EIP712 {
 
     function getAttestationDigest(
         AttestationRequestData memory attData,
-        bytes32 schemaUid,
+        SchemaUID schemaUid,
         address attester
     )
         public
@@ -117,7 +117,7 @@ abstract contract EIP712Verifier is EIP712 {
 
     function _attestationDigest(
         AttestationRequestData memory data,
-        bytes32 schemaUid,
+        SchemaUID schemaUid,
         uint256 nonce
     )
         private
@@ -159,7 +159,7 @@ abstract contract EIP712Verifier is EIP712 {
 
     function getRevocationDigest(
         RevocationRequestData memory revData,
-        bytes32 schemaUid,
+        SchemaUID schemaUid,
         address revoker
     )
         public
@@ -171,7 +171,7 @@ abstract contract EIP712Verifier is EIP712 {
     }
 
     function _revocationDigest(
-        bytes32 schemaUid,
+        SchemaUID schemaUid,
         address subject,
         address attester,
         uint256 nonce

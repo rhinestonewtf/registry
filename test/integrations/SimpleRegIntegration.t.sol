@@ -37,7 +37,7 @@ contract SimpleRegistryIntegrationTest is BaseTest {
     }
 
     function testGasRegistryCheck() public {
-        instancel1.mockAttestation(defaultSchema1, defaultResolver, auth1k, defaultModule1);
+        instancel1.mockAttestation(defaultSchema1, auth1k, defaultModule1);
         harness.query(defaultModule1);
     }
 }

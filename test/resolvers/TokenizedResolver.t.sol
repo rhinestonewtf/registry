@@ -26,29 +26,24 @@ contract TokenizedResolverTest is BaseTest {
     }
 
     function testTokenizedResolver() public {
-        console2.log("--------------------------------");
-        bytes32 schema =
+        SchemaUID schema =
             instancel1.registerSchema("TokenizedResolver", ISchemaValidator(address(validator)));
-        bytes32 resolverUID = instancel1.registerResolver(ISchemaResolver(address(resolver)));
-        console.logBytes32(resolverUID);
+        ResolverUID resolverUID = instancel1.registerResolver(ISchemaResolver(address(resolver)));
 
         address module = instancel1.deployAndRegister(
-            schema, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")
+            resolverUID, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")
         );
 
         AttestationRequestData memory attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
             data: abi.encode(true),
-            value: 0,
-            resolverUID: resolverUID
+            value: 0
         });
-        console2.log("--------------------------------");
 
         vm.prank(vm.addr(auth1k));
         token.approve(address(resolver), 1000);
         instancel1.newAttestation(schema, auth1k, attData);
-        console2.log("--------------------------------");
         assertEq(token.balanceOf(address(resolver)), 10);
     }
 }

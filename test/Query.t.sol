@@ -39,8 +39,7 @@ contract QueryTest is AttestationTest {
             subject: defaultModule1,
             expirationTime: uint48(101),
             data: abi.encode(true),
-            value: 0,
-            resolverUID: defaultResolver
+            value: 0
         });
         instancel1.mockAttestation(defaultSchema1, auth1k, attData);
         vm.warp(200);
@@ -61,8 +60,7 @@ contract QueryTest is AttestationTest {
             subject: defaultModule1,
             expirationTime: uint48(101),
             data: abi.encode(true),
-            value: 0,
-            resolverUID: defaultResolver
+            value: 0
         });
         instancel1.mockAttestation(defaultSchema1, auth2k, attData);
         address[] memory authorities = new address[](2);
@@ -88,8 +86,7 @@ contract QueryTest is AttestationTest {
             subject: defaultModule1,
             expirationTime: uint48(101),
             data: abi.encode(true),
-            value: 0,
-            resolverUID: defaultResolver
+            value: 0
         });
         instancel1.mockAttestation(defaultSchema1, auth2k, attData);
         vm.warp(200);
@@ -107,8 +104,7 @@ contract QueryTest is AttestationTest {
             subject: defaultModule1,
             expirationTime: uint48(101),
             data: abi.encode(true),
-            value: 0,
-            resolverUID: defaultResolver
+            value: 0
         });
         instancel1.mockAttestation(defaultSchema1, auth2k, attData);
         instancel1.revokeAttestation(defaultModule1, defaultSchema1, auth2k);
@@ -126,8 +122,7 @@ contract QueryTest is AttestationTest {
             subject: defaultModule1,
             expirationTime: uint48(101),
             data: abi.encode(true),
-            value: 0,
-            resolverUID: defaultResolver
+            value: 0
         });
         instancel1.mockAttestation(defaultSchema1, auth2k, attData);
         address[] memory authorities = new address[](2);
@@ -153,8 +148,7 @@ contract QueryTest is AttestationTest {
             subject: defaultModule1,
             expirationTime: uint48(101),
             data: abi.encode(true),
-            value: 0,
-            resolverUID: defaultResolver
+            value: 0
         });
         instancel1.mockAttestation(defaultSchema1, auth2k, attData);
         vm.warp(200);
@@ -171,8 +165,7 @@ contract QueryTest is AttestationTest {
             subject: defaultModule1,
             expirationTime: uint48(101),
             data: abi.encode(true),
-            value: 0,
-            resolverUID: defaultResolver
+            value: 0
         });
         instancel1.mockAttestation(defaultSchema1, auth2k, attData);
         instancel1.revokeAttestation(defaultModule1, defaultSchema1, auth2k);

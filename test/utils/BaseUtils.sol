@@ -52,8 +52,7 @@ struct HashiEnv {
 library RegistryTestLib {
     function mockAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaUID,
-        bytes32 resolverUID,
+        SchemaUID schemaUID,
         uint256 attesterKey,
         address moduleAddr
     )
@@ -63,15 +62,14 @@ library RegistryTestLib {
             subject: moduleAddr,
             expirationTime: uint48(0),
             data: abi.encode(true),
-            value: 0,
-            resolverUID: resolverUID
+            value: 0
         });
         newAttestation(instance, schemaUID, attesterKey, attData);
     }
 
     function mockAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaUID,
+        SchemaUID schemaUID,
         uint256 attesterKey,
         AttestationRequestData memory attData
     )
@@ -82,7 +80,7 @@ library RegistryTestLib {
 
     function newAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaUID,
+        SchemaUID schemaUID,
         uint256 attesterKey,
         AttestationRequestData memory attData
     )
@@ -101,7 +99,7 @@ library RegistryTestLib {
 
     function signAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        SchemaUID schemaId,
         uint256 attesterPk,
         AttestationRequestData memory attData
     )
@@ -122,7 +120,7 @@ library RegistryTestLib {
 
     function signAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        SchemaUID schemaId,
         uint256 attesterPk,
         AttestationRequestData[] memory attData
     )
@@ -149,7 +147,7 @@ library RegistryTestLib {
     function revokeAttestation(
         RegistryInstance memory instance,
         address module,
-        bytes32 schemaId,
+        SchemaUID schemaId,
         uint256 attesterPk
     )
         public
@@ -179,7 +177,7 @@ library RegistryTestLib {
         ISchemaResolver resolver
     )
         internal
-        returns (bytes32 schemaId, bytes32 resolverId)
+        returns (SchemaUID schemaId, ResolverUID resolverId)
     {
         schemaId = registerSchema(instance, abiString, validator);
         resolverId = registerResolver(instance, resolver);
@@ -191,7 +189,7 @@ library RegistryTestLib {
         ISchemaValidator validator
     )
         internal
-        returns (bytes32 schemaId)
+        returns (SchemaUID schemaId)
     {
         return instance.registry.registerSchema(abiString, validator);
     }
@@ -201,14 +199,14 @@ library RegistryTestLib {
         ISchemaResolver resolver
     )
         internal
-        returns (bytes32 schemaId)
+        returns (ResolverUID resolverUID)
     {
-        return instance.registry.registerSchemaResolver(resolver);
+        resolverUID = instance.registry.registerSchemaResolver(resolver);
     }
 
     function deployAndRegister(
         RegistryInstance memory instance,
-        bytes32 referrerUID,
+        ResolverUID resolverUID,
         bytes memory bytecode,
         bytes memory constructorArgs
     )
@@ -220,8 +218,11 @@ library RegistryTestLib {
             deployParams: constructorArgs,
             salt: 0,
             data: "",
-            referrerUID: referrerUID
+            resolverUID: resolverUID
         });
+
+        ModuleRecord memory moduleRecord = instance.registry.getModule(moduleAddr);
+        require(moduleRecord.resolverUID == resolverUID, "resolverUID mismatch");
     }
 }
 
