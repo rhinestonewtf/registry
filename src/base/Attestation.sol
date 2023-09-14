@@ -362,6 +362,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         // if (bytes(schemaRecord.schema).length == 0) {
         //     revert InvalidSchema();
         // }
+        console2.log("schemaUID");
+        console2.logBytes32(schemaUID);
+        console2.log("resolverUID");
+        console2.logBytes32(resolverUID);
 
         AttestationRecord[] memory attestations = new AttestationRecord[](
             length
@@ -413,9 +417,8 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             emit Attested(request.subject, attester, schemaUID);
         }
 
-        usedValue = _resolveAttestations(
-            getSchemaResolver(resolverUID), attestations, values, false, availableValue, last
-        );
+        usedValue =
+            _resolveAttestations(resolverUID, attestations, values, false, availableValue, last);
     }
 
     /**
@@ -491,13 +494,13 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             emit Revoked(attestation.subject, revoker, attestation.schemaUID);
         }
 
-        return _resolveAttestations(resolver, attestations, values, true, availableValue, last);
+        return _resolveAttestations(resolverUID, attestations, values, true, availableValue, last);
     }
 
     /**
      * @dev Resolves a new attestation or a revocation of an existing attestation.
      *
-     * @param resolver The schema of the attestation.
+     * @param resolverUID The schema of the attestation.
      * @param attestation The data of the attestation to make/revoke.
      * @param value An explicit ETH amount to send to the resolver.
      * @param isRevocation Whether to resolve an attestation or its revocation.
@@ -507,7 +510,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
      * @return Returns the total sent ETH amount.
      */
     function _resolveAttestation(
-        SchemaResolver memory resolver,
+        bytes32 resolverUID,
         AttestationRecord memory attestation,
         uint256 value,
         bool isRevocation,
@@ -517,9 +520,11 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         private
         returns (uint256)
     {
+        SchemaResolver memory resolver = getSchemaResolver(resolverUID);
         ISchemaResolver resolverContract = resolver.resolver;
+        console2.log("resolver contract", address(resolver.resolver));
+        console2.logBytes32(resolverUID);
 
-        console2.log("resolver:", address(resolverContract));
         if (address(resolverContract) == address(0)) {
             // Ensure that we don't accept payments if there is no resolver.
             if (value != 0) {
@@ -562,7 +567,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     /**
      * @dev Resolves multiple attestations or revocations of existing attestations.
      *
-     * @param resolver The schema of the attestation.
+     * @param resolverUID THe bytes32 uid of the resolver
      * @param attestations The data of the attestations to make/revoke.
      * @param values Explicit ETH amounts to send to the resolver.
      * @param isRevocation Whether to resolve an attestation or its revocation.
@@ -572,7 +577,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
      * @return Returns the total sent ETH amount.
      */
     function _resolveAttestations(
-        SchemaResolver memory resolver,
+        bytes32 resolverUID,
         AttestationRecord[] memory attestations,
         uint256[] memory values,
         bool isRevocation,
@@ -585,9 +590,10 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         uint256 length = attestations.length;
         if (length == 1) {
             return _resolveAttestation(
-                resolver, attestations[0], values[0], isRevocation, availableValue, last
+                resolverUID, attestations[0], values[0], isRevocation, availableValue, last
             );
         }
+        SchemaResolver memory resolver = getSchemaResolver(resolverUID);
 
         ISchemaResolver resolverContract = resolver.resolver;
         if (address(resolverContract) == address(0)) {

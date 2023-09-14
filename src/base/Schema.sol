@@ -7,6 +7,7 @@ import { ISchema, SchemaRecord, SchemaResolver } from "../interface/ISchema.sol"
 
 import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
 import { ISchemaValidator } from "../resolver/ISchemaValidator.sol";
+import "forge-std/console2.sol";
 
 /**
  * @title Schema
@@ -80,19 +81,21 @@ abstract contract Schema is ISchema {
 
     function registerSchemaResolver(ISchemaResolver resolver) external returns (bytes32) {
         if (address(resolver) == address(0)) revert InvalidResolver();
-        SchemaResolver memory referrer =
+        SchemaResolver memory _resolver =
             SchemaResolver({ resolver: resolver, schemaOwner: msg.sender });
 
         // Computing a unique ID for the schema using its properties
-        bytes32 uid = _getUID(referrer);
+        bytes32 uid = _getUID(_resolver);
+        console2.log("registering schema resolver:", address(resolver));
+        console2.logBytes32(uid);
 
-        // Checking if a schema with this UID already exists -> owner can never be address(0)
-        if (_resolvers[uid].schemaOwner != address(0)) {
+        // Checking if a schema with this UID already exists -> resolver can never be address(0)
+        if (address(_resolvers[uid].resolver) != address(0)) {
             revert AlreadyExists();
         }
 
         // Storing schema in the _schemas mapping
-        _resolvers[uid] = referrer;
+        _resolvers[uid] = _resolver;
 
         emit SchemaResolverRegistered(uid, msg.sender);
 
@@ -119,6 +122,8 @@ abstract contract Schema is ISchema {
     }
 
     function getSchemaResolver(bytes32 uid) public view virtual returns (SchemaResolver memory) {
+        console2.log("looking up resolver uid");
+        console2.logBytes32(uid);
         return _resolvers[uid];
     }
 

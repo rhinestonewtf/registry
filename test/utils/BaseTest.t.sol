@@ -77,12 +77,12 @@ contract BaseTest is Test, RegistryTestTools {
         );
 
         instancel2.registry.register({
-            referrerUID: defaultSchema2,
+            referrerUID: defaultResolver,
             moduleAddress: defaultModule1,
             data: ""
         });
         instancel2.registry.register({
-            referrerUID: defaultSchema2,
+            referrerUID: defaultResolver,
             moduleAddress: defaultModule2,
             data: ""
         });
