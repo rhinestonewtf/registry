@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.19;
 
-import { EMPTY_UID, AccessDenied, _time } from "../Common.sol";
+import { EMPTY_UID, AccessDenied, _time, InvalidResolver } from "../Common.sol";
 import { ISchema, SchemaRecord, SchemaResolver } from "../interface/ISchema.sol";
 
 import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
@@ -42,7 +42,7 @@ abstract contract Schema is ISchema {
     // The global mapping between schema records and their IDs.
     mapping(bytes32 uid => SchemaRecord schemaRecord) private _schemas;
 
-    mapping(bytes32 uid => SchemaResolver referrer) private _referrers;
+    mapping(bytes32 uid => SchemaResolver resolver) private _resolvers;
 
     /**
      * @inheritdoc ISchema
@@ -79,6 +79,7 @@ abstract contract Schema is ISchema {
     }
 
     function registerSchemaResolver(ISchemaResolver resolver) external returns (bytes32) {
+        if (address(resolver) == address(0)) revert InvalidResolver();
         SchemaResolver memory referrer =
             SchemaResolver({ resolver: resolver, schemaOwner: msg.sender });
 
@@ -86,16 +87,15 @@ abstract contract Schema is ISchema {
         bytes32 uid = _getUID(referrer);
 
         // Checking if a schema with this UID already exists -> owner can never be address(0)
-        if (_referrers[uid].schemaOwner != address(0)) {
+        if (_resolvers[uid].schemaOwner != address(0)) {
             revert AlreadyExists();
         }
 
         // Storing schema in the _schemas mapping
-        _referrers[uid] = referrer;
+        _resolvers[uid] = referrer;
 
         emit SchemaResolverRegistered(uid, msg.sender);
 
-        // @TODO: remove this
         return uid;
     }
 
@@ -106,7 +106,7 @@ abstract contract Schema is ISchema {
         external
         onlySchemaOwner(uid)
     {
-        SchemaResolver storage referrer = _referrers[uid];
+        SchemaResolver storage referrer = _resolvers[uid];
         referrer.resolver = resolver;
         emit NewSchemaResolver(uid, address(resolver));
     }
@@ -119,7 +119,7 @@ abstract contract Schema is ISchema {
     }
 
     function getSchemaResolver(bytes32 uid) public view virtual returns (SchemaResolver memory) {
-        return _referrers[uid];
+        return _resolvers[uid];
     }
 
     /**
@@ -160,7 +160,7 @@ abstract contract Schema is ISchema {
      * @param uid The UID of the schema.
      */
     function _onlySchemaOwner(bytes32 uid) private view {
-        if (_referrers[uid].schemaOwner != msg.sender) {
+        if (_resolvers[uid].schemaOwner != msg.sender) {
             revert AccessDenied();
         }
     }

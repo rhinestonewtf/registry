@@ -17,11 +17,9 @@ import "hashi/Yaru.sol";
 struct AttestationRequestData {
     address subject; // The subject of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
-    bool propagateable; // Whether the attestation is propagateable to L2s.
-    bytes32 refUID; // The UID of the related attestation.
-    bytes data; // Custom attestation data.
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
-    bytes32 schemaUID; // The unique identifier of the schema.
+    bytes32 resolverUID;
+    bytes data; // Custom attestation data.
 }
 
 /**
@@ -147,12 +145,8 @@ interface IAttestation {
      * @dev The function verifies the attestation, wraps the data in an array and forwards it to the _attest() function
      *
      * @param delegatedRequest A delegated attestation request
-     * @return attestationId The ID of the performed attestation
      */
-    function attest(DelegatedAttestationRequest calldata delegatedRequest)
-        external
-        payable
-        returns (bytes32 attestationId);
+    function attest(DelegatedAttestationRequest calldata delegatedRequest) external payable;
 
     /**
      * @notice Function to handle multiple delegated attestation requests
@@ -160,71 +154,10 @@ interface IAttestation {
      * @dev It iterates over the attestation requests and processes them. It collects the returned UIDs into a list.
      *
      * @param multiDelegatedRequests An array of multiple delegated attestation requests
-     * @return attestationIds An array of IDs of the performed attestations
      */
     function multiAttest(MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests)
         external
-        payable
-        returns (bytes32[] memory attestationIds);
-
-    /**
-     * @notice Propagates the attestations to a different blockchain.
-     *
-     * @dev Encodes the attestation record and sends it as a message to the destination chain.
-     *
-     * @param to The address to send to on the destination chain
-     * @param toChainId The ID of the destination chain
-     * @param attestationIds The IDs of the attestations to be propagated.
-     *           They have to be attestations on the same subject
-     * @param moduleOnL2 The address of the module on the Layer 2 chain
-     * @return messages An array of messages sent
-     * @return messageIds An array of IDs of the messages sent
-     */
-    function propagateAttest(
-        address to,
-        uint256 toChainId,
-        bytes32[] calldata attestationIds,
-        address moduleOnL2
-    )
-        external
-        returns (Message[] memory messages, bytes32[] memory messageIds);
-
-    /**
-     * @notice Propagates the attestations to a different blockchain.
-     *
-     * @dev Encodes the attestation record and sends it as a message to the destination chain.
-     *
-     * @param to The address to send to on the destination chain
-     * @param toChainId The ID of the destination chain
-     * @param attestationId The ID of the attestation to be propagated
-     * @param moduleOnL2 The address of the module on the Layer 2 chain
-     * @return messages An array of messages sent
-     * @return messageIds An array of IDs of the messages sent
-     */
-    function propagateAttest(
-        address to,
-        uint256 toChainId,
-        bytes32 attestationId,
-        address moduleOnL2
-    )
-        external
-        returns (Message[] memory messages, bytes32[] memory messageIds);
-
-    /**
-     * @notice Handles the attestation by propagation method
-     *
-     * @dev The function verifies the code hash and stores the attestation. Only accessible by Hashi
-     *
-     * @param attestation The attestation data
-     * @param codeHash The hash of the code
-     * @param moduleAddress The address of the module
-     */
-    function attestByPropagation(
-        AttestationRecord calldata attestation,
-        bytes32 codeHash,
-        address moduleAddress
-    )
-        external;
+        payable;
 
     /**
      * @notice Handles a single delegated revocation request

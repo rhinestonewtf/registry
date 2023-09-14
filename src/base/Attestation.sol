@@ -89,38 +89,22 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         l1Registry = _l1Registry;
     }
 
-    function attest(AttestationRequest calldata request) external payable returns (bytes32) {
+    function attest(AttestationRequest calldata request) external payable {
         AttestationRequestData[] memory requests = new AttestationRequestData[](
             1
         );
         requests[0] = request.data;
 
-        ModuleRecord memory moduleRecord = _getModule(request.data.subject); // should use storage
+        ModuleRecord storage moduleRecord = _getModule(request.data.subject); // should use storage
 
-        return _attest(
-            request.schemaUID, moduleRecord.resolverUID, requests, msg.sender, msg.value, true
-        ).uids[0];
+        _attest(request.schemaUID, moduleRecord.resolverUID, requests, msg.sender, msg.value, true);
     }
 
-    function multiAttest(MultiAttestationRequest[] calldata multiRequests)
-        external
-        payable
-        returns (bytes32[] memory)
-    {
+    function multiAttest(MultiAttestationRequest[] calldata multiRequests) external payable {
         uint256 length = multiRequests.length;
-        // Since a multi-attest call is going to make multiple attestations for multiple schemas, we'd need to collect
-        // all the returned UIDs into a single list.
-        bytes32[][] memory totalUids = new bytes32[][](length);
-        uint256 totalUidsCount = 0;
-
         uint256 availableValue = msg.value;
 
-        // @zeroknots: lets dicuss this - I dont think it should be a security issue
-        // whats your assumption here?
-        // gas bad: should use storage
-        // I think it would be much better to move this into the for loop so we can iterate over the requests.
-        // Its possible that the MultiAttestationRequests is attesting different modules, that thus have different resolvers
-        ModuleRecord memory moduleRecord = _getModule(multiRequests[0].data[0].subject);
+        ModuleRecord storage moduleRecord = _getModule(multiRequests[0].data[0].subject);
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
             bool last;
@@ -130,7 +114,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
             // Process the current batch of attestations.
             MultiAttestationRequest calldata multiRequest = multiRequests[i];
-            AttestationsResult memory res = _attest(
+            uint256 usedValue = _attest(
                 multiRequest.schemaUID,
                 moduleRecord.resolverUID,
                 multiRequest.data,
@@ -140,27 +124,14 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             );
 
             // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
-            availableValue -= res.usedValue;
-
-            // Collect UIDs (and merge them later).
-            totalUids[i] = res.uids;
-            unchecked {
-                totalUidsCount += res.uids.length;
-            }
+            availableValue -= usedValue;
         }
-
-        // Merge all the collected UIDs and return them as a flatten array.
-        return _mergeUIDs(totalUids, totalUidsCount);
     }
 
     /**
      * @inheritdoc IAttestation
      */
-    function attest(DelegatedAttestationRequest calldata delegatedRequest)
-        external
-        payable
-        returns (bytes32 attestationId)
-    {
+    function attest(DelegatedAttestationRequest calldata delegatedRequest) external payable {
         _verifyAttest(delegatedRequest);
 
         AttestationRequestData[] memory data = new AttestationRequestData[](1);
@@ -168,14 +139,14 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
         ModuleRecord memory moduleRecord = _getModule(delegatedRequest.data.subject);
 
-        return _attest(
+        _attest(
             delegatedRequest.schemaUID,
             moduleRecord.resolverUID,
             data,
             delegatedRequest.attester,
             msg.value,
             true
-        ).uids[0];
+        );
     }
 
     /**
@@ -184,15 +155,8 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     function multiAttest(MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests)
         external
         payable
-        returns (bytes32[] memory attestationIds)
     {
         uint256 length = multiDelegatedRequests.length;
-
-        // Since a multi-attest call is going to make multiple attestations for multiple schemas, we'd need to collect
-        // all the returned UIDs into a single list.
-        // can be deleted if we dont use UIDs
-        bytes32[][] memory totalUids = new bytes32[][](length);
-        uint256 totalUidsCount;
 
         // We are keeping track of the total available ETH amount that can be sent to resolvers and will keep deducting
         // from it to verify that there isn't any attempt to send too much ETH to resolvers. Please note that unless
@@ -238,7 +202,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             }
 
             // Process the current batch of attestations.
-            AttestationsResult memory res = _attest(
+            uint256 usedValue = _attest(
                 multiDelegatedRequest.schemaUID,
                 moduleRecord.resolverUID,
                 data,
@@ -248,145 +212,8 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             );
 
             // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
-            availableValue -= res.usedValue;
-
-            // Collect UIDs (and merge them later).
-            totalUids[i] = res.uids;
-            unchecked {
-                totalUidsCount += res.uids.length;
-            }
+            availableValue -= usedValue;
         }
-
-        // Merge all the collected UIDs and return them as a flatten array.
-        return _mergeUIDs(totalUids, totalUidsCount);
-    }
-
-    /**
-     * @inheritdoc IAttestation
-     */
-    function propagateAttest(
-        address to,
-        uint256 toChainId,
-        bytes32[] memory attestationIds,
-        address moduleOnL2
-    )
-        external
-        returns (Message[] memory messages, bytes32[] memory messageIds)
-    {
-        // uint256 length = attestationIds.length;
-        // messages = new Message[](length);
-        // messageIds = new bytes32[](length);
-        // for (uint256 i; i < length; i = uncheckedInc(i)) {
-        //     AttestationRecord memory attestationRecord = _attestations[
-        //         attestationIds[i]
-        //     ];
-        //     _resolvePropagation(attestationRecord, to, toChainId, moduleOnL2);
-        //     if (attestationRecord.uid == EMPTY_UID) {
-        //         revert InvalidAttestation();
-        //     }
-        //     // Encode the attestation record into a data payload.
-        //     bytes memory callData = abi.encodeWithSelector(
-        //         this.attestByPropagation.selector,
-        //         attestationRecord,
-        //         attestationRecord.subject.codeHash(),
-        //         moduleOnL2
-        //     );
-        //     // Prepare the message for dispatch.
-        //     messages[i] = Message({
-        //         to: to,
-        //         toChainId: toChainId,
-        //         data: callData
-        //     });
-        // }
-        // messageIds = yaho.dispatchMessages(messages);
-    }
-
-    /**
-     * @inheritdoc IAttestation
-     */
-    function propagateAttest(
-        address to,
-        uint256 toChainId,
-        bytes32 attestationId,
-        address moduleOnL2
-    )
-        public
-        returns (Message[] memory messages, bytes32[] memory messageIds)
-    {
-        // Get the attestation record for the contract and the authority.
-        // AttestationRecord memory attestationRecord = _attestations[
-        //     attestationId
-        // ];
-        // bytes32 codeHash = attestationRecord.subject.codeHash();
-        // _resolvePropagation(attestationRecord, to, toChainId, moduleOnL2);
-        // if (attestationRecord.propagateable == false) {
-        //     revert InvalidAttestation();
-        // }
-        // // Encode the attestation record into a data payload.
-        // bytes memory callReceiveFnOnL2 = abi.encodeWithSelector(
-        //     this.attestByPropagation.selector,
-        //     attestationRecord,
-        //     codeHash,
-        //     moduleOnL2
-        // );
-        // // Prepare the message for dispatch.
-        // messages = new Message[](1);
-        // messages[0] = Message({
-        //     to: to,
-        //     toChainId: toChainId,
-        //     data: callReceiveFnOnL2
-        // });
-        // messageIds = new bytes32[](1);
-        // // Dispatch message to selected L2
-        // messageIds = yaho.dispatchMessages(messages);
-    }
-
-    /**
-     * @inheritdoc IAttestation
-     */
-    function attestByPropagation(
-        AttestationRecord calldata attestation,
-        bytes32 codeHash,
-        address moduleAddress
-    )
-        external
-        onlyHashi
-    {
-        // // Check if the code hash from sending chain matches the hash of the module address
-        // // if codeHash does not match, the attestation is invalid
-        // if (codeHash != moduleAddress.codeHash()) {
-        //     revert IncompatibleAttestation(codeHash, moduleAddress.codeHash());
-        // }
-        // // check if schemaId exists on this L2 registry
-        // if (bytes(getSchema(attestation.schemaUID).schema).length == 0) {
-        //     revert WrongSchema();
-        // }
-        // // check if refUID exists on this L2 registry
-        // if (attestation.refUID != EMPTY_UID) {
-        //     // check if refUID exists on this L2 registry
-        //     if (_attestations[attestation.refUID].uid == EMPTY_UID) {
-        //         revert InvalidAttestationRefUID(attestation.refUID);
-        //     }
-        // }
-        // // check if attestationId already exists on this L2 registry
-        // AttestationRecord storage existingRecord = _attestations[
-        //     attestation.uid
-        // ];
-        // if (existingRecord.revocationTime != 0) revert InvalidAttestation();
-        // // can not propagate attestations that were commited natively after the original attestation was created
-        // if (existingRecord.time > attestation.time) revert InvalidAttestation();
-        // // Store the attestation
-        // _attestations[attestation.uid] = attestation;
-        // _moduleToAuthorityToAttestations[attestation.subject][
-        //     attestation.attester
-        // ] = attestation.uid;
-        // // Emit an event for the attestation
-        // emit Attested(
-        //     attestation.subject,
-        //     attestation.attester,
-        //     attestation.uid,
-        //     attestation.schema
-        // );
     }
 
     function revoke(RevocationRequest calldata request) external payable {
@@ -514,7 +341,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
      * @param availableValue The total available ETH amount that can be sent to the resolver.
      * @param last Whether this is the last attestations/revocations set.
      *
-     * @return res The AttestationResult struct
+     * @return usedValue the msg.value used for attestations
      */
     function _attest(
         bytes32 schemaUID,
@@ -525,23 +352,16 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         bool last
     )
         private
-        returns (AttestationsResult memory res)
+        returns (uint256 usedValue)
     {
         uint256 length = data.length;
 
-        res.uids = new bytes32[](length);
-
-        // Ensure that we aren't attempting to attest to a non-existing schema.
-        SchemaRecord memory schemaRecord = getSchema(schemaUID);
-        // pretty gas intensive if the schema is long. requires to cast the entire thing
-        if (bytes(schemaRecord.schema).length == 0) {
-            revert InvalidSchema();
-        }
-
-        SchemaResolver memory resolver = getSchemaResolver(resolverUID);
-        if (address(resolver.schemaOwner) == address(0)) {
-            revert InvalidResolver();
-        }
+        // // Ensure that we aren't attempting to attest to a non-existing schema.
+        // SchemaRecord memory schemaRecord = getSchema(schemaUID);
+        // // pretty gas intensive if the schema is long. requires to cast the entire thing
+        // if (bytes(schemaRecord.schema).length == 0) {
+        //     revert InvalidSchema();
+        // }
 
         AttestationRecord[] memory attestations = new AttestationRecord[](
             length
@@ -553,24 +373,25 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
             AttestationRequestData memory request = data[i];
-
             // Ensure that either no expiration time was set or that it was set in the future.
             if (request.expirationTime != NO_EXPIRATION_TIME && request.expirationTime <= timeNow) {
                 revert InvalidExpirationTime();
             }
 
-            // scope to avoid stack too deep error
-            // seems we are getting the moduleRecord twice, in attest/multiAttest and in this fn
-            ModuleRecord storage moduleRecord = _getModule(request.subject);
+            // scope to avoid stack too deep
+            {
+                // seems we are getting the moduleRecord twice, in attest/multiAttest and in this fn
+                ModuleRecord storage moduleRecord = _getModule(request.subject);
 
-            // Ensure that attestation is for module that was registered.
-            if (moduleRecord.implementation == address(0)) {
-                revert InvalidAttestation();
-            }
+                // Ensure that attestation is for module that was registered.
+                if (moduleRecord.implementation == address(0)) {
+                    revert InvalidAttestation();
+                }
 
-            // Ensure that attestation for a module is using the modules resolver
-            if (moduleRecord.resolverUID != resolverUID) {
-                revert InvalidAttestation();
+                // Ensure that attestation for a module is using the modules resolver
+                if (moduleRecord.resolverUID != resolverUID) {
+                    revert InvalidAttestation();
+                }
             }
 
             AttestationRecord memory attestation = AttestationRecord({
@@ -586,24 +407,15 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             // saving into contract storage
             _moduleToAuthorityToAttestations[request.subject][attester] = attestation;
 
-            if (request.refUID != 0) {
-                // Ensure that we aren't trying to attest to a non-existing referenced UID.
-                if (!isAttestationValid(request.refUID)) {
-                    revert NotFound();
-                }
-            }
-
             attestations[i] = attestation;
 
             values[i] = request.value;
-
             emit Attested(request.subject, attester, schemaUID);
         }
 
-        res.usedValue =
-            _resolveAttestations(resolver, attestations, values, false, availableValue, last);
-
-        return res;
+        usedValue = _resolveAttestations(
+            getSchemaResolver(resolverUID), attestations, values, false, availableValue, last
+        );
     }
 
     /**
@@ -635,9 +447,9 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         }
 
         SchemaResolver memory resolver = getSchemaResolver(resolverUID);
-        if (address(resolver.schemaOwner) == address(0)) {
-            revert InvalidResolver();
-        }
+        // if (address(resolver.schemaOwner) == address(0)) {
+        //     revert InvalidResolver();
+        // }
 
         uint256 length = data.length;
         AttestationRecord[] memory attestations = new AttestationRecord[](
@@ -706,6 +518,8 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         returns (uint256)
     {
         ISchemaResolver resolverContract = resolver.resolver;
+
+        console2.log("resolver:", address(resolverContract));
         if (address(resolverContract) == address(0)) {
             // Ensure that we don't accept payments if there is no resolver.
             if (value != 0) {
@@ -992,6 +806,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             if (valid) return valid;
             else revert InvalidPropagation();
         }
+        return false;
     }
 
     function getSchema(bytes32 uid) public view virtual returns (SchemaRecord memory);

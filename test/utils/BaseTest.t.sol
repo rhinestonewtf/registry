@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import "forge-std/Test.sol";
 import "./BaseUtils.sol";
 import "../../src/resolver/ISchemaResolver.sol";
+import "../../src/resolver/examples/DebugResolver.sol";
 
 contract MockModuleWithArgs {
     uint256 value;
@@ -38,6 +39,7 @@ contract BaseTest is Test, RegistryTestTools {
 
     bytes32 defaultSchema1;
     bytes32 defaultSchema2;
+    bytes32 defaultResolver;
     address defaultModule1;
     address defaultModule2;
 
@@ -62,6 +64,8 @@ contract BaseTest is Test, RegistryTestTools {
 
         defaultSchema1 = instancel1.registerSchema("Test ABI", ISchemaValidator(address(0)));
         defaultSchema2 = instancel1.registerSchema("Test ABI2", ISchemaValidator(address(0)));
+        DebugResolver debugResolver = new DebugResolver(address(instancel1.registry));
+        defaultResolver = instancel1.registerResolver(ISchemaResolver(address(debugResolver)));
 
         instancel2.registerSchema("Test ABI", ISchemaValidator(address(0)));
         instancel2.registerSchema("Test ABI2", ISchemaValidator(address(0)));

@@ -16,7 +16,8 @@ contract ValueResolverTest is BaseTest {
 
     function testValueResolver() public {
         bytes32 schema =
-            instancel1.registerSchema("TokenizedResolver", ISchemaValidator(address(resolver)));
+            instancel1.registerSchema("TokenizedResolver", ISchemaValidator(address(0)));
+        bytes32 resolverUID = instancel1.registerResolver(ISchemaResolver(address(resolver)));
 
         address module = instancel1.deployAndRegister(
             schema, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")
@@ -25,11 +26,9 @@ contract ValueResolverTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 1 ether,
-            schemaUID: schema
+            resolverUID: resolverUID
         });
 
         EIP712Signature memory signature =
@@ -41,7 +40,7 @@ contract ValueResolverTest is BaseTest {
             attester: vm.addr(auth1k)
         });
 
-        bytes32 attestationUid = instancel1.registry.attest{ value: 1 ether }(req);
+        instancel1.registry.attest{ value: 1 ether }(req);
         assertTrue(address(resolver).balance > 0);
     }
 }

@@ -59,7 +59,7 @@ abstract contract Module is IModule {
     {
         // Check if the provided schemaId exists
         SchemaResolver memory resolver = getSchemaResolver(referrerUID);
-        if (resolver.schemaOwner == address(0)) revert InvalidResolver();
+        // if (resolver.schemaOwner == address(0)) revert InvalidResolver();
 
         bytes32 contractCodeHash; //  Hash of contract bytecode
         bytes32 deployParamsHash; // Hash of contract deployment parameters
@@ -79,7 +79,7 @@ abstract contract Module is IModule {
     function register(bytes32 referrerUID, address moduleAddress, bytes calldata data) external {
         // Check if the provided schemaId exists
         SchemaResolver memory resolver = getSchemaResolver(referrerUID);
-        if (resolver.schemaOwner == address(0)) revert InvalidResolver();
+        // if (resolver.schemaOwner == address(0)) revert InvalidResolver();
 
         // get codehash of depoyed contract
         bytes32 contractCodeHash = moduleAddress.codeHash();

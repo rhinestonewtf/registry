@@ -52,55 +52,51 @@ struct HashiEnv {
 library RegistryTestLib {
     function mockAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        bytes32 schemaUID,
+        bytes32 resolverUID,
         uint256 attesterKey,
         address moduleAddr
     )
         public
-        returns (bytes32 attestationUid)
     {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: moduleAddr,
             expirationTime: uint48(0),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 0,
-            schemaUID: schemaId
+            resolverUID: resolverUID
         });
-        return newAttestation(instance, schemaId, attesterKey, attData);
+        newAttestation(instance, schemaUID, attesterKey, attData);
     }
 
     function mockAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        bytes32 schemaUID,
         uint256 attesterKey,
         AttestationRequestData memory attData
     )
         public
-        returns (bytes32 attestationUid)
     {
-        return newAttestation(instance, schemaId, attesterKey, attData);
+        newAttestation(instance, schemaUID, attesterKey, attData);
     }
 
     function newAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        bytes32 schemaUID,
         uint256 attesterKey,
         AttestationRequestData memory attData
     )
         public
-        returns (bytes32 attestationUid)
     {
-        EIP712Signature memory signature = signAttestation(instance, schemaId, attesterKey, attData);
+        EIP712Signature memory signature =
+            signAttestation(instance, schemaUID, attesterKey, attData);
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
-            schemaUID: schemaId,
+            schemaUID: schemaUID,
             data: attData,
             signature: abi.encode(signature),
             attester: getAddr(attesterKey)
         });
-
-        attestationUid = instance.registry.attest(req);
+        instance.registry.attest(req);
     }
 
     function signAttestation(
@@ -176,6 +172,19 @@ library RegistryTestLib {
         instance.registry.revoke(req);
     }
 
+    function registerSchemaAndResolver(
+        RegistryInstance memory instance,
+        string memory abiString,
+        ISchemaValidator validator,
+        ISchemaResolver resolver
+    )
+        internal
+        returns (bytes32 schemaId, bytes32 resolverId)
+    {
+        schemaId = registerSchema(instance, abiString, validator);
+        resolverId = registerResolver(instance, resolver);
+    }
+
     function registerSchema(
         RegistryInstance memory instance,
         string memory abiString,
@@ -185,6 +194,16 @@ library RegistryTestLib {
         returns (bytes32 schemaId)
     {
         return instance.registry.registerSchema(abiString, validator);
+    }
+
+    function registerResolver(
+        RegistryInstance memory instance,
+        ISchemaResolver resolver
+    )
+        internal
+        returns (bytes32 schemaId)
+    {
+        return instance.registry.registerSchemaResolver(resolver);
     }
 
     function deployAndRegister(

@@ -17,7 +17,7 @@ contract QueryTest is AttestationTest {
     }
 
     function testQueryAttestation() public {
-        bytes32 attestationUid = testCreateAttestation();
+        testCreateAttestation();
 
         AttestationRecord memory attestation1 =
             instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
@@ -38,22 +38,20 @@ contract QueryTest is AttestationTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(101),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 0,
-            schemaUID: defaultSchema1
+            resolverUID: defaultResolver
         });
-        bytes32 attestationUid = instancel1.mockAttestation(defaultSchema1, auth1k, attData);
+        instancel1.mockAttestation(defaultSchema1, auth1k, attData);
         vm.warp(200);
         vm.expectRevert(IQuery.AttestationNotFound.selector);
         instancel1.registry.check(defaultModule1, vm.addr(auth1k));
     }
 
     function testCheckAttestation__RevertWhen__Revoked() public {
-        bytes32 attestationUid = testCreateAttestation();
+        testCreateAttestation();
         instancel1.revokeAttestation(defaultModule1, defaultSchema1, auth1k);
-        vm.expectRevert(abi.encodeWithSelector(IQuery.RevokedAttestation.selector, attestationUid));
+        vm.expectRevert(abi.encodeWithSelector(IQuery.RevokedAttestation.selector, vm.addr(auth1k)));
         instancel1.registry.check(defaultModule1, vm.addr(auth1k));
     }
 
@@ -62,13 +60,11 @@ contract QueryTest is AttestationTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(101),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 0,
-            schemaUID: defaultSchema1
+            resolverUID: defaultResolver
         });
-        bytes32 attestationUid = instancel1.mockAttestation(defaultSchema1, auth2k, attData);
+        instancel1.mockAttestation(defaultSchema1, auth2k, attData);
         address[] memory authorities = new address[](2);
         authorities[0] = vm.addr(auth1k);
         authorities[1] = vm.addr(auth2k);
@@ -91,13 +87,11 @@ contract QueryTest is AttestationTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(101),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 0,
-            schemaUID: defaultSchema1
+            resolverUID: defaultResolver
         });
-        bytes32 attestationUid = instancel1.mockAttestation(defaultSchema1, auth2k, attData);
+        instancel1.mockAttestation(defaultSchema1, auth2k, attData);
         vm.warp(200);
         address[] memory authorities = new address[](2);
         authorities[0] = vm.addr(auth1k);
@@ -112,19 +106,17 @@ contract QueryTest is AttestationTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(101),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 0,
-            schemaUID: defaultSchema1
+            resolverUID: defaultResolver
         });
-        bytes32 attestationUid = instancel1.mockAttestation(defaultSchema1, auth2k, attData);
+        instancel1.mockAttestation(defaultSchema1, auth2k, attData);
         instancel1.revokeAttestation(defaultModule1, defaultSchema1, auth2k);
         address[] memory authorities = new address[](2);
         authorities[0] = vm.addr(auth1k);
         authorities[1] = vm.addr(auth2k);
 
-        vm.expectRevert(abi.encodeWithSelector(IQuery.RevokedAttestation.selector, attestationUid));
+        vm.expectRevert(abi.encodeWithSelector(IQuery.RevokedAttestation.selector, vm.addr(auth2k)));
         instancel1.registry.verify(defaultModule1, authorities, 1);
     }
 
@@ -133,13 +125,11 @@ contract QueryTest is AttestationTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(101),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 0,
-            schemaUID: defaultSchema1
+            resolverUID: defaultResolver
         });
-        bytes32 attestationUid = instancel1.mockAttestation(defaultSchema1, auth2k, attData);
+        instancel1.mockAttestation(defaultSchema1, auth2k, attData);
         address[] memory authorities = new address[](2);
         authorities[0] = vm.addr(auth1k);
         authorities[1] = vm.addr(auth2k);
@@ -162,13 +152,11 @@ contract QueryTest is AttestationTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(101),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 0,
-            schemaUID: defaultSchema1
+            resolverUID: defaultResolver
         });
-        bytes32 attestationUid = instancel1.mockAttestation(defaultSchema1, auth2k, attData);
+        instancel1.mockAttestation(defaultSchema1, auth2k, attData);
         vm.warp(200);
         address[] memory authorities = new address[](2);
         authorities[0] = vm.addr(auth1k);
@@ -182,13 +170,11 @@ contract QueryTest is AttestationTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(101),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 0,
-            schemaUID: defaultSchema1
+            resolverUID: defaultResolver
         });
-        bytes32 attestationUid = instancel1.mockAttestation(defaultSchema1, auth2k, attData);
+        instancel1.mockAttestation(defaultSchema1, auth2k, attData);
         instancel1.revokeAttestation(defaultModule1, defaultSchema1, auth2k);
         address[] memory authorities = new address[](2);
         authorities[0] = vm.addr(auth1k);
