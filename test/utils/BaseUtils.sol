@@ -179,12 +179,12 @@ library RegistryTestLib {
     function registerSchema(
         RegistryInstance memory instance,
         string memory abiString,
-        ISchemaResolver resolver
+        ISchemaValidator validator
     )
         internal
         returns (bytes32 schemaId)
     {
-        return instance.registry.registerSchema(abiString, resolver);
+        return instance.registry.registerSchema(abiString, validator);
     }
 
     function deployAndRegister(

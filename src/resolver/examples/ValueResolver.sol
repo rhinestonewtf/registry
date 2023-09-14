@@ -8,10 +8,10 @@ import "../../Common.sol";
 /// @author zeroknots
 /// @notice A resolver for value (ETH) attestations.
 
-contract ValueResolver is SchemaResolver {
+contract ValueResolver is SchemaResolverBase {
     uint256 immutable fee = 10;
 
-    constructor(address rs) SchemaResolver(rs) { }
+    constructor(address rs) SchemaResolverBase(rs) { }
 
     function onAttest(
         AttestationRecord calldata attestation,

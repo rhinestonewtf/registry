@@ -60,11 +60,11 @@ contract BaseTest is Test, RegistryTestTools {
         (, auth1k) = makeAddrAndKey("auth1");
         (, auth2k) = makeAddrAndKey("auth2");
 
-        defaultSchema1 = instancel1.registerSchema("Test ABI", ISchemaResolver(address(0)));
-        defaultSchema2 = instancel1.registerSchema("Test ABI2", ISchemaResolver(address(0)));
+        defaultSchema1 = instancel1.registerSchema("Test ABI", ISchemaValidator(address(0)));
+        defaultSchema2 = instancel1.registerSchema("Test ABI2", ISchemaValidator(address(0)));
 
-        instancel2.registerSchema("Test ABI", ISchemaResolver(address(0)));
-        instancel2.registerSchema("Test ABI2", ISchemaResolver(address(0)));
+        instancel2.registerSchema("Test ABI", ISchemaValidator(address(0)));
+        instancel2.registerSchema("Test ABI2", ISchemaValidator(address(0)));
         defaultModule1 = instancel1.deployAndRegister(
             defaultSchema1, type(MockModuleWithArgs).creationCode, abi.encode(1234)
         );

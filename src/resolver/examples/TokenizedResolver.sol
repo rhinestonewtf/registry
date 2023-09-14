@@ -11,14 +11,14 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 /// @author zeroknots
 /// @notice A resolver for tokenized attestations.
 
-contract TokenizedResolver is SchemaResolver {
+contract TokenizedResolver is SchemaResolverBase {
     using SafeERC20 for IERC20;
 
     IERC20 private immutable token;
 
     uint256 immutable fee = 10;
 
-    constructor(address rs, address tokenAddr) SchemaResolver(rs) {
+    constructor(address rs, address tokenAddr) SchemaResolverBase(rs) {
         token = IERC20(tokenAddr);
     }
 

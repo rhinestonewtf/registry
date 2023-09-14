@@ -16,7 +16,7 @@ contract ValueResolverTest is BaseTest {
 
     function testValueResolver() public {
         bytes32 schema =
-            instancel1.registerSchema("TokenizedResolver", ISchemaResolver(address(resolver)));
+            instancel1.registerSchema("TokenizedResolver", ISchemaValidator(address(resolver)));
 
         address module = instancel1.deployAndRegister(
             schema, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")

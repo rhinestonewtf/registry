@@ -3,22 +3,21 @@
 pragma solidity ^0.8.0;
 
 import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
-import { IReferrerResolver } from "../resolver/IReferrerResolver.sol";
+import { ISchemaValidator } from "../resolver/ISchemaValidator.sol";
 
 /**
  * @title A struct representing a record for a submitted schema.
  * Inspired by schema definitions of EAS (Ethereum Attestation Service)
  */
 struct SchemaRecord {
+    ISchemaValidator validator; // Optional external schema validator.
+    uint48 registeredAt;
     string schema; // Custom specification of the schema (e.g., an ABI).
-    ISchemaResolver resolver; // Optional schema resolver.
-        // @TODO: do we need an owner?
 }
 
-struct Referrer {
-    IReferrerResolver resolver; // Optional schema resolver.
+struct SchemaResolver {
+    ISchemaResolver resolver; // Optional schema resolver.
     address schemaOwner; // The address of the account used to register the schema.
-    address[] bridges; // bridges that must be used for L2 propagation
 }
 
 /**
@@ -36,7 +35,7 @@ interface ISchema {
      */
     event SchemaRegistered(bytes32 indexed uid, address registerer);
 
-    event ReferrerRegistered(bytes32 indexed uid, address registerer);
+    event SchemaResolverRegistered(bytes32 indexed uid, address registerer);
 
     /**
      * @dev Emitted when a new schema resolver
@@ -58,27 +57,10 @@ interface ISchema {
      */
     function registerSchema(
         string calldata schema,
-        ISchemaResolver resolver
+        ISchemaValidator resolver
     )
         external
         returns (bytes32);
-
-    /**
-     * @dev Sets the bridges for a schema
-     *
-     * @param uid The schema UID.
-     * @param bridges An array of bridge addresses.
-     */
-    function setBridges(bytes32 uid, address[] calldata bridges) external;
-
-    /**
-     * @dev Returns the bridges for a schema
-     *
-     * @param uid The schema UID.
-     *
-     * @return An array of bridge addresses.
-     */
-    function getBridges(bytes32 uid) external view returns (address[] memory);
 
     /**
      * @dev Sets a resolver for a schema

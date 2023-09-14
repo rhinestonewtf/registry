@@ -2,15 +2,15 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/console2.sol";
-import { SchemaResolver } from "../SchemaResolver.sol";
+import { SchemaResolverBase } from "../SchemaResolver.sol";
 import { AttestationRecord, ModuleRecord } from "../../Common.sol";
 
 /// @title DebugResolver
 /// @author zeroknots
 /// @notice A debug resolver for testing purposes.
 
-contract DebugResolver is SchemaResolver {
-    constructor(address rs) SchemaResolver(rs) { }
+contract DebugResolver is SchemaResolverBase {
+    constructor(address rs) SchemaResolverBase(rs) { }
 
     function onAttest(
         AttestationRecord calldata attestation,

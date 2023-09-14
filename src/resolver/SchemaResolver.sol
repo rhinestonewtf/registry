@@ -18,7 +18,7 @@ import { ISchemaResolver } from "./ISchemaResolver.sol";
  *
  * @author zeroknots.eth
  */
-abstract contract SchemaResolver is ISchemaResolver {
+abstract contract SchemaResolverBase is ISchemaResolver {
     error InsufficientValue();
     error NotPayable();
     error InvalidRS();

@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.19;
 
-import { EMPTY_UID, AccessDenied } from "../Common.sol";
-import { ISchema, SchemaRecord, Referrer } from "../interface/ISchema.sol";
+import { EMPTY_UID, AccessDenied, _time } from "../Common.sol";
+import { ISchema, SchemaRecord, SchemaResolver } from "../interface/ISchema.sol";
 
 import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
-import { IReferrerResolver } from "../resolver/IReferrerResolver.sol";
+import { ISchemaValidator } from "../resolver/ISchemaValidator.sol";
 
 /**
  * @title Schema
@@ -42,25 +42,29 @@ abstract contract Schema is ISchema {
     // The global mapping between schema records and their IDs.
     mapping(bytes32 uid => SchemaRecord schemaRecord) private _schemas;
 
-    mapping(bytes32 uid => Referrer referrer) private _referrers;
+    mapping(bytes32 uid => SchemaResolver referrer) private _referrers;
 
     /**
      * @inheritdoc ISchema
      */
     function registerSchema(
         string calldata schema,
-        ISchemaResolver resolver
+        ISchemaValidator validator
     )
         external
         returns (bytes32)
     {
-        SchemaRecord memory schemaRecord = SchemaRecord({ schema: schema, resolver: resolver });
+        SchemaRecord memory schemaRecord =
+            SchemaRecord({ validator: validator, registeredAt: _time(), schema: schema });
 
         // Computing a unique ID for the schema using its properties
         bytes32 uid = _getUID(schemaRecord);
 
         // @TODO: better way to make this check?
         // Checking if a schema with this UID already exists
+        // very gas intensive.
+        // I think it would be better to spend a bit more gas on schema creation and make it cheaper
+        // during usage. Maybe we can add a timestamp when it was created or so?
         if (bytes(_schemas[uid].schema).length != 0) {
             revert AlreadyExists();
         }
@@ -74,15 +78,9 @@ abstract contract Schema is ISchema {
         return uid;
     }
 
-    function registerReferrer(
-        IReferrerResolver resolver,
-        address[] calldata bridges
-    )
-        external
-        returns (bytes32)
-    {
-        Referrer memory referrer =
-            Referrer({ resolver: resolver, schemaOwner: msg.sender, bridges: bridges });
+    function registerSchemaResolver(ISchemaResolver resolver) external returns (bytes32) {
+        SchemaResolver memory referrer =
+            SchemaResolver({ resolver: resolver, schemaOwner: msg.sender });
 
         // Computing a unique ID for the schema using its properties
         bytes32 uid = _getUID(referrer);
@@ -95,22 +93,12 @@ abstract contract Schema is ISchema {
         // Storing schema in the _schemas mapping
         _referrers[uid] = referrer;
 
-        emit ReferrerRegistered(uid, msg.sender);
+        emit SchemaResolverRegistered(uid, msg.sender);
 
         // @TODO: remove this
         return uid;
     }
 
-    /**
-     * @inheritdoc ISchema
-     */
-    function setBridges(bytes32 uid, address[] calldata bridges) external onlySchemaOwner(uid) {
-        Referrer storage referrer = _referrers[uid];
-        referrer.bridges = bridges;
-    }
-
-    // @TODO: remove this
-    // @zeroknots: imo schema resolvers shouldnt be changeable since their function is only to verify that attestation data is valid for schema
     function setSchemaResolver(
         bytes32 uid,
         ISchemaResolver resolver
@@ -118,21 +106,9 @@ abstract contract Schema is ISchema {
         external
         onlySchemaOwner(uid)
     {
-        SchemaRecord storage schemaRecord = _schemas[uid];
-        schemaRecord.resolver = resolver;
-        emit NewSchemaResolver(uid, address(resolver));
-    }
-
-    function setReferrerResolver(
-        bytes32 uid,
-        IReferrerResolver resolver
-    )
-        external
-        onlySchemaOwner(uid)
-    {
-        Referrer storage referrer = _referrers[uid];
+        SchemaResolver storage referrer = _referrers[uid];
         referrer.resolver = resolver;
-        emit NewReferrerResolver(uid, address(resolver));
+        emit NewSchemaResolver(uid, address(resolver));
     }
 
     /**
@@ -142,15 +118,8 @@ abstract contract Schema is ISchema {
         return _schemas[uid];
     }
 
-    function getReferrer(bytes32 uid) public view virtual returns (Referrer memory) {
+    function getSchemaResolver(bytes32 uid) public view virtual returns (SchemaResolver memory) {
         return _referrers[uid];
-    }
-
-    /**
-     * @inheritdoc ISchema
-     */
-    function getBridges(bytes32 uid) public view virtual returns (address[] memory) {
-        return _referrers[uid].bridges;
     }
 
     /**
@@ -161,19 +130,14 @@ abstract contract Schema is ISchema {
      * @return schema UID.
      */
     function _getUID(SchemaRecord memory schemaRecord) private pure returns (bytes32) {
-        return keccak256(
-            abi.encodePacked(
-                // @zeroknots: there can only ever be one schema with a given string and resolver -> this forces reuse of schemas
-                schemaRecord.schema,
-                address(schemaRecord.resolver)
-            )
-        );
+        return keccak256(abi.encodePacked(schemaRecord.schema, address(schemaRecord.validator)));
     }
 
-    function _getUID(Referrer memory referrer) private pure returns (bytes32) {
+    function _getUID(SchemaResolver memory referrer) private pure returns (bytes32) {
         return keccak256(
             abi.encodePacked(
                 // @zeroknots: this breaks when resolver is changed
+                // I think being able to change the resolver would make a lot of sense
                 referrer.schemaOwner,
                 address(referrer.resolver)
             )
