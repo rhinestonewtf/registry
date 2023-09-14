@@ -40,14 +40,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     mapping(address module => mapping(address authority => AttestationRecord attestation)) internal
         _moduleToAuthorityToAttestations;
 
-    // Instance of Hashi's Yaho contract.
-    Yaho public yaho;
-    // Instance of Hashi's Yaru contract.
-    Yaru public yaru;
-
-    // address of L1 registry
-    address public l1Registry;
-
     error AlreadyRevoked();
     error AlreadyRevokedOffchain();
     error AlreadyTimestamped();
@@ -68,19 +60,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     error InvalidSender(address moduleAddr, address sender); // Emitted when the sender address is invalid.
     error InvalidCaller(address moduleAddr, address yaruSender); // Emitted when the caller is not the Yaru contract.
 
-    constructor(
-        Yaho _yaho,
-        Yaru _yaru,
-        address _l1Registry,
-        string memory name,
-        string memory version
-    )
-        EIP712Verifier(name, version)
-    {
-        yaho = _yaho;
-        yaru = _yaru;
-        l1Registry = _l1Registry;
-    }
+    constructor(string memory name, string memory version) EIP712Verifier(name, version) { }
 
     function attest(AttestationRequest calldata request) external payable {
         AttestationRequestData[] memory requests = new AttestationRequestData[](
@@ -722,17 +702,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             // apply for.
             payable(msg.sender).sendValue(remainingValue);
         }
-    }
-
-    // Modifier that checks the validity of the caller and sender.
-    modifier onlyHashi() {
-        if (yaru.sender() != l1Registry) {
-            revert InvalidSender(address(this), yaru.sender());
-        }
-        if (msg.sender != address(yaru)) {
-            revert InvalidCaller(address(this), msg.sender);
-        }
-        _;
     }
 
     function _resolvePropagation(

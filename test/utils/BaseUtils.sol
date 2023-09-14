@@ -35,18 +35,6 @@ function getAddr(uint256 pk) pure returns (address) {
 struct RegistryInstance {
     Registry registry;
     string name;
-    Yaho yaho;
-    Yaru yaru;
-}
-
-struct HashiEnv {
-    Hashi hashi;
-    GiriGiriBashi giriGiriBashi;
-    Yaho yaho;
-    Yaru yaru;
-    MockAMB amb;
-    AMBMessageRelay ambMessageRelay;
-    AMBAdapter ambAdapter;
 }
 
 library RegistryTestLib {
@@ -229,54 +217,12 @@ library RegistryTestLib {
 contract RegistryTestTools {
     using RegistryTestLib for RegistryInstance;
 
-    function _setupHashi(address hashiSigner) internal returns (HashiEnv memory hashiEnv) {
-        Hashi hashi = new Hashi();
-        GiriGiriBashi giriGiriBashi = new GiriGiriBashi(
-            hashiSigner,
-            address(hashi)
-        );
-        Yaho yaho = new Yaho();
-        MockAMB amb = new MockAMB();
-        Yaru yaru = new Yaru(
-            IHashi(address(hashi)),
-            address(yaho),
-            block.chainid
-        );
-        AMBMessageRelay ambMessageRelay = new AMBMessageRelay(
-            IAMB(address(amb)),
-            yaho
-        );
-        AMBAdapter ambAdapter = new AMBAdapter(
-            IAMB(address(amb)),
-            address(ambMessageRelay),
-            bytes32(block.chainid)
-        );
-
-        hashiEnv = HashiEnv({
-            hashi: hashi,
-            giriGiriBashi: giriGiriBashi,
-            yaho: yaho,
-            yaru: yaru,
-            amb: amb,
-            ambMessageRelay: ambMessageRelay,
-            ambAdapter: ambAdapter
-        });
-    }
-
-    function _setupInstance(
-        string memory name,
-        Yaho yaho,
-        Yaru yaru,
-        address l1Registry
-    )
-        internal
-        returns (RegistryInstance memory)
-    {
+    function _setupInstance(string memory name) internal returns (RegistryInstance memory) {
         RegistryInstance memory instance;
 
-        Registry registry = new Registry(yaho, yaru, l1Registry, name, "0.0.1");
+        Registry registry = new Registry(name, "0.0.1");
 
-        instance = RegistryInstance(registry, name, yaho, yaru);
+        instance = RegistryInstance(registry, name);
         return instance;
     }
 }

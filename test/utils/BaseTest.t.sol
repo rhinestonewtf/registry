@@ -29,8 +29,6 @@ contract MockModule {
 contract BaseTest is Test, RegistryTestTools {
     using RegistryTestLib for RegistryInstance;
 
-    HashiEnv hashiEnv;
-
     RegistryInstance instancel1;
     RegistryInstance instancel2;
 
@@ -45,13 +43,7 @@ contract BaseTest is Test, RegistryTestTools {
 
     function setUp() public virtual {
         address hashiSigner = makeAddr("hashiSigner");
-        hashiEnv = _setupHashi(hashiSigner);
-        instancel1 = _setupInstance({
-            name: "RegistryL1",
-            yaho: hashiEnv.yaho,
-            yaru: Yaru(address(0)),
-            l1Registry: address(0)
-        });
+        instancel1 = _setupInstance({ name: "RegistryL1" });
         (, auth1k) = makeAddrAndKey("auth1");
         (, auth2k) = makeAddrAndKey("auth2");
 

@@ -10,13 +10,7 @@ import "../test/utils/BaseUtils.sol";
 contract DeployRegistryScript is Script, RegistryTestTools {
     function run() public {
         vm.startBroadcast(vm.envUint("PK"));
-        HashiEnv memory hashiEnv = _setupHashi(address(123));
-        RegistryInstance memory instance = _setupInstance({
-            name: "RegistryL1",
-            yaho: hashiEnv.yaho,
-            yaru: Yaru(address(0)),
-            l1Registry: address(0)
-        });
+        RegistryInstance memory instance = _setupInstance({ name: "RegistryL1" });
         vm.stopBroadcast();
     }
 }

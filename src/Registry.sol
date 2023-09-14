@@ -10,15 +10,7 @@ import "./base/Query.sol";
  * @author zeroknots
  */
 contract Registry is Schema, Query, Attestation, Module {
-    constructor(
-        Yaho _yaho,
-        Yaru _yaru,
-        address _l1registry,
-        string memory name,
-        string memory version
-    )
-        Attestation(_yaho, _yaru, _l1registry, name, version)
-    { }
+    constructor(string memory name, string memory version) Attestation(name, version) { }
 
     /*//////////////////////////////////////////////////////////////
                             Helper Functions
