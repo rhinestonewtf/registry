@@ -6,7 +6,7 @@ import "../DataTypes.sol";
 import "../base/Attestation.sol";
 import "./IAttestation.sol";
 import "./ISchema.sol";
-import "../external//IResolver.sol";
+import "../external/IResolver.sol";
 
 interface IRegistry {
     function VERSION() external view returns (string memory);

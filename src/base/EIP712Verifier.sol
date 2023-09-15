@@ -3,7 +3,6 @@
 pragma solidity 0.8.19;
 
 import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
-import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { IERC1271 } from "@openzeppelin/contracts/interfaces/IERC1271.sol";
 
 import { SignatureCheckerLib } from "solady/src/utils/SignatureCheckerLib.sol";
