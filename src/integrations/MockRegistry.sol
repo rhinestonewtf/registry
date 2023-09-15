@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import { IQuery } from "../interface/IQuery.sol";
-import { AttestationRecord } from "../Common.sol";
+import { AttestationRecord } from "../DataTypes.sol";
 
 /// @title MockRegistry
 /// @author zeroknots

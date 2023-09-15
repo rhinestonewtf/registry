@@ -154,7 +154,7 @@ library RegistryTestLib {
         RegistryInstance memory instance,
         string memory abiString,
         ISchemaValidator validator,
-        ISchemaResolver resolver
+        IResolver resolver
     )
         internal
         returns (SchemaUID schemaId, ResolverUID resolverId)
@@ -176,12 +176,12 @@ library RegistryTestLib {
 
     function registerResolver(
         RegistryInstance memory instance,
-        ISchemaResolver resolver
+        IResolver resolver
     )
         internal
         returns (ResolverUID resolverUID)
     {
-        resolverUID = instance.registry.registerSchemaResolver(resolver);
+        resolverUID = instance.registry.registerResolver(resolver);
     }
 
     function deployAndRegister(

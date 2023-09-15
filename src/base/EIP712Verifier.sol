@@ -8,17 +8,8 @@ import { IERC1271 } from "@openzeppelin/contracts/interfaces/IERC1271.sol";
 
 import { SignatureCheckerLib } from "solady/src/utils/SignatureCheckerLib.sol";
 
-// prettier-ignore
-import {
-    AttestationRequest,
-    AttestationRequestData,
-    DelegatedAttestationRequest,
-    DelegatedRevocationRequest,
-    RevocationRequest,
-    RevocationRequestData
-} from "../interface/IAttestation.sol";
-
-import { InvalidSignature, SchemaUID } from "../Common.sol";
+import { InvalidSignature } from "../Common.sol";
+import "../DataTypes.sol";
 
 /**
  * @title Singature Verifier. If provided signed is a contract, this function will fallback to ERC1271

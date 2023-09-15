@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.0;
 
-import { AttestationRecord, ModuleRecord } from "../Common.sol";
+import { AttestationRecord, ModuleRecord } from "../DataTypes.sol";
 
 /**
  * @title The interface of an optional schema resolver.
  */
-interface ISchemaResolver {
+interface IResolver {
     /**
      * @dev Returns whether the resolver supports ETH transfers.
      */

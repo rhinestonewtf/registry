@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "../SchemaResolver.sol";
+import "../ResolverBase.sol";
 import "../../Common.sol";
 
 /// @title ValueResolver
 /// @author zeroknots
 /// @notice A resolver for value (ETH) attestations.
 
-contract ValueResolver is SchemaResolverBase {
+contract ValueResolver is ResolverBase {
     uint256 immutable fee = 10;
 
-    constructor(address rs) SchemaResolverBase(rs) { }
+    constructor(address rs) ResolverBase(rs) { }
 
     function onAttest(
         AttestationRecord calldata attestation,

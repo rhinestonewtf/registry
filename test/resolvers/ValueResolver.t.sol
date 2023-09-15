@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "../utils/BaseTest.t.sol";
-import "../../src/resolver/examples/ValueResolver.sol";
+import "../../src/external/examples/ValueResolver.sol";
 
 contract ValueResolverTest is BaseTest {
     using RegistryTestLib for RegistryInstance;
@@ -17,7 +17,7 @@ contract ValueResolverTest is BaseTest {
     function testValueResolver() public {
         SchemaUID schema =
             instancel1.registerSchema("TokenizedResolver", ISchemaValidator(address(0)));
-        ResolverUID resolverUID = instancel1.registerResolver(ISchemaResolver(address(resolver)));
+        ResolverUID resolverUID = instancel1.registerResolver(IResolver(address(resolver)));
 
         address module = instancel1.deployAndRegister(
             resolverUID, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")

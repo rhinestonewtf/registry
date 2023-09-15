@@ -2,18 +2,12 @@
 pragma solidity ^0.8.19;
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
-import "../eip712/EIP712Verifier.sol";
+import { EIP712Verifier } from "./EIP712Verifier.sol";
 import "../interface/IAttestation.sol";
 import "./Schema.sol";
 import "./Module.sol";
 
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
-
-// Hashi's contract to dispatch messages to L2
-import "hashi/Yaho.sol";
-
-// Hashi's contract to receive messages from L1
-import "hashi/Yaru.sol";
 
 import {
     AccessDenied,
@@ -483,7 +477,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         returns (uint256)
     {
         ResolverRecord memory resolver = getResolver(resolverUID);
-        ISchemaResolver resolverContract = resolver.resolver;
+        IResolver resolverContract = resolver.resolver;
 
         if (address(resolverContract) == address(0)) {
             // Ensure that we don't accept payments if there is no resolver.
@@ -554,8 +548,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             );
         }
         ResolverRecord memory resolver = getResolver(resolverUID);
-
-        ISchemaResolver resolverContract = resolver.resolver;
+        IResolver resolverContract = resolver.resolver;
         if (address(resolverContract) == address(0)) {
             // Ensure that we don't accept payments if there is no resolver.
             for (uint256 i; i < length; i = uncheckedInc(i)) {

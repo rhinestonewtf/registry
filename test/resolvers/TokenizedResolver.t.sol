@@ -3,8 +3,8 @@ pragma solidity ^0.8.19;
 
 import "solmate/test/utils/mocks/MockERC20.sol";
 import "../utils/BaseTest.t.sol";
-import "../../src/resolver/examples/TokenizedResolver.sol";
-import "../../src/resolver/examples/SimpleValidator.sol";
+import "../../src/external/examples/TokenizedResolver.sol";
+import "../../src/external/examples/SimpleValidator.sol";
 
 contract TokenizedResolverTest is BaseTest {
     using RegistryTestLib for RegistryInstance;
@@ -28,7 +28,7 @@ contract TokenizedResolverTest is BaseTest {
     function testTokenizedResolver() public {
         SchemaUID schema =
             instancel1.registerSchema("TokenizedResolver", ISchemaValidator(address(validator)));
-        ResolverUID resolverUID = instancel1.registerResolver(ISchemaResolver(address(resolver)));
+        ResolverUID resolverUID = instancel1.registerResolver(IResolver(address(resolver)));
 
         address module = instancel1.deployAndRegister(
             resolverUID, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")

@@ -2,23 +2,17 @@
 
 pragma solidity 0.8.19;
 
-import {
-    AccessDenied,
-    NO_EXPIRATION_TIME,
-    NotFound,
-    uncheckedInc,
-    AttestationRecord,
-    ModuleRecord
-} from "../Common.sol";
+import { AccessDenied, NO_EXPIRATION_TIME, NotFound, uncheckedInc } from "../Common.sol";
+import "../DataTypes.sol";
 
-import { ISchemaResolver } from "./ISchemaResolver.sol";
+import { IResolver } from "./IResolver.sol";
 
 /**
  * @title A base resolver contract
  *
  * @author zeroknots.eth
  */
-abstract contract SchemaResolverBase is ISchemaResolver {
+abstract contract ResolverBase is IResolver {
     error InsufficientValue();
     error NotPayable();
     error InvalidRS();
@@ -50,7 +44,7 @@ abstract contract SchemaResolverBase is ISchemaResolver {
     }
 
     /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
     function isPayable() public pure virtual returns (bool) {
         return false;
@@ -66,7 +60,7 @@ abstract contract SchemaResolverBase is ISchemaResolver {
     }
 
     /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
     function attest(AttestationRecord calldata attestation)
         external
@@ -78,7 +72,7 @@ abstract contract SchemaResolverBase is ISchemaResolver {
     }
 
     /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
     function moduleRegistration(ModuleRecord calldata module)
         external
@@ -90,7 +84,7 @@ abstract contract SchemaResolverBase is ISchemaResolver {
     }
 
     /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
 
     function propagation(
@@ -107,7 +101,7 @@ abstract contract SchemaResolverBase is ISchemaResolver {
         return onPropagation(attestation, sender, to, toChainId, moduleOnL2);
     }
     /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
 
     function multiAttest(
@@ -149,7 +143,7 @@ abstract contract SchemaResolverBase is ISchemaResolver {
     }
 
     /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
     function revoke(AttestationRecord calldata attestation)
         external
@@ -161,7 +155,7 @@ abstract contract SchemaResolverBase is ISchemaResolver {
     }
 
     /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
     function multiRevoke(
         AttestationRecord[] calldata attestations,

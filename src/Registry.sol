@@ -6,6 +6,8 @@ import "./base/Attestation.sol";
 import "./base/Module.sol";
 import "./base/Query.sol";
 
+import "./interface/IRegistry.sol";
+
 /**
  * @author zeroknots
  */

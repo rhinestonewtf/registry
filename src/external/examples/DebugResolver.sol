@@ -1,46 +1,37 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "../SchemaResolver.sol";
-import "../../Common.sol";
+import "forge-std/console2.sol";
+import { ResolverBase } from "../ResolverBase.sol";
+import { AttestationRecord, ModuleRecord } from "../../DataTypes.sol";
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-
-/// @title TokenizedResolver
+/// @title DebugResolver
 /// @author zeroknots
-/// @notice A resolver for tokenized attestations.
+/// @notice A debug resolver for testing purposes.
 
-contract TokenizedResolver is SchemaResolverBase {
-    using SafeERC20 for IERC20;
-
-    IERC20 private immutable token;
-
-    uint256 immutable fee = 10;
-
-    constructor(address rs, address tokenAddr) SchemaResolverBase(rs) {
-        token = IERC20(tokenAddr);
-    }
+contract DebugResolver is ResolverBase {
+    constructor(address rs) ResolverBase(rs) { }
 
     function onAttest(
         AttestationRecord calldata attestation,
-        uint256 value
+        uint256 /*value*/
     )
         internal
-        virtual
+        view
         override
         returns (bool)
     {
-        token.safeTransferFrom(attestation.attester, address(this), fee);
+        console2.log(attestation.attester);
+
         return true;
     }
 
     function onRevoke(
-        AttestationRecord calldata attestation,
-        uint256 value
+        AttestationRecord calldata, /*attestation*/
+        uint256 /*value*/
     )
         internal
-        virtual
+        pure
         override
         returns (bool)
     {

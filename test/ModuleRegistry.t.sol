@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import { ISchema, SchemaRecord } from "../src/interface/ISchema.sol";
-import { ISchemaResolver } from "../src/resolver/ISchemaResolver.sol";
+import { IResolver } from "../src/external/IResolver.sol";
 import { InvalidSchema } from "../src/Common.sol";
 import "./utils/BaseTest.t.sol";
 

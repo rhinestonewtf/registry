@@ -2,9 +2,9 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import "../src/resolver/ISchemaResolver.sol";
+import "../src/external/IResolver.sol";
 import "../src/interface/ISchema.sol";
-import { DebugResolver } from "../src/resolver/examples/DebugResolver.sol";
+import { DebugResolver } from "../src/external/examples/DebugResolver.sol";
 
 import "./utils/BaseTest.t.sol";
 

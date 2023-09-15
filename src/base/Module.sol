@@ -2,13 +2,14 @@
 pragma solidity ^0.8.19;
 
 import { IModule } from "../interface/IModule.sol";
-import { InvalidResolver, ResolverUID } from "../Common.sol";
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
-import { ISchema, SchemaRecord, ResolverRecord } from "../interface/ISchema.sol";
+import { ISchema } from "../interface/ISchema.sol";
+import { IRegistry } from "../interface/IRegistry.sol";
 import { Schema } from "./Schema.sol";
-import { AttestationRecord, ModuleRecord } from "../Common.sol";
-import { ISchemaValidator } from "../resolver/ISchemaValidator.sol";
-import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
+import "../DataTypes.sol";
+import { InvalidResolver } from "../Common.sol";
+import { ISchemaValidator } from "../external/ISchemaValidator.sol";
+import { IResolver } from "../external/IResolver.sol";
 
 /**
  * @title Module
@@ -124,7 +125,7 @@ abstract contract Module is IModule {
     }
 
     function _resolveRegistration(
-        ISchemaResolver resolver,
+        IResolver resolver,
         ModuleRecord memory moduleRegistration
     )
         private

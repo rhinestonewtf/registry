@@ -22,6 +22,7 @@ abstract contract Query is IQuery {
     )
         public
         view
+        override(IQuery)
         returns (uint48 listedAt, uint48 revokedAt)
     {
         AttestationRecord storage attestation = _getAttestation(module, attester);
@@ -44,6 +45,7 @@ abstract contract Query is IQuery {
     )
         external
         view
+        override(IQuery)
     {
         uint256 attestersLength = attesters.length;
         if (attestersLength < threshold || threshold == 0) {
@@ -114,6 +116,7 @@ abstract contract Query is IQuery {
     )
         public
         view
+        override(IQuery)
         returns (AttestationRecord memory attestation)
     {
         attestation = _getAttestation(module, attesters);
@@ -128,6 +131,7 @@ abstract contract Query is IQuery {
     )
         external
         view
+        override(IQuery)
         returns (AttestationRecord[] memory attestations)
     {
         uint256 attesterssLength = attesters.length;

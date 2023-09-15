@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { AttestationRecord } from "../Common.sol";
+import { AttestationRecord } from "../DataTypes.sol";
 
 /**
  * Query interface allows for the verification of attestations

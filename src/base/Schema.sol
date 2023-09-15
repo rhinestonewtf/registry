@@ -2,13 +2,13 @@
 
 pragma solidity 0.8.19;
 
-import {
-    EMPTY_UID, AccessDenied, _time, InvalidResolver, SchemaUID, ResolverUID
-} from "../Common.sol";
-import { ISchema, SchemaRecord, ResolverRecord, SchemaLib } from "../interface/ISchema.sol";
+import { EMPTY_UID, AccessDenied, _time, InvalidResolver } from "../Common.sol";
+import { ISchema, SchemaLib } from "../interface/ISchema.sol";
 
-import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
-import { ISchemaValidator } from "../resolver/ISchemaValidator.sol";
+import "../DataTypes.sol";
+
+import { IResolver } from "../external/IResolver.sol";
+import { ISchemaValidator } from "../external/ISchemaValidator.sol";
 import "forge-std/console2.sol";
 
 /**
@@ -80,7 +80,7 @@ abstract contract Schema is ISchema {
         return uid;
     }
 
-    function registerSchemaResolver(ISchemaResolver _resolver) external returns (ResolverUID) {
+    function registerResolver(IResolver _resolver) external returns (ResolverUID) {
         if (address(_resolver) == address(0)) revert InvalidResolver();
         ResolverRecord memory resolver =
             ResolverRecord({ resolver: _resolver, schemaOwner: msg.sender });
@@ -101,13 +101,7 @@ abstract contract Schema is ISchema {
         return uid;
     }
 
-    function setSchemaResolver(
-        ResolverUID uid,
-        ISchemaResolver resolver
-    )
-        external
-        onlySchemaOwner(uid)
-    {
+    function setResolver(ResolverUID uid, IResolver resolver) external onlySchemaOwner(uid) {
         ResolverRecord storage referrer = _resolvers[uid];
         referrer.resolver = resolver;
         emit NewSchemaResolver(uid, address(resolver));

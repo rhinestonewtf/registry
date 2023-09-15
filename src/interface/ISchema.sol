@@ -2,28 +2,15 @@
 
 pragma solidity ^0.8.0;
 
-import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
-import { ISchemaValidator } from "../resolver/ISchemaValidator.sol";
-import { SchemaUID, ResolverUID } from "../Common.sol";
+import { IResolver } from "../external/IResolver.sol";
+import { ISchemaValidator } from "../external/ISchemaValidator.sol";
+import { SchemaUID, SchemaRecord, ResolverUID, ResolverRecord } from "../DataTypes.sol";
 
-/**
- * @title A struct representing a record for a submitted schema.
- * Inspired by schema definitions of EAS (Ethereum Attestation Service)
- */
-struct SchemaRecord {
-    ISchemaValidator validator; // Optional external schema validator.
-    uint48 registeredAt;
-    string schema; // Custom specification of the schema (e.g., an ABI).
-}
-
-struct ResolverRecord {
-    ISchemaResolver resolver; // Optional schema resolver.
-    address schemaOwner; // The address of the account used to register the schema.
-}
-
+import "./IRegistry.sol";
 /**
  * @title The global schema registry interface.
  */
+
 interface ISchema {
     // Error to throw if the SchemaID already exists
     error AlreadyExists();
@@ -67,7 +54,7 @@ interface ISchema {
      * @param uid The schema UID.
      * @param resolver The new resolver address.
      */
-    function setSchemaResolver(ResolverUID uid, ISchemaResolver resolver) external;
+    function setResolver(ResolverUID uid, IResolver resolver) external;
 
     /**
      * @dev Returns an existing schema by UID

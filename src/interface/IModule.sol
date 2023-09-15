@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { ResolverUID } from "../Common.sol";
+import { ResolverUID } from "../DataTypes.sol";
 
 interface IModule {
     // Event triggered when a contract is deployed.
