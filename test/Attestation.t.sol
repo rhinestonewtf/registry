@@ -44,7 +44,7 @@ contract AttestationTest is BaseTest {
             value: 0
         });
 
-        bytes memory sig = abi.encodePacked(uint8(27), "", "");
+        bytes memory sig = EXPECTED_SIGNATURE;
 
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
             schemaUID: defaultSchema1,
