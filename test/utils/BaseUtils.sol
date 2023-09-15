@@ -2,24 +2,8 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-/*//////////////////////////////////////////////////////////////
-                  Import Hashi Core Components
-//////////////////////////////////////////////////////////////*/
 
-import "hashi/Hashi.sol";
-import "hashi/GiriGiriBashi.sol";
-// Hashi's contract to dispatch messages to L2
-import "hashi/Yaho.sol";
-// Hashi's contract to receive messages from L1
-import "hashi/Yaru.sol";
-
-/*//////////////////////////////////////////////////////////////
-                      Hashi Bridge adapters
-//////////////////////////////////////////////////////////////*/
-import "hashi/adapters/AMB/AMBAdapter.sol";
-import "hashi/adapters/AMB/IAMB.sol";
-import "hashi/adapters/AMB/AMBMessageRelayer.sol";
-import "hashi/adapters/AMB/test/MockAMB.sol";
+import { SignatureCheckerLib } from "solady/src/utils/SignatureCheckerLib.sol";
 
 import "../../src/Registry.sol";
 
@@ -74,12 +58,11 @@ library RegistryTestLib {
     )
         public
     {
-        EIP712Signature memory signature =
-            signAttestation(instance, schemaUID, attesterKey, attData);
+        bytes memory signature = signAttestation(instance, schemaUID, attesterKey, attData);
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
             schemaUID: schemaUID,
             data: attData,
-            signature: abi.encode(signature),
+            signature: signature,
             attester: getAddr(attesterKey)
         });
         instance.registry.attest(req);
@@ -93,7 +76,7 @@ library RegistryTestLib {
     )
         internal
         view
-        returns (EIP712Signature memory sig)
+        returns (bytes memory sig)
     {
         uint256 nonce = instance.registry.getNonce(getAddr(attesterPk)) + 1;
         bytes32 digest = instance.registry.getAttestationDigest({
@@ -103,7 +86,11 @@ library RegistryTestLib {
         });
 
         (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
-        sig = EIP712Signature({ v: v, r: r, s: s });
+        sig = abi.encodePacked(r, s, v);
+        require(
+            SignatureCheckerLib.isValidSignatureNow(getAddr(attesterPk), digest, sig) == true,
+            "Internal Error"
+        );
     }
 
     function signAttestation(
@@ -114,9 +101,9 @@ library RegistryTestLib {
     )
         internal
         view
-        returns (EIP712Signature[] memory sig)
+        returns (bytes[] memory sig)
     {
-        sig = new EIP712Signature[](attData.length);
+        sig = new bytes[](attData.length);
 
         uint256 nonce = instance.registry.getNonce(getAddr(attesterPk)) + 1;
 
@@ -128,7 +115,12 @@ library RegistryTestLib {
             });
 
             (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
-            sig[i] = EIP712Signature({ v: v, r: r, s: s });
+            sig[i] = abi.encodePacked(r, s, v);
+
+            require(
+                SignatureCheckerLib.isValidSignatureNow(getAddr(attesterPk), digest, sig[i]) == true,
+                "Internal Error"
+            );
         }
     }
 
@@ -147,12 +139,12 @@ library RegistryTestLib {
             instance.registry.getRevocationDigest(revoke, schemaId, getAddr(attesterPk));
 
         (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
-        EIP712Signature memory signature = EIP712Signature({ v: v, r: r, s: s });
+        bytes memory signature = abi.encodePacked(r, s, v);
 
         DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
             schemaUID: schemaId,
             data: revoke,
-            signature: abi.encode(signature),
+            signature: signature,
             revoker: getAddr(attesterPk)
         });
         instance.registry.revoke(req);

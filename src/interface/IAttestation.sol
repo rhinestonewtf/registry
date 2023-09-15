@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import { AttestationRecord, EIP712Signature, SchemaUID } from "../Common.sol";
+import { AttestationRecord, SchemaUID } from "../Common.sol";
 // Hashi's contract to dispatch messages to L2
 import "hashi/Yaho.sol";
 

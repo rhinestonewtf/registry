@@ -30,12 +30,12 @@ contract ValueResolverTest is BaseTest {
             value: 1 ether
         });
 
-        EIP712Signature memory signature =
+        bytes memory signature =
             RegistryTestLib.signAttestation(instancel1, schema, auth1k, attData);
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
             schemaUID: schema,
             data: attData,
-            signature: abi.encode(signature),
+            signature: signature,
             attester: vm.addr(auth1k)
         });
 

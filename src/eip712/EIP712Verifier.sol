@@ -18,7 +18,7 @@ import {
     RevocationRequestData
 } from "../interface/IAttestation.sol";
 
-import { EIP712Signature, InvalidSignature, SchemaUID } from "../Common.sol";
+import { InvalidSignature, SchemaUID } from "../Common.sol";
 
 /**
  * @title EIP712 typed signatures verifier for EAS delegated attestations.
@@ -208,7 +208,10 @@ abstract contract EIP712Verifier is EIP712 {
     )
         internal
         view
-    { }
+    {
+        bool valid = SignatureCheckerLib.isValidSignatureNow(signer, digest, signature);
+        if (!valid) revert InvalidSignature();
+    }
 
     // function _verifySignature(
     //     bytes32 digest,
