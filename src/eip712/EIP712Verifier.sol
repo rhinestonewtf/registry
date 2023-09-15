@@ -6,7 +6,7 @@ import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { IERC1271 } from "@openzeppelin/contracts/interfaces/IERC1271.sol";
 
-import "forge-std/console2.sol";
+import { SignatureCheckerLib } from "solady/src/utils/SignatureCheckerLib.sol";
 
 // prettier-ignore
 import {
@@ -208,25 +208,34 @@ abstract contract EIP712Verifier is EIP712 {
     )
         internal
         view
-    {
-        // check if signer is EOA or contract
-        if (_isContract(signer)) {
-            if (
-                IERC1271(signer).isValidSignature(digest, signature)
-                    != ERC1271_RETURN_VALID_SIGNATURE
-            ) {
-                revert InvalidSignature();
-            }
-        } else {
-            EIP712Signature memory eip712Signature = abi.decode(signature, (EIP712Signature));
-            if (
-                ECDSA.recover(digest, eip712Signature.v, eip712Signature.r, eip712Signature.s)
-                    != signer
-            ) {
-                revert InvalidSignature();
-            }
-        }
-    }
+    { }
+
+    // function _verifySignature(
+    //     bytes32 digest,
+    //     bytes memory signature,
+    //     address signer
+    // )
+    //     internal
+    //     view
+    // {
+    //     // check if signer is EOA or contract
+    //     if (_isContract(signer)) {
+    //         if (
+    //             IERC1271(signer).isValidSignature(digest, signature)
+    //                 != ERC1271_RETURN_VALID_SIGNATURE
+    //         ) {
+    //             revert InvalidSignature();
+    //         }
+    //     } else {
+    //         EIP712Signature memory eip712Signature = abi.decode(signature, (EIP712Signature));
+    //         if (
+    //             ECDSA.recover(digest, eip712Signature.v, eip712Signature.r, eip712Signature.s)
+    //                 != signer
+    //         ) {
+    //             revert InvalidSignature();
+    //         }
+    //     }
+    // }
 
     function _isContract(address account) internal view returns (bool) {
         uint256 size;
