@@ -42,7 +42,6 @@ contract BaseTest is Test, RegistryTestTools {
     address defaultModule2;
 
     function setUp() public virtual {
-        address hashiSigner = makeAddr("hashiSigner");
         instancel1 = _setupInstance({ name: "RegistryL1" });
         (, auth1k) = makeAddrAndKey("auth1");
         (, auth2k) = makeAddrAndKey("auth2");

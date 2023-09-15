@@ -604,92 +604,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         return totalUsedValue;
     }
 
-    // function _newUID(
-    //     AttestationRecord memory attestation
-    // ) private view returns (bytes32 uid) {
-    //     uint256 bump;
-    //     while (true) {
-    //         uid = _getUID(attestation, bump);
-    //         // @TODO
-    //         // if (_attestations[uid].uid == EMPTY_UID) {
-    //         //     return uid;
-    //         // }
-
-    //         unchecked {
-    //             ++bump;
-    //         }
-    //     }
-    // }
-
-    /**
-     * @inheritdoc IAttestation
-     */
-    // function predictAttestationUID(
-    //     bytes32 schema,
-    //     address attester,
-    //     AttestationRequestData memory request
-    // ) external view returns (bytes32 uid) {
-    //     AttestationRecord memory attestation = AttestationRecord({
-    //         schemaUID: schema,
-    //         refUID: request.refUID,
-    //         time: _time(),
-    //         expirationTime: request.expirationTime,
-    //         revocationTime: 0,
-    //         subject: request.subject,
-    //         attester: attester,
-    //         propagateable: request.propagateable,
-    //         data: request.data
-    //     });
-    //     return _newUID(attestation);
-    // }
-
-    /**
-     * @dev Calculates a UID for a given attestation.
-     *
-     * @param attestation The input attestation.
-     * @param bump A bump value to use in case of a UID conflict.
-     *
-     * @return Attestation UID.
-     */
-    // function _getUID(
-    //     AttestationRecord memory attestation,
-    //     uint256 bump
-    // )
-    //     private
-    //     pure
-    //     returns (bytes32)
-    // {
-    //     return keccak256(
-    //         abi.encodePacked(
-    //             attestation.schemaUID,
-    //             attestation.subject,
-    //             attestation.attester,
-    //             // attestation.time, <-- makes UIDs unpredictable. is removing this a security issue?
-    //             attestation.expirationTime,
-    //             attestation.data,
-    //             bump
-    //         )
-    //     );
-    // }
-
-    /**
-     * @notice Converts an array of bytes32 to an array of uint256
-     *
-     * @dev Iterates over the input array and converts each bytes32 to uint256
-     *
-     * @param array The array of bytes32 to convert
-     *
-     * @return array2 The converted array of uint256
-     */
-    function _toUint256Array(bytes32[] memory array) internal pure returns (uint256[] memory) {
-        uint256 length = array.length;
-        uint256[] memory array2 = new uint256[](length);
-        for (uint256 i; i < length; ++i) {
-            array2[i] = uint256(array[i]);
-        }
-        return array2;
-    }
-
     /**
      * @dev Refunds remaining ETH amount to the attester.
      *
@@ -702,24 +616,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
             // apply for.
             payable(msg.sender).sendValue(remainingValue);
         }
-    }
-
-    function _resolvePropagation(
-        AttestationRecord memory attestation,
-        address to,
-        uint256 toChainId,
-        address moduleOnL2
-    )
-        private
-        returns (bool)
-    {
-        ISchemaResolver resolver = getResolver(_getModule(attestation.subject).resolverUID).resolver;
-        if (address(resolver) != address(0)) {
-            bool valid = resolver.propagation(attestation, msg.sender, to, toChainId, moduleOnL2);
-            if (valid) return valid;
-            else revert InvalidPropagation();
-        }
-        return false;
     }
 
     function _getSchema(SchemaUID uid) internal view virtual returns (SchemaRecord storage);

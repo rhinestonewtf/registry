@@ -128,6 +128,7 @@ abstract contract EIP712Verifier is EIP712 {
             keccak256(
                 abi.encode(
                     ATTEST_TYPEHASH,
+                    block.chainid,
                     schemaUid,
                     data.subject,
                     data.expirationTime,
@@ -181,7 +182,9 @@ abstract contract EIP712Verifier is EIP712 {
         returns (bytes32 digest)
     {
         digest = _hashTypedDataV4(
-            keccak256(abi.encode(REVOKE_TYPEHASH, schemaUid, subject, attester, nonce))
+            keccak256(
+                abi.encode(REVOKE_TYPEHASH, block.chainid, schemaUid, subject, attester, nonce)
+            )
         );
     }
 
