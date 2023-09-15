@@ -34,26 +34,6 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     mapping(address module => mapping(address authority => AttestationRecord attestation)) internal
         _moduleToAuthorityToAttestations;
 
-    error AlreadyRevoked();
-    error AlreadyRevokedOffchain();
-    error AlreadyTimestamped();
-    error InsufficientValue();
-    error InvalidAttestation();
-    error InvalidAttestationRefUID(bytes32 missingRefUID);
-    error IncompatibleAttestation(bytes32 sourceCodeHash, bytes32 targetCodeHash);
-    error InvalidPropagation();
-    error InvalidAttestations();
-    error InvalidExpirationTime();
-    error InvalidOffset();
-    error InvalidRegistry();
-    error InvalidRevocation();
-    error InvalidRevocations();
-    error InvalidVerifier();
-    error NotPayable();
-    error WrongSchema();
-    error InvalidSender(address moduleAddr, address sender); // Emitted when the sender address is invalid.
-    error InvalidCaller(address moduleAddr, address yaruSender); // Emitted when the caller is not the Yaru contract.
-
     constructor(string memory name, string memory version) EIP712Verifier(name, version) { }
 
     function attest(AttestationRequest calldata request) external payable {

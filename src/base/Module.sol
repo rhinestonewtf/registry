@@ -42,8 +42,6 @@ abstract contract Module is IModule {
     using ModuleDeploymentLib for bytes;
     using ModuleDeploymentLib for address;
 
-    error AlreadyRegistered(address module);
-
     /**
      * @inheritdoc IModule
      */

@@ -6,6 +6,25 @@ import "../DataTypes.sol";
 import { IRegistry } from "./IRegistry.sol";
 
 interface IAttestation {
+    error AlreadyRevoked();
+    error AlreadyRevokedOffchain();
+    error AlreadyTimestamped();
+    error InsufficientValue();
+    error InvalidAttestation();
+    error InvalidAttestationRefUID(bytes32 missingRefUID);
+    error IncompatibleAttestation(bytes32 sourceCodeHash, bytes32 targetCodeHash);
+    error InvalidPropagation();
+    error InvalidAttestations();
+    error InvalidExpirationTime();
+    error InvalidOffset();
+    error InvalidRegistry();
+    error InvalidRevocation();
+    error InvalidRevocations();
+    error InvalidVerifier();
+    error NotPayable();
+    error WrongSchema();
+    error InvalidSender(address moduleAddr, address sender); // Emitted when the sender address is invalid.
+    error InvalidCaller(address moduleAddr, address yaruSender); // Emitted when the caller is not the Yaru contract.
     /**
      * @dev Emitted when an attestation has been made.
      *
@@ -13,6 +32,7 @@ interface IAttestation {
      * @param attester The attesting account.
      * @param schema The UID of the schema.
      */
+
     event Attested(address indexed subject, address indexed attester, SchemaUID indexed schema);
 
     /**

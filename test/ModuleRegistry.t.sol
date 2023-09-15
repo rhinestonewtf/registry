@@ -57,7 +57,7 @@ contract ModuleTest is BaseTest {
             bytecode: bytecode,
             constructorArgs: abi.encode(313_132)
         });
-        vm.expectRevert(abi.encodeWithSelector(Module.AlreadyRegistered.selector, moduleAddr));
+        vm.expectRevert(abi.encodeWithSelector(IModule.AlreadyRegistered.selector, moduleAddr));
         instancel1.registry.register(defaultResolver, moduleAddr, "");
     }
 }
