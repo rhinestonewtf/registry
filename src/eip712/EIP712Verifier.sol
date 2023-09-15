@@ -21,17 +21,18 @@ import {
 import { InvalidSignature, SchemaUID } from "../Common.sol";
 
 /**
- * @title EIP712 typed signatures verifier for EAS delegated attestations.
+ * @title Singature Verifier. If provided signed is a contract, this function will fallback to ERC1271
  *
  * @author zeroknots.eth
  */
 abstract contract EIP712Verifier is EIP712 {
     // The hash of the data type used to relay calls to the attest function. It's the value of
     bytes32 private constant ATTEST_TYPEHASH =
-        keccak256("Attest(bytes32,address,uint48,bool,bytes32,bytes32,uint256)");
+        keccak256("AttestationRequestData(address,uint48,uint256,bytes)");
 
     // The hash of the data type used to relay calls to the revoke function. It's the value of
-    bytes32 private constant REVOKE_TYPEHASH = keccak256("Revoke(bytes32,address,address,uint256)");
+    bytes32 private constant REVOKE_TYPEHASH =
+        keccak256("RevocationRequestData(address,address,uint256)");
 
     // bytes4(keccak256("isValidSignature(bytes32,bytes)")
     bytes4 private constant ERC1271_RETURN_VALID_SIGNATURE = 0x1626ba7e;
@@ -149,7 +150,9 @@ abstract contract EIP712Verifier is EIP712 {
 
         uint256 nonce = _newNonce(request.attester);
         bytes32 digest = _attestationDigest(data, request.schemaUID, nonce);
-        _verifySignature(digest, request.signature, request.attester);
+        bool valid =
+            SignatureCheckerLib.isValidSignatureNow(request.attester, digest, request.signature);
+        if (!valid) revert InvalidSignature();
     }
 
     function _newNonce(address account) private returns (uint256 nonce) {
@@ -198,47 +201,10 @@ abstract contract EIP712Verifier is EIP712 {
 
         uint256 nonce = _newNonce(request.revoker);
         bytes32 digest = _revocationDigest(request.schemaUID, data.subject, data.attester, nonce);
-        _verifySignature(digest, request.signature, request.revoker);
-    }
-
-    function _verifySignature(
-        bytes32 digest,
-        bytes memory signature,
-        address signer
-    )
-        internal
-        view
-    {
-        bool valid = SignatureCheckerLib.isValidSignatureNow(signer, digest, signature);
+        bool valid =
+            SignatureCheckerLib.isValidSignatureNow(request.revoker, digest, request.signature);
         if (!valid) revert InvalidSignature();
     }
-
-    // function _verifySignature(
-    //     bytes32 digest,
-    //     bytes memory signature,
-    //     address signer
-    // )
-    //     internal
-    //     view
-    // {
-    //     // check if signer is EOA or contract
-    //     if (_isContract(signer)) {
-    //         if (
-    //             IERC1271(signer).isValidSignature(digest, signature)
-    //                 != ERC1271_RETURN_VALID_SIGNATURE
-    //         ) {
-    //             revert InvalidSignature();
-    //         }
-    //     } else {
-    //         EIP712Signature memory eip712Signature = abi.decode(signature, (EIP712Signature));
-    //         if (
-    //             ECDSA.recover(digest, eip712Signature.v, eip712Signature.r, eip712Signature.s)
-    //                 != signer
-    //         ) {
-    //             revert InvalidSignature();
-    //         }
-    //     }
-    // }
 
     function _isContract(address account) internal view returns (bool) {
         uint256 size;
