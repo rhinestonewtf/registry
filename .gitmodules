@@ -15,3 +15,6 @@
 	path = lib/Solidity-RLP
 	url = https://github.com/hamdiallam/Solidity-RLP
 	branch = v2.0.8
+[submodule "lib/checknsignatures"]
+	path = lib/checknsignatures
+	url = https://github.com/zeroknots/checknsignatures
