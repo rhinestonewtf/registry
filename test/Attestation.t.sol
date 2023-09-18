@@ -29,15 +29,18 @@ contract AttestationTest is BaseTest {
         instancel1.mockAttestation(defaultSchema1, auth1k, defaultModule1);
     }
 
-    function test__fuzz_CreateAttestation(bytes memory data) public {
+    function testCreateLargeAttestation() public {
         SampleAttestation memory sample = SampleAttestation({
-            dependencies: new address[](5),
-            comment: "This is a test",
-            url: "https://www.google.com",
+            dependencies: new address[](20),
+            comment: "This is a test!!",
+            url: "https://www.rhinestone.wtf",
             hash: bytes32(0),
             severity: 0
         });
-        data = abi.encode(sample);
+        bytes memory data = abi.encode(sample);
+
+        console2.log(data.length);
+
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
@@ -54,6 +57,27 @@ contract AttestationTest is BaseTest {
         AttestationRecord memory attestation =
             instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
         assertTrue(attestation.revocationTime != 0);
+    }
+
+    function testReAttest() public {
+        AttestationRequestData memory attData = AttestationRequestData({
+            subject: defaultModule1,
+            expirationTime: uint48(0),
+            data: "123",
+            value: 0
+        });
+        instancel1.newAttestation(defaultSchema1, auth1k, attData);
+        instancel1.revokeAttestation(defaultModule1, defaultSchema1, auth1k);
+        vm.warp(400);
+
+        attData.data = "456";
+        uint48 time = uint48(block.timestamp);
+        instancel1.newAttestation(defaultSchema1, auth1k, attData);
+
+        AttestationRecord memory attestation =
+            instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
+
+        assertTrue(attestation.time == time);
     }
 
     function testAttestationNonExistingSchema() public {

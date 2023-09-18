@@ -14,7 +14,7 @@ struct AttestationRecord {
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
-    address dataPointer;
+    AttestationDataRef dataPointer; // SSTORE2 pointer to the attestation data. (saves gas)
 }
 
 // Struct that represents Module artefact.
@@ -163,4 +163,21 @@ function resolverEq(ResolverUID uid1, ResolverUID uid2) pure returns (bool) {
 
 function resolverNotEq(ResolverUID uid1, ResolverUID uid2) pure returns (bool) {
     return ResolverUID.unwrap(uid1) != ResolverUID.unwrap(uid2);
+}
+
+type AttestationDataRef is address;
+
+import { SSTORE2 } from "solady/src/utils/SSTORE2.sol";
+
+function readAttestationData(AttestationDataRef dataPointer) view returns (bytes memory data) {
+    data = SSTORE2.read(AttestationDataRef.unwrap(dataPointer));
+}
+
+function writeAttestationData(
+    bytes memory attestationData,
+    bytes32 salt
+)
+    returns (AttestationDataRef dataPointer)
+{
+    dataPointer = AttestationDataRef.wrap(SSTORE2.writeDeterministic(attestationData, salt));
 }
