@@ -38,14 +38,19 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     constructor(string memory name, string memory version) EIP712Verifier(name, version) { }
 
     function attest(AttestationRequest calldata request) external payable {
-        AttestationRequestData[] memory requests = new AttestationRequestData[](
-            1
-        );
-        requests[0] = request.data;
+        AttestationRequestData calldata requestData = request.data;
 
         ModuleRecord storage moduleRecord = _getModule(request.data.subject);
+        ResolverUID resolverUID = moduleRecord.resolverUID;
 
-        _attest(request.schemaUID, moduleRecord.resolverUID, requests, msg.sender, msg.value, true);
+        AttestationRecord[] memory attestations = new AttestationRecord[](1);
+        uint256[] memory values = new uint256[](1);
+
+        (attestations[0], values[0]) =
+            _writeAttestation(request.schemaUID, resolverUID, requestData, msg.sender, _time());
+
+        uint256 usedValue =
+            _resolveAttestations(resolverUID, attestations, values, false, msg.value, true);
     }
 
     function multiAttest(MultiAttestationRequest[] calldata multiRequests) external payable {
@@ -82,19 +87,19 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     function attest(DelegatedAttestationRequest calldata delegatedRequest) external payable {
         _verifyAttest(delegatedRequest);
 
-        AttestationRequestData[] memory data = new AttestationRequestData[](1);
-        data[0] = delegatedRequest.data;
+        AttestationRequestData calldata data = delegatedRequest.data;
+        ModuleRecord storage moduleRecord = _getModule(delegatedRequest.data.subject);
+        ResolverUID resolverUID = moduleRecord.resolverUID;
 
-        ModuleRecord memory moduleRecord = _getModule(delegatedRequest.data.subject);
+        AttestationRecord[] memory attestations = new AttestationRecord[](1);
+        uint256[] memory values = new uint256[](1);
 
-        _attest(
-            delegatedRequest.schemaUID,
-            moduleRecord.resolverUID,
-            data,
-            delegatedRequest.attester,
-            msg.value,
-            true
+        (attestations[0], values[0]) = _writeAttestation(
+            delegatedRequest.schemaUID, resolverUID, data, delegatedRequest.attester, _time()
         );
+
+        uint256 usedValue =
+            _resolveAttestations(resolverUID, attestations, values, false, msg.value, true);
     }
 
     /**
@@ -303,7 +308,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
     function _attest(
         SchemaUID schemaUID,
         ResolverUID resolverUID,
-        AttestationRequestData[] memory data,
+        AttestationRequestData[] calldata data,
         address attester,
         uint256 availableValue,
         bool last
@@ -323,37 +328,23 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         uint48 timeNow = _time();
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
-            AttestationRequestData memory request = data[i];
-            if (request.expirationTime != NO_EXPIRATION_TIME && request.expirationTime <= timeNow) {
-                revert InvalidExpirationTime();
-            }
-            _enforceModuleExists(request.subject, resolverUID);
-
-            AttestationRecord memory attestation = AttestationRecord({
+            (attestations[i], values[i]) = _writeAttestation({
                 schemaUID: schemaUID,
-                subject: request.subject,
+                resolverUID: resolverUID,
+                request: data[i],
                 attester: attester,
-                time: timeNow,
-                expirationTime: request.expirationTime,
-                revocationTime: 0,
-                dataPointer: _writeSSTORE2(attester, request)
+                timeNow: timeNow
             });
-            values[i] = request.value;
-            _moduleToAttesterToAttestations[request.subject][attester] = attestation;
-
-            attestations[i] = attestation;
-
-            emit Attested(request.subject, attester, schemaUID);
         }
 
         usedValue =
             _resolveAttestations(resolverUID, attestations, values, false, availableValue, last);
     }
 
-    function _attest(
+    function _writeAttestation(
         SchemaUID schemaUID,
         ResolverUID resolverUID,
-        AttestationRequestData memory request,
+        AttestationRequestData calldata request,
         address attester,
         uint48 timeNow
     )
@@ -364,25 +355,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         if (request.expirationTime != NO_EXPIRATION_TIME && request.expirationTime <= timeNow) {
             revert InvalidExpirationTime();
         }
-        _enforceModuleExists(request.subject, resolverUID);
-
-        attestation = AttestationRecord({
-            schemaUID: schemaUID,
-            subject: request.subject,
-            attester: attester,
-            time: timeNow,
-            expirationTime: request.expirationTime,
-            revocationTime: 0,
-            dataPointer: _writeSSTORE2(attester, request)
-        });
-        value = request.value;
-
-        // SSTORE attestation on registry storage
-        _moduleToAttesterToAttestations[request.subject][attester] = attestation;
-        emit Attested(request.subject, attester, schemaUID);
-    }
-
-    function _enforceModuleExists(address module, ResolverUID resolverUID) private view {
+        address module = request.subject;
         ModuleRecord storage moduleRecord = _getModule(module);
 
         // Ensure that attestation is for module that was registered.
@@ -394,21 +367,32 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         if (moduleRecord.resolverUID != resolverUID) {
             revert InvalidAttestation();
         }
+        bytes32 attestationSalt = _getAttestationSSTORESalt(attester, module);
+        attestation = AttestationRecord({
+            schemaUID: schemaUID,
+            subject: module,
+            attester: attester,
+            time: timeNow,
+            expirationTime: request.expirationTime,
+            revocationTime: 0,
+            dataPointer: writeAttestationData(request.data, attestationSalt)
+        });
+        value = request.value;
+
+        // SSTORE attestation on registry storage
+        _moduleToAttesterToAttestations[module][attester] = attestation;
+        emit Attested(module, attester, schemaUID);
     }
 
-    function _writeSSTORE2(
+    function _getAttestationSSTORESalt(
         address attester,
-        AttestationRequestData memory request
+        address module
     )
         private
-        returns (AttestationDataRef dataPointer)
+        returns (bytes32 dataPointerSalt)
     {
-        bytes32 dataPointerSalt = keccak256(
-            abi.encodePacked(
-                request.subject, keccak256(request.data), attester, block.timestamp, block.chainid
-            )
-        );
-        dataPointer = writeAttestationData(request.data, dataPointerSalt);
+        dataPointerSalt =
+            keccak256(abi.encodePacked(module, attester, block.timestamp, block.chainid));
     }
 
     /**
