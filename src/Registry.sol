@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "./base/Schema.sol";
-import "./base/Attestation.sol";
+import "./base/AttestationDelegation.sol";
 import "./base/Module.sol";
 import "./base/Query.sol";
 
@@ -11,8 +11,8 @@ import "./interface/IRegistry.sol";
 /**
  * @author zeroknots
  */
-contract Registry is Schema, Query, Attestation, Module {
-    constructor(string memory name, string memory version) Attestation(name, version) { }
+contract Registry is Schema, Query, AttestationDelegation, Module {
+    constructor(string memory name, string memory version) AttestationDelegation(name, version) { }
 
     /*//////////////////////////////////////////////////////////////
                             Helper Functions
@@ -25,7 +25,7 @@ contract Registry is Schema, Query, Attestation, Module {
     function _getSchema(SchemaUID uid)
         internal
         view
-        override(Attestation, Schema)
+        override(AttestationResolve, Schema)
         returns (SchemaRecord storage)
     {
         return super._getSchema(uid);
@@ -48,7 +48,7 @@ contract Registry is Schema, Query, Attestation, Module {
         public
         view
         virtual
-        override(Attestation, Module, Schema)
+        override(AttestationResolve, Module, Schema)
         returns (ResolverRecord memory)
     {
         return super.getResolver(uid);
@@ -58,7 +58,7 @@ contract Registry is Schema, Query, Attestation, Module {
         internal
         view
         virtual
-        override(Attestation, Module)
+        override(AttestationResolve, Module)
         returns (ModuleRecord storage)
     {
         return super._getModule(moduleAddress);
