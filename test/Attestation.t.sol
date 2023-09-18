@@ -8,6 +8,14 @@ import "./utils/ERC1271Attester.sol";
 
 import "./utils/BaseTest.t.sol";
 
+struct SampleAttestation {
+    address[] dependencies;
+    string comment;
+    string url;
+    bytes32 hash;
+    uint256 severity;
+}
+
 /// @title AttestationTest
 /// @author zeroknots
 contract AttestationTest is BaseTest {
@@ -19,6 +27,25 @@ contract AttestationTest is BaseTest {
 
     function testCreateAttestation() public {
         instancel1.mockAttestation(defaultSchema1, auth1k, defaultModule1);
+    }
+
+    function test__fuzz_CreateAttestation(bytes memory data) public {
+        SampleAttestation memory sample = SampleAttestation({
+            dependencies: new address[](5),
+            comment: "This is a test",
+            url: "https://www.google.com",
+            hash: bytes32(0),
+            severity: 0
+        });
+        data = abi.encode(sample);
+        AttestationRequestData memory attData = AttestationRequestData({
+            subject: defaultModule1,
+            expirationTime: uint48(0),
+            data: data,
+            value: 0
+        });
+
+        instancel1.newAttestation(defaultSchema1, auth1k, attData);
     }
 
     function testRevokeAttestation() public {

@@ -344,6 +344,8 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 }
             }
 
+            address dataPointer = SSTORE2.write(request.data);
+
             AttestationRecord memory attestation = AttestationRecord({
                 schemaUID: schemaUID,
                 time: timeNow,
@@ -351,7 +353,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 revocationTime: 0,
                 subject: request.subject,
                 attester: attester,
-                data: request.data
+                dataPointer: request.data
             });
 
             // saving into contract storage

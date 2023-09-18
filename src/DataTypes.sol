@@ -14,7 +14,7 @@ struct AttestationRecord {
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
-    bytes data; // Custom attestation data.
+    address dataPointer;
 }
 
 // Struct that represents Module artefact.
