@@ -195,12 +195,4 @@ abstract contract EIP712Verifier is EIP712 {
             SignatureCheckerLib.isValidSignatureNow(request.revoker, digest, request.signature);
         if (!valid) revert InvalidSignature();
     }
-
-    function _isContract(address account) internal view returns (bool) {
-        uint256 size;
-        assembly {
-            size := extcodesize(account)
-        }
-        return size > 0;
-    }
 }

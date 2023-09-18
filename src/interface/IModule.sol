@@ -5,7 +5,7 @@ import { ResolverUID } from "../DataTypes.sol";
 
 interface IModule {
     // Event triggered when a contract is deployed.
-    event ModuleRegistration(address indexed implementation, bytes32 codeHash);
+    event ModuleRegistration(address indexed implementation);
 
     error AlreadyRegistered(address module);
 

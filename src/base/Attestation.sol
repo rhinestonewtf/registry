@@ -182,15 +182,16 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         uint256 availableValue = msg.value;
 
         ModuleRecord memory moduleRecord = _getModule(multiRequests[0].data[0].subject);
+        uint256 requestsLength = multiRequests.length;
 
         // should cache length
-        for (uint256 i = 0; i < multiRequests.length; i = uncheckedInc(i)) {
+        for (uint256 i; i < requestsLength; i = uncheckedInc(i)) {
             // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there
             // is a remainder - it will be refunded back to the attester (something that we can only verify during the
             // last and final batch).
             bool last;
             unchecked {
-                last = i == multiRequests.length - 1;
+                last = i == requestsLength - 1;
             }
 
             MultiRevocationRequest calldata multiRequest = multiRequests[i];

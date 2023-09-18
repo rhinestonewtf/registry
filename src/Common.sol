@@ -30,3 +30,11 @@ function uncheckedInc(uint256 i) pure returns (uint256 j) {
 function _time() view returns (uint48) {
     return uint48(block.timestamp);
 }
+
+function _isContract(address account) view returns (bool) {
+    uint256 size;
+    assembly {
+        size := extcodesize(account)
+    }
+    return size > 0;
+}

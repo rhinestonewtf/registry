@@ -3,11 +3,12 @@ pragma solidity ^0.8.19;
 
 import { IModule } from "../interface/IModule.sol";
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
+import { CREATE3 } from "solady/src/utils/CREATE3.sol";
 import { ISchema } from "../interface/ISchema.sol";
 import { IRegistry } from "../interface/IRegistry.sol";
 import { Schema } from "./Schema.sol";
 import "../DataTypes.sol";
-import { InvalidResolver } from "../Common.sol";
+import { InvalidResolver, _isContract } from "../Common.sol";
 import { ISchemaValidator } from "../external/ISchemaValidator.sol";
 import { IResolver } from "../external/IResolver.sol";
 
@@ -15,32 +16,21 @@ import { IResolver } from "../external/IResolver.sol";
  * @title Module
  *
  * @dev The Module contract serves as a component in a larger system for handling smart contracts or "modules"
- * within a blockchain ecosystem. This contract inherits from the IModule interface and the Schema contract,
- * providing the actual implementation for the interface and extending the functionality of the Schema contract.
+ * within a blockchain ecosystem. This contract inherits from the IModule interface
  *
  * @dev The primary responsibility of the Module is to deploy and manage modules. A module is a smart contract
  * that has been deployed through the Module. The details of each module, such as its address, code hash, schema ID,
  * sender address, deploy parameters hash, and additional data are stored in a struct and mapped to the module's address in
  * the `_modules` mapping for easy access and management.
  *
- * @dev The `deploy` function is used to deploy a new module. The code of the module, parameters for deployment (constructor arguments),
- * a salt for creating the contract, additional data for registration, and a schema ID under which to register the contract are
- * all passed as arguments to this function. This function first checks if the provided schema ID is valid and then deploys the contract.
- * Once the contract is successfully deployed, the details are stored in the `_modules` mapping and a `Deployment` event is emitted.
- *
- * @dev Furthermore, the Module contract utilizes the Ethereum `CREATE2` opcode in its `_deploy` function for deploying
- * contracts. This opcode allows creating a contract with a deterministic address, which is calculated in the `_calcAddress` function.
- * This approach provides flexibility and advanced patterns in contract interactions, like the ability to show a contract’s address
- * before it is mined.
- *
  * @dev In conclusion, the Module is a central part of a system to manage, deploy, and interact with a set of smart contracts
  * in a structured and controlled manner.
  */
 abstract contract Module is IModule {
-    mapping(address moduleAddress => ModuleRecord) internal _modules;
-
     using ModuleDeploymentLib for bytes;
     using ModuleDeploymentLib for address;
+
+    mapping(address moduleAddress => ModuleRecord) private _modules;
 
     /**
      * @inheritdoc IModule
@@ -60,21 +50,50 @@ abstract contract Module is IModule {
         ResolverRecord memory resolver = getResolver(resolverUID);
         if (resolver.schemaOwner == address(0)) revert InvalidResolver();
 
-        bytes32 contractCodeHash; //  Hash of contract bytecode
-        bytes32 deployParamsHash; // Hash of contract deployment parameters
-        (moduleAddr, deployParamsHash, contractCodeHash) =
-            code.deploy(deployParams, salt, msg.value);
+        (moduleAddr,,) = code.deploy(deployParams, salt, msg.value);
 
-        _register(
-            moduleAddr, msg.sender, resolver, resolverUID, contractCodeHash, deployParamsHash, data
-        );
-
-        emit ModuleRegistration(moduleAddr, contractCodeHash); // Emit a deployment event
+        _register(moduleAddr, msg.sender, resolver, resolverUID, data);
     }
 
-    // this function might be removed in the future.
-    // could be a security risk
-    // TODO
+    function deployC3(
+        bytes calldata code,
+        bytes calldata deployParams,
+        bytes32 salt,
+        bytes calldata data,
+        ResolverUID resolverUID
+    )
+        external
+        payable
+        returns (address moduleAddr)
+    {
+        ResolverRecord memory resolver = getResolver(resolverUID);
+        if (resolver.schemaOwner == address(0)) revert InvalidResolver();
+        bytes memory creationCode = abi.encodePacked(code, deployParams);
+        moduleAddr = CREATE3.deploy(salt, creationCode, msg.value);
+
+        _register(moduleAddr, msg.sender, resolver, resolverUID, data);
+    }
+
+    function deployViaFactory(
+        address factory,
+        bytes calldata callOnFactory,
+        bytes calldata data,
+        ResolverUID resolverUID
+    )
+        external
+        payable
+        returns (address moduleAddr)
+    {
+        ResolverRecord memory resolver = getResolver(resolverUID);
+        if (resolver.schemaOwner == address(0)) revert InvalidResolver();
+        (bool ok, bytes memory returnData) = factory.call{ value: msg.value }(callOnFactory);
+
+        if (!ok) revert InvalidDeployment();
+        moduleAddr = abi.decode(returnData, (address));
+
+        _register(moduleAddr, msg.sender, resolver, resolverUID, data);
+    }
+
     function register(
         ResolverUID resolverUID,
         address moduleAddress,
@@ -82,15 +101,10 @@ abstract contract Module is IModule {
     )
         external
     {
-        // Check if the provided schemaId exists
         ResolverRecord memory resolver = getResolver(resolverUID);
         if (resolver.schemaOwner == address(0)) revert InvalidResolver();
 
-        // get codehash of depoyed contract
-        bytes32 contractCodeHash = moduleAddress.codeHash();
-        _register(moduleAddress, address(0), resolver, resolverUID, contractCodeHash, "", data);
-
-        emit ModuleRegistration(moduleAddress, contractCodeHash); // Emit a registration event
+        _register(moduleAddress, address(0), resolver, resolverUID, data);
     }
 
     function _register(
@@ -98,8 +112,6 @@ abstract contract Module is IModule {
         address sender,
         ResolverRecord memory resolver,
         ResolverUID resolverUID,
-        bytes32 codeHash,
-        bytes32 deployParamsHash,
         bytes calldata data
     )
         private
@@ -107,6 +119,9 @@ abstract contract Module is IModule {
         // ensure moduleAddress is not already registered
         if (_modules[moduleAddress].implementation != address(0)) {
             revert AlreadyRegistered(moduleAddress);
+        }
+        if (_isContract(moduleAddress) != true) {
+            revert InvalidDeployment();
         }
 
         // Store module data in _modules mapping
@@ -145,7 +160,7 @@ abstract contract Module is IModule {
         return _modules[moduleAddress];
     }
 
-    function getModule(address moduleAddress) public returns (ModuleRecord memory) {
+    function getModule(address moduleAddress) public view returns (ModuleRecord memory) {
         return _getModule(moduleAddress);
     }
 }
