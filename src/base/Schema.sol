@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.19;
 
-import { EMPTY_UID, AccessDenied, _time, InvalidResolver } from "../Common.sol";
+import { EMPTY_UID, AccessDenied, _time, ZERO_ADDRESS, InvalidResolver } from "../Common.sol";
 import { ISchema, SchemaLib } from "../interface/ISchema.sol";
 
 import "../DataTypes.sol";
@@ -37,9 +37,6 @@ import "forge-std/console2.sol";
 abstract contract Schema is ISchema {
     using SchemaLib for SchemaRecord;
     using SchemaLib for ResolverRecord;
-    // The version of the contract.
-
-    string public constant VERSION = "0.1";
 
     // The global mapping between schema records and their IDs.
     mapping(SchemaUID uid => SchemaRecord schemaRecord) private _schemas;
@@ -62,34 +59,26 @@ abstract contract Schema is ISchema {
         // Computing a unique ID for the schema using its properties
         SchemaUID uid = schemaRecord.getUID();
 
-        // @TODO: better way to make this check?
-        // Checking if a schema with this UID already exists
-        // very gas intensive.
-        // I think it would be better to spend a bit more gas on schema creation and make it cheaper
-        // during usage. Maybe we can add a timestamp when it was created or so?
-        if (bytes(_schemas[uid].schema).length != 0) {
-            revert AlreadyExists();
-        }
+        if (_schemas[uid].registeredAt != 0) revert AlreadyExists();
 
         // Storing schema in the _schemas mapping
         _schemas[uid] = schemaRecord;
 
         emit SchemaRegistered(uid, msg.sender);
 
-        // @TODO: remove this
         return uid;
     }
 
     function registerResolver(IResolver _resolver) external returns (ResolverUID) {
-        if (address(_resolver) == address(0)) revert InvalidResolver();
+        if (address(_resolver) == ZERO_ADDRESS) revert InvalidResolver();
         ResolverRecord memory resolver =
             ResolverRecord({ resolver: _resolver, schemaOwner: msg.sender });
 
         // Computing a unique ID for the schema using its properties
         ResolverUID uid = resolver.getUID();
 
-        // Checking if a schema with this UID already exists -> resolver can never be address(0)
-        if (address(_resolvers[uid].resolver) != address(0)) {
+        // Checking if a schema with this UID already exists -> resolver can never be ZERO_ADDRESS
+        if (address(_resolvers[uid].resolver) != ZERO_ADDRESS) {
             revert AlreadyExists();
         }
 

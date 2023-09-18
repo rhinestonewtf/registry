@@ -26,7 +26,7 @@ library ModuleDeploymentLib {
     function deploy(
         bytes memory createCode,
         bytes memory params,
-        uint256 salt,
+        bytes32 salt,
         uint256 value
     )
         internal
@@ -51,7 +51,7 @@ library ModuleDeploymentLib {
     /// @param _code The contract code that would be deployed.
     /// @param _salt A salt used for the address calculation. This must be the same salt that would be passed to the CREATE2 opcode.
     /// @return The address that the contract would be deployed at if the CREATE2 opcode was called with the specified _code and _salt.
-    function calcAddress(bytes memory _code, uint256 _salt) internal view returns (address) {
+    function calcAddress(bytes memory _code, bytes32 _salt) internal view returns (address) {
         bytes32 hash =
             keccak256(abi.encodePacked(bytes1(0xff), address(this), _salt, keccak256(_code)));
         // NOTE: cast last 20 bytes of hash to address

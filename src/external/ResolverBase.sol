@@ -2,7 +2,9 @@
 
 pragma solidity 0.8.19;
 
-import { AccessDenied, NO_EXPIRATION_TIME, NotFound, uncheckedInc } from "../Common.sol";
+import {
+    AccessDenied, NO_EXPIRATION_TIME, NotFound, ZERO_ADDRESS, uncheckedInc
+} from "../Common.sol";
 import "../DataTypes.sol";
 
 import { IResolver } from "./IResolver.sol";
@@ -29,7 +31,7 @@ abstract contract ResolverBase is IResolver {
      * @param rs The address of the global RS contract.
      */
     constructor(address rs) {
-        if (rs == address(0)) {
+        if (rs == ZERO_ADDRESS) {
             revert InvalidRS();
         }
         _rs = rs;

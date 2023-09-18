@@ -80,16 +80,9 @@ library SchemaLib {
         );
     }
 
-    function getUID(ResolverRecord memory schemaResolver) internal pure returns (ResolverUID) {
+    function getUID(ResolverRecord memory resolver) internal view returns (ResolverUID) {
         return ResolverUID.wrap(
-            keccak256(
-                abi.encodePacked(
-                    // @zeroknots: this breaks when resolver is changed
-                    // I think being able to change the resolver would make a lot of sense
-                    schemaResolver.schemaOwner,
-                    address(schemaResolver.resolver)
-                )
-            )
+            keccak256(abi.encodePacked(resolver.resolver, block.timestamp, block.chainid))
         );
     }
 }

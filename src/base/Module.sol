@@ -8,7 +8,7 @@ import { ISchema } from "../interface/ISchema.sol";
 import { IRegistry } from "../interface/IRegistry.sol";
 import { Schema } from "./Schema.sol";
 import "../DataTypes.sol";
-import { InvalidResolver, _isContract } from "../Common.sol";
+import { InvalidResolver, _isContract, ZERO_ADDRESS } from "../Common.sol";
 import { ISchemaValidator } from "../external/ISchemaValidator.sol";
 import { IResolver } from "../external/IResolver.sol";
 
@@ -38,26 +38,6 @@ abstract contract Module is IModule {
     function deploy(
         bytes calldata code,
         bytes calldata deployParams,
-        uint256 salt,
-        bytes calldata data,
-        ResolverUID resolverUID
-    )
-        external
-        payable
-        returns (address moduleAddr)
-    {
-        // Check if the provided schemaId exists
-        ResolverRecord memory resolver = getResolver(resolverUID);
-        if (resolver.schemaOwner == address(0)) revert InvalidResolver();
-
-        (moduleAddr,,) = code.deploy(deployParams, salt, msg.value);
-
-        _register(moduleAddr, msg.sender, resolver, resolverUID, data);
-    }
-
-    function deployC3(
-        bytes calldata code,
-        bytes calldata deployParams,
         bytes32 salt,
         bytes calldata data,
         ResolverUID resolverUID
@@ -67,11 +47,33 @@ abstract contract Module is IModule {
         returns (address moduleAddr)
     {
         ResolverRecord memory resolver = getResolver(resolverUID);
-        if (resolver.schemaOwner == address(0)) revert InvalidResolver();
+        if (resolver.schemaOwner == ZERO_ADDRESS) revert InvalidResolver();
+
+        (moduleAddr,,) = code.deploy(deployParams, salt, msg.value);
+
+        _register(moduleAddr, msg.sender, resolver, resolverUID, data);
+        emit ModuleDeployed(moduleAddr, salt, ResolverUID.unwrap(resolverUID));
+    }
+
+    function deployC3(
+        bytes calldata code,
+        bytes calldata deployParams,
+        bytes32 _salt,
+        bytes calldata data,
+        ResolverUID resolverUID
+    )
+        external
+        payable
+        returns (address moduleAddr)
+    {
+        ResolverRecord memory resolver = getResolver(resolverUID);
+        if (resolver.schemaOwner == ZERO_ADDRESS) revert InvalidResolver();
         bytes memory creationCode = abi.encodePacked(code, deployParams);
+        bytes32 salt = keccak256(abi.encodePacked(_salt, msg.sender));
         moduleAddr = CREATE3.deploy(salt, creationCode, msg.value);
 
         _register(moduleAddr, msg.sender, resolver, resolverUID, data);
+        emit ModuleDeployed(moduleAddr, salt, ResolverUID.unwrap(resolverUID));
     }
 
     function deployViaFactory(
@@ -85,13 +87,16 @@ abstract contract Module is IModule {
         returns (address moduleAddr)
     {
         ResolverRecord memory resolver = getResolver(resolverUID);
-        if (resolver.schemaOwner == address(0)) revert InvalidResolver();
+        if (resolver.schemaOwner == ZERO_ADDRESS) revert InvalidResolver();
         (bool ok, bytes memory returnData) = factory.call{ value: msg.value }(callOnFactory);
 
         if (!ok) revert InvalidDeployment();
         moduleAddr = abi.decode(returnData, (address));
+        if (moduleAddr == ZERO_ADDRESS) revert InvalidDeployment();
+        if (_isContract(moduleAddr) != true) revert InvalidDeployment();
 
         _register(moduleAddr, msg.sender, resolver, resolverUID, data);
+        emit ModuleDeployedExternalFactory(moduleAddr, factory, ResolverUID.unwrap(resolverUID));
     }
 
     function register(
@@ -102,9 +107,10 @@ abstract contract Module is IModule {
         external
     {
         ResolverRecord memory resolver = getResolver(resolverUID);
-        if (resolver.schemaOwner == address(0)) revert InvalidResolver();
+        if (resolver.schemaOwner == ZERO_ADDRESS) revert InvalidResolver();
 
-        _register(moduleAddress, address(0), resolver, resolverUID, data);
+        _register(moduleAddress, ZERO_ADDRESS, resolver, resolverUID, data);
+        emit ModuleRegistration(moduleAddress, ResolverUID.unwrap(resolverUID));
     }
 
     function _register(
@@ -117,7 +123,7 @@ abstract contract Module is IModule {
         private
     {
         // ensure moduleAddress is not already registered
-        if (_modules[moduleAddress].implementation != address(0)) {
+        if (_modules[moduleAddress].implementation != ZERO_ADDRESS) {
             revert AlreadyRegistered(moduleAddress);
         }
         if (_isContract(moduleAddress) != true) {
@@ -143,7 +149,7 @@ abstract contract Module is IModule {
     )
         private
     {
-        if (address(resolver) == address(0)) return;
+        if (address(resolver) == ZERO_ADDRESS) return;
         if (resolver.moduleRegistration(moduleRegistration) == false) {
             revert InvalidDeployment();
         }

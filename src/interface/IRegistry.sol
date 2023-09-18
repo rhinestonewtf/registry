@@ -22,7 +22,7 @@ interface IRegistry {
     function deploy(
         bytes memory code,
         bytes memory deployParams,
-        uint256 salt,
+        bytes32 salt,
         bytes memory data,
         ResolverUID resolverUID
     )

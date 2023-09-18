@@ -10,6 +10,7 @@ import "./Module.sol";
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
 
 import {
+    ZERO_ADDRESS,
     AccessDenied,
     NotFound,
     NO_EXPIRATION_TIME,
@@ -333,7 +334,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
                 ModuleRecord storage moduleRecord = _getModule(request.subject);
 
                 // Ensure that attestation is for module that was registered.
-                if (moduleRecord.implementation == address(0)) {
+                if (moduleRecord.implementation == ZERO_ADDRESS) {
                     revert InvalidAttestation();
                 }
 
@@ -460,7 +461,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         ResolverRecord memory resolver = getResolver(resolverUID);
         IResolver resolverContract = resolver.resolver;
 
-        if (address(resolverContract) == address(0)) {
+        if (address(resolverContract) == ZERO_ADDRESS) {
             // Ensure that we don't accept payments if there is no resolver.
             if (value != 0) {
                 revert NotPayable();
@@ -530,7 +531,7 @@ abstract contract Attestation is IAttestation, EIP712Verifier {
         }
         ResolverRecord memory resolver = getResolver(resolverUID);
         IResolver resolverContract = resolver.resolver;
-        if (address(resolverContract) == address(0)) {
+        if (address(resolverContract) == ZERO_ADDRESS) {
             // Ensure that we don't accept payments if there is no resolver.
             for (uint256 i; i < length; i = uncheckedInc(i)) {
                 if (values[i] != 0) {

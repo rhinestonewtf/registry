@@ -5,7 +5,9 @@ pragma solidity ^0.8.0;
 bytes32 constant EMPTY_UID = 0;
 
 // A zero expiration represents an non-expiring attestation.
-uint64 constant NO_EXPIRATION_TIME = 0;
+uint48 constant NO_EXPIRATION_TIME = 0;
+
+address constant ZERO_ADDRESS = address(0);
 
 error AccessDenied();
 error InvalidSchema();
