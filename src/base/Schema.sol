@@ -69,8 +69,13 @@ abstract contract Schema is ISchema {
         return uid;
     }
 
+    /**
+     * @inheritdoc ISchema
+     */
     function registerResolver(IResolver _resolver) external returns (ResolverUID) {
         if (address(_resolver) == ZERO_ADDRESS) revert InvalidResolver();
+
+        // build a ResolverRecord from the input
         ResolverRecord memory resolver =
             ResolverRecord({ resolver: _resolver, schemaOwner: msg.sender });
 
@@ -90,6 +95,9 @@ abstract contract Schema is ISchema {
         return uid;
     }
 
+    /**
+     * @inheritdoc ISchema
+     */
     function setResolver(ResolverUID uid, IResolver resolver) external onlySchemaOwner(uid) {
         ResolverRecord storage referrer = _resolvers[uid];
         referrer.resolver = resolver;

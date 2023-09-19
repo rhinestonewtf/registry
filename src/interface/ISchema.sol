@@ -34,36 +34,61 @@ interface ISchema {
     event NewSchemaResolver(ResolverUID indexed uid, address resolver);
 
     /**
-     * @dev Submits and reserves a new schema
+     * @notice Registers a new schema.
      *
-     * @param schema The schema data schema.
-     * @param resolver An optional schema resolver.
+     * @dev Ensures that the schema does not already exist and calculates a unique ID for it.
      *
-     * @return The UID of the new schema.
+     * @param schema The schema as a string representation.
+     * @param validator Contract address that validates this schema.
+     *
+     * @return The unique ID of the registered schema.
      */
     function registerSchema(
         string calldata schema,
-        ISchemaValidator resolver
+        ISchemaValidator validator
     )
         external
         returns (SchemaUID);
 
     /**
-     * @dev Sets a resolver for a schema
+     * @notice Registers a resolver and associates it with the caller.
+     * @dev This function allows the registration of a resolver by computing a unique ID and associating it with the schema owner.
+     *      Emits a SchemaResolverRegistered event upon successful registration.
      *
-     * @param uid The schema UID.
-     * @param resolver The new resolver address.
+     * @param _resolver Address of the IResolver to be registered.
+     *
+     * @return uid The unique ID (ResolverUID) associated with the registered resolver.
+     */
+
+    function registerResolver(IResolver _resolver) external returns (ResolverUID);
+
+    /**
+     * @notice Updates the resolver for a given UID.
+     *
+     * @dev Can only be called by the owner of the schema.
+     *
+     * @param uid The UID of the schema to update.
+     * @param resolver The new resolver interface.
      */
     function setResolver(ResolverUID uid, IResolver resolver) external;
 
     /**
-     * @dev Returns an existing schema by UID
+     * @notice Retrieves the schema record for a given UID.
      *
      * @param uid The UID of the schema to retrieve.
      *
-     * @return The schema record.
+     * @return The schema record associated with the given UID.
      */
     function getSchema(SchemaUID uid) external view returns (SchemaRecord memory);
+
+    /**
+     * @notice Retrieves the resolver record for a given UID.
+     *
+     * @param uid The UID of the resolver to retrieve.
+     *
+     * @return The resolver record associated with the given UID.
+     */
+    function getResolver(ResolverUID uid) external view returns (ResolverRecord memory);
 }
 
 library SchemaLib {
@@ -80,6 +105,13 @@ library SchemaLib {
         );
     }
 
+    /**
+     * @dev Calculates a UID for a given resolver.
+     *
+     * @param resolver The input schema.
+     *
+     * @return ResolverUID.
+     */
     function getUID(ResolverRecord memory resolver) internal view returns (ResolverUID) {
         return ResolverUID.wrap(
             keccak256(abi.encodePacked(resolver.resolver, block.timestamp, block.chainid))

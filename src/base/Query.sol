@@ -7,11 +7,12 @@ import {
 import "../interface/IQuery.sol";
 import "./Attestation.sol";
 
-import "forge-std/console2.sol";
-
-/// @title RSRegistry
-/// @author zeroknots
-/// @notice The global attestation registry.
+/**
+ * @title Query
+ * @author zeroknots
+ * Implements EIP-7484 to query attestations stored in the registry.
+ * @dev This contract is abstract and provides utility functions to query attestations.
+ */
 abstract contract Query is IQuery {
     /**
      * @inheritdoc IQuery
@@ -140,6 +141,16 @@ abstract contract Query is IQuery {
             attestations[i] = findAttestation(module, attesters[i]);
         }
     }
+    /**
+     * @notice Internal function to retrieve an attestation record.
+     *
+     * @dev This is a virtual function and is meant to be overridden in derived contracts.
+     *
+     * @param module The address of the module for which the attestation is retrieved.
+     * @param attester The address of the attester whose record is being retrieved.
+     *
+     * @return Attestation record associated with the given module and attester.
+     */
 
     function _getAttestation(
         address module,

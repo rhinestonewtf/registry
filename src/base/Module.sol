@@ -58,7 +58,7 @@ abstract contract Module is IModule {
     function deployC3(
         bytes calldata code,
         bytes calldata deployParams,
-        bytes32 _salt,
+        bytes32 salt,
         bytes calldata data,
         ResolverUID resolverUID
     )
@@ -69,11 +69,11 @@ abstract contract Module is IModule {
         ResolverRecord memory resolver = getResolver(resolverUID);
         if (resolver.schemaOwner == ZERO_ADDRESS) revert InvalidResolver();
         bytes memory creationCode = abi.encodePacked(code, deployParams);
-        bytes32 salt = keccak256(abi.encodePacked(_salt, msg.sender));
-        moduleAddr = CREATE3.deploy(salt, creationCode, msg.value);
+        bytes32 senderSalt = keccak256(abi.encodePacked(salt, msg.sender));
+        moduleAddr = CREATE3.deploy(senderSalt, creationCode, msg.value);
 
         _register(moduleAddr, msg.sender, resolver, resolverUID, data);
-        emit ModuleDeployed(moduleAddr, salt, ResolverUID.unwrap(resolverUID));
+        emit ModuleDeployed(moduleAddr, senderSalt, ResolverUID.unwrap(resolverUID));
     }
 
     function deployViaFactory(
@@ -113,6 +113,15 @@ abstract contract Module is IModule {
         emit ModuleRegistration(moduleAddress, ResolverUID.unwrap(resolverUID));
     }
 
+    /**
+     * @dev Registers a module, ensuring it's not already registered.
+     *
+     * @param moduleAddress Address of the module.
+     * @param sender Address of the sender registering the module.
+     * @param resolver Resolver record associated with the module.
+     * @param resolverUID Unique ID of the resolver.
+     * @param data Data associated with the module.
+     */
     function _register(
         address moduleAddress,
         address sender,
@@ -143,6 +152,12 @@ abstract contract Module is IModule {
         _modules[moduleAddress] = moduleRegistration;
     }
 
+    /**
+     * @dev Resolves the module registration using the provided resolver.
+     *
+     * @param resolver Resolver to validate the module registration.
+     * @param moduleRegistration Module record to be registered.
+     */
     function _resolveRegistration(
         IResolver resolver,
         ModuleRecord memory moduleRegistration
@@ -155,8 +170,22 @@ abstract contract Module is IModule {
         }
     }
 
+    /**
+     * @notice Retrieves the resolver record for a given UID.
+     *
+     * @param uid The UID of the resolver to retrieve.
+     *
+     * @return The resolver record associated with the given UID.
+     */
     function getResolver(ResolverUID uid) public view virtual returns (ResolverRecord memory);
 
+    /**
+     * @dev Retrieves the module record for a given address.
+     *
+     * @param moduleAddress The address of the module to retrieve.
+     *
+     * @return The module record associated with the given address.
+     */
     function _getModule(address moduleAddress)
         internal
         view
@@ -165,6 +194,14 @@ abstract contract Module is IModule {
     {
         return _modules[moduleAddress];
     }
+
+    /**
+     * @notice Retrieves the module record for a given address.
+     *
+     * @param moduleAddress The address of the module to retrieve.
+     *
+     * @return The module record associated with the given address.
+     */
 
     function getModule(address moduleAddress) public view returns (ModuleRecord memory) {
         return _getModule(moduleAddress);

@@ -16,7 +16,17 @@ import {
     _time
 } from "../Common.sol";
 
+/**
+ * @title AttestationDelegation
+ * @dev This contract provides a delegated approach to attesting and revoking attestations.
+ *      The contract extends both IAttestation and Attestation.
+ */
 abstract contract AttestationDelegation is IAttestation, Attestation {
+    /**
+     * @dev Initializes the contract with a name and version for the attestation.
+     * @param name Name of the attestation.
+     * @param version Version of the attestation.
+     */
     constructor(string memory name, string memory version) Attestation(name, version) { }
     /*//////////////////////////////////////////////////////////////
                             ATTEST

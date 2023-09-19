@@ -23,22 +23,31 @@ import { AttestationDataRef, writeAttestationData, readAttestationData } from ".
 
 import { AttestationResolve } from "./AttestationResolve.sol";
 /**
- * @title Module
- *
- * @author zeroknots
+ * @title Attestation
+ * @dev Manages attestations and revocations for modules.
  */
 
 abstract contract Attestation is IAttestation, AttestationResolve {
     using ModuleDeploymentLib for address;
 
+    // Mapping of module addresses to attester addresses to their attestation records.
     mapping(address module => mapping(address attester => AttestationRecord attestation)) internal
         _moduleToAttesterToAttestations;
 
+    /**
+     * @notice Constructs a new Attestation contract instance.
+     * @param name The name of the contract.
+     * @param version The version of the contract.
+     */
     constructor(string memory name, string memory version) EIP712Verifier(name, version) { }
 
     /*//////////////////////////////////////////////////////////////
                               ATTEST
     //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @inheritdoc IAttestation
+     */
     function attest(AttestationRequest calldata request) external payable {
         AttestationRequestData calldata requestData = request.data;
 
@@ -48,13 +57,18 @@ abstract contract Attestation is IAttestation, AttestationResolve {
         AttestationRecord[] memory attestations = new AttestationRecord[](1);
         uint256[] memory values = new uint256[](1);
 
+        // write attestations to registry storge
         (attestations[0], values[0]) =
             _writeAttestation(request.schemaUID, resolverUID, requestData, msg.sender, _time());
 
+        // trigger the resolver procedure
         uint256 usedValue =
             _resolveAttestations(resolverUID, attestations, values, false, msg.value, true);
     }
 
+    /**
+     * @inheritdoc IAttestation
+     */
     function multiAttest(MultiAttestationRequest[] calldata multiRequests) external payable {
         uint256 length = multiRequests.length;
         uint256 availableValue = msg.value;
@@ -87,6 +101,9 @@ abstract contract Attestation is IAttestation, AttestationResolve {
                               REVOKE
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @inheritdoc IAttestation
+     */
     function revoke(RevocationRequest calldata request) external payable {
         RevocationRequestData[] memory requests = new RevocationRequestData[](
             1
@@ -98,6 +115,9 @@ abstract contract Attestation is IAttestation, AttestationResolve {
         _revoke(request.schemaUID, moduleRecord.resolverUID, requests, msg.sender, msg.value, true);
     }
 
+    /**
+     * @inheritdoc IAttestation
+     */
     function multiRevoke(MultiRevocationRequest[] calldata multiRequests) external payable {
         // We are keeping track of the total available ETH amount that can be sent to resolvers and will keep deducting
         // from it to verify that there isn't any attempt to send too much ETH to resolvers. Please note that unless
@@ -136,12 +156,13 @@ abstract contract Attestation is IAttestation, AttestationResolve {
      * @dev Attests to a specific schema.
      *
      * @param schemaUID The unique identifier of the schema to attest to.
-     * @param data The arguments of the attestation requests.
-     * @param attester The attesting account.
-     * @param availableValue The total available ETH amount that can be sent to the resolver.
-     * @param last Whether this is the last attestations/revocations set.
+     * @param resolverUID The unique identifier of the resolver.
+     * @param data The attestation data.
+     * @param attester The attester's address.
+     * @param availableValue Amount of ETH available for the operation.
+     * @param last Indicates if this is the last batch.
      *
-     * @return usedValue the msg.value used for attestations
+     * @return usedValue Amount of ETH used.
      */
     function _attest(
         SchemaUID schemaUID,
@@ -154,17 +175,21 @@ abstract contract Attestation is IAttestation, AttestationResolve {
         internal
         returns (uint256 usedValue)
     {
+        // only run this function if the selected schemaUID exists
         _enforceExistingSchema(schemaUID);
-        uint256 length = data.length;
 
+        // caching length
+        uint256 length = data.length;
+        // caching current time as it will be used in the for loop
+        uint48 timeNow = _time();
+
+        // for loop will run and save the return values in these two arrays
         AttestationRecord[] memory attestations = new AttestationRecord[](
             length
         );
         uint256[] memory values = new uint256[](length);
 
-        // caching the current time
-        uint48 timeNow = _time();
-
+        // write every attesatation provided to registry's storage
         for (uint256 i; i < length; i = uncheckedInc(i)) {
             (attestations[i], values[i]) = _writeAttestation({
                 schemaUID: schemaUID,
@@ -175,9 +200,26 @@ abstract contract Attestation is IAttestation, AttestationResolve {
             });
         }
 
+        // trigger the resolver procedure
         usedValue =
             _resolveAttestations(resolverUID, attestations, values, false, availableValue, last);
     }
+    /**
+     * Writes an attestation record to storage and emits an event.
+     *
+     * @dev the bytes metadata provided in the AttestationRequestData
+     * is writted to the EVM with SSTORE2 to allow for large attestations without spending a lot of gas
+     *   https://mirror.xyz/0x53478A49d7c16D85082659BCE9EDba5a6FBFd1Cf/_DIgJiM0_ETNuAUOq77wklNJ-L6GHlBcvVrm2_jNvKo
+     *
+     * @param schemaUID The unique identifier of the schema being attested to.
+     * @param resolverUID The unique identifier of the resolver for the module.
+     * @param request The data for the attestation request.
+     * @param attester The address of the entity making the attestation.
+     * @param timeNow The current timestamp.
+     *
+     * @return attestation The written attestation record.
+     * @return value The value associated with the attestation request.
+     */
 
     function _writeAttestation(
         SchemaUID schemaUID,
@@ -193,6 +235,7 @@ abstract contract Attestation is IAttestation, AttestationResolve {
         if (request.expirationTime != NO_EXPIRATION_TIME && request.expirationTime <= timeNow) {
             revert InvalidExpirationTime();
         }
+        // caching module address. gas bad
         address module = request.subject;
         ModuleRecord storage moduleRecord = _getModule(module);
 
@@ -205,7 +248,11 @@ abstract contract Attestation is IAttestation, AttestationResolve {
         if (moduleRecord.resolverUID != resolverUID) {
             revert InvalidAttestation();
         }
+
+        // get salt used for SSTORE2 to avoid collisions during CREATE2
         bytes32 attestationSalt = _getAttestationSSTORESalt(attester, module);
+
+        // write attestationdata with SSTORE2 to EVM, and prepare return value
         attestation = AttestationRecord({
             schemaUID: schemaUID,
             subject: module,
@@ -215,12 +262,23 @@ abstract contract Attestation is IAttestation, AttestationResolve {
             revocationTime: 0,
             dataPointer: writeAttestationData(request.data, attestationSalt)
         });
+
         value = request.value;
 
         // SSTORE attestation on registry storage
         _moduleToAttesterToAttestations[module][attester] = attestation;
         emit Attested(module, attester, schemaUID);
     }
+    /**
+     * @dev Generates a unique salt for an attestation using the provided attester and module addresses.
+     * The salt is generated using a keccak256 hash of the module address, attester address, current timestamp, and chain ID.
+     *   This salt will be used for SSTORE2
+     *
+     * @param attester Address of the entity making the attestation.
+     * @param module Address of the module being attested to.
+     *
+     * @return dataPointerSalt A unique salt for the attestation data storage.
+     */
 
     function _getAttestationSSTORESalt(
         address attester,
@@ -257,6 +315,7 @@ abstract contract Attestation is IAttestation, AttestationResolve {
     {
         _enforceExistingSchema(schemaUID);
 
+        // caching length
         uint256 length = data.length;
         AttestationRecord[] memory attestations = new AttestationRecord[](
             length
@@ -301,6 +360,11 @@ abstract contract Attestation is IAttestation, AttestationResolve {
         return _resolveAttestations(resolverUID, attestations, values, true, availableValue, last);
     }
 
+    /**
+     * @dev Checks if the provided schemaUID corresponds to a registered schema in the contract.
+     *      If the schema does not exist, it reverts with an "InvalidSchema" error.
+     * @param schemaUID Unique identifier for the schema to be verified.
+     */
     function _enforceExistingSchema(SchemaUID schemaUID) private view {
         SchemaRecord storage schemaRecord = _getSchema(schemaUID);
         if (schemaRecord.registeredAt == 0) {

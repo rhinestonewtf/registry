@@ -60,6 +60,20 @@ interface IAttestation {
      * @param timestamp The timestamp.
      */
     event RevokedOffchain(address indexed revoker, bytes32 indexed data, uint64 indexed timestamp);
+    /**
+     * @notice Creates an attestation for a specified schema.
+     *
+     * @param request The attestation request.
+     */
+
+    function attest(AttestationRequest calldata request) external payable;
+
+    /**
+     * @notice Creates multiple attestations for multiple schemas.
+     *
+     * @param multiRequests An array of multi attestation requests.
+     */
+    function multiAttest(MultiAttestationRequest[] calldata multiRequests) external payable;
 
     /**
      * @notice Handles a single delegated attestation request
@@ -80,7 +94,12 @@ interface IAttestation {
     function multiAttest(MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests)
         external
         payable;
-
+    /**
+     * @notice Revokes an existing attestation for a specified schema.
+     *
+     * @param request The revocation request.
+     */
+    function revoke(RevocationRequest calldata request) external payable;
     /**
      * @notice Handles a single delegated revocation request
      *
@@ -100,4 +119,10 @@ interface IAttestation {
     function multiRevoke(MultiDelegatedRevocationRequest[] calldata multiDelegatedRequests)
         external
         payable;
+
+    /**
+     * @notice Revokes multiple existing attestations for multiple schemas.
+     * @param multiRequests An array of multi revocation requests.
+     */
+    function multiRevoke(MultiRevocationRequest[] calldata multiRequests) external payable;
 }

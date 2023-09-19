@@ -16,66 +16,65 @@ interface IQuery {
     error InsufficientAttestations();
 
     /**
-     * Verify an attestation associated with a given module and authority.
+     * @notice Queries the attestation status of a specific attester for a given module.
      *
-     * @param plugin The address of the module to verify
-     * @param trustedEntity The address of the authority issuing the attestation
-     * @return listedAt timestamp  Not zero if the attesation is valid
-     * @return revokedAt timestamp not zero if the attestation was revoked.
+     * @dev If an attestation is not found or is revoked, the function will revert.
+     *
+     * @param module The address of the module being queried.
+     * @param attester The address of the attester whose status is being queried.
+     * @return listedAt The time the attestation was listed. Returns 0 if not listed or expired.
+     *
+     * @return revokedAt The time the attestation was revoked.
      */
-
     function check(
-        address plugin,
-        address trustedEntity
+        address module,
+        address attester
     )
         external
         view
         returns (uint48 listedAt, uint48 revokedAt);
 
     /**
-     * Verify a set of attestations associated with a given module and a list of authorities.
-     * @dev Will revert if threshold is not met.
-     * @dev Will revert if any of the attestations have been revoked (even if threshold is met)!
+     * @notice Verifies the validity of attestations for a given module against a threshold.
      *
-     * @param module The address of the module to verify
-     * @param authorities The list of authorities issuing the attestations
-     * @param threshold The minimum number of valid attestations required
+     * @dev This function will revert if the threshold is not met.
+     * @dev Will also revert if any of the attestations have been revoked (even if threshold is met).
+     *
+     * @param module The address of the module being verified.
+     * @param attesters The list of attesters whose attestations are being verified.
+     * @param threshold The minimum number of valid attestations required.
      */
-    function verify(
-        address module,
-        address[] memory authorities,
-        uint256 threshold
-    )
-        external
-        view;
+    function verify(address module, address[] memory attesters, uint256 threshold) external view;
 
     /**
-     * Verify a set of attestations associated with a given module and a list of authorities.
-     * @dev Will revert if threshold is not met.
-     * @dev Will NOT revert if any of the attestations have been revoked.
+     * @notice Verifies attestations for a given module against a threshold, but does not check revocation.
      *
-     * @param module The address of the module to verify
-     * @param authorities The list of authorities issuing the attestations
-     * @param threshold The minimum number of valid attestations required
+     * @dev This function will revert if the threshold is not met.
+     * @dev Does not verify against revoked attestations.
+     *
+     * @param module The address of the module being verified.
+     * @param attesters The list of attesters whose attestations are being verified.
+     * @param threshold The minimum number of valid attestations required.
      */
     function verifyUnsafe(
         address module,
-        address[] memory authorities,
+        address[] memory attesters,
         uint256 threshold
     )
         external
         view;
 
     /**
-     * Find an attestation associated with a given module and authority.
+     * @notice Retrieves the attestation record for a given module and attester.
      *
-     * @param module The address of the module
-     * @param authority The address of the authority issuing the attestation
-     * @return attestation The attestation associated with the module and authority
+     * @param module The address of the module being queried.
+     * @param attester The address of the attester whose record is being retrieved.
+     *
+     * @return attestation The attestation record associated with the given module and attester.
      */
     function findAttestation(
         address module,
-        address authority
+        address attester
     )
         external
         view
@@ -84,13 +83,16 @@ interface IQuery {
     /**
      * Find an attestations associated with a given module and authority.
      *
-     * @param module The address of the module
-     * @param authority The address of the authority issuing the attestation
-     * @return attestations The attestations associated with the module and authority
+     * @notice Retrieves attestation records for a given module and a list of attesters.
+     *
+     * @param module The address of the module being queried.
+     * @param attesters The list of attesters whose records are being retrieved.
+     *
+     * @return attestations The list of attestation records associated with the given module and attesters.
      */
     function findAttestations(
         address module,
-        address[] memory authority
+        address[] memory attesters
     )
         external
         view
