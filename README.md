@@ -22,6 +22,7 @@ transparency, it allows attesters to register, verify, and dispatch verification
 various EVM chains.
 
 
+
 ## Core Principles
 ### Attestations
 [Attestations](./docs/Attestation.md) represent digitally documented assertions made by any entity 
@@ -75,12 +76,6 @@ deployment metadata are stored on the registry.
 Modules are registered on the Rhinestone Registry by [deploying](./docs/ModulesRegistration.md) the Module Bytecode with `CREATE2`
 
 
-### Cross-Chain Consistency
-For account abstraction modules that can be used [across multiple Ethereum](./docs/L2Propagation.md) chains,
-the Rhinestone Registry can ensure the consistency of modules across these chains. 
-This feature will prevent versioning issues, guaranteeing that users experience the same level of security and functionality, 
-irrespective of the chain they're on.
-
 ### Users
 Users represent entities that depend on attestations to inform 
 decisions or initiate actions. They utilize the information enclosed 
@@ -105,17 +100,50 @@ where entities can share, validate, and verify smart contracts across chains.
 ![Architecture](./public/docs/architecture.png)
 
 
+##  Changes V0.2
+
+### New Features
+
+* GAS Efficiency *
+- GAS consumption for both storing attestations and querying the request was reduced dramatically
+- non-delegated attestations can now be made without signature
+- full ERC1271 support
+- SSTORE2 to store attestation data
+- Removal of attestation UIDs
+- seperation of Schema Validation and external resolvers
+- restructured files for improved readability
+
+
+
+### Breaking Changes
+
+Registry V0.2 introduces a major redesign and breaking changes to the regsitry code.
+
+*Removal of Hashi / Cross-chain propagation*
+While we love Hashi and believe strongly in the need of cross-chain propagation of attestations, we decided to move the propagation logic out of the registry.
+The main motiviation behind this is, that cross-chain Bytecode equivalence with new 
+OPCODEs will be limited. We believe a propagation implementation 
+that attesters can implement as a smart account module to propagate their own attestations will be a sufficient substitute.
+
+*Removal of Attestation UIDs*
+To reduce GAS while querying / checking the registry, we redesigned the attestation storage to no longer rely on UIDs.
+The chained attestation feature was removed for this redesign.
+
+*Splitting Resolvers and SchemaValidators*
+We received feature requests to allow attesters to make attestations on different schemas. 
+The new version of the Registry is thus seperating resolver and schema validation into two different optional external contracts
+
+
 
 ### Prerequisites
 - Solidity version 0.8.19 or later
-- External dependencies: Hashi's Yaho.sol and Hashi's Yaru.sol
 
 
 ## Contribute
 For feature of change requests, feel free to get in touch with us, or open PRs
 
 ## Credits
-- Rhinestone Registry is leveraging an attestation logic inspired by EAS
+- Rhinestone Registry is drawing some inspiration of EAS
 
 ## Authors ✨
 
