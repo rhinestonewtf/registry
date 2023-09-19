@@ -21,9 +21,12 @@ import {
 
 import { AttestationDataRef, writeAttestationData, readAttestationData } from "../DataTypes.sol";
 import { AttestationResolve } from "./AttestationResolve.sol";
+
 /**
  * @title Attestation
  * @dev Manages attestations and revocations for modules.
+ *
+ * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
  */
 
 abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGuard {

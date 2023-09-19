@@ -12,7 +12,7 @@ import "../DataTypes.sol";
 /**
  * @title Schema
  *
- * @author zeroknots.eth
+ * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
  *
  */
 abstract contract Schema is ISchema {

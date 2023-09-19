@@ -9,7 +9,7 @@ import {
 } from "../Common.sol";
 /**
  * @title Query
- * @author zeroknots
+ * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
  * Implements EIP-7484 to query attestations stored in the registry.
  * @dev This contract is abstract and provides utility functions to query attestations.
  */

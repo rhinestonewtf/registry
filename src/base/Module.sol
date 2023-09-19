@@ -29,6 +29,8 @@ import "../DataTypes.sol";
  *
  * @dev In conclusion, the Module is a central part of a system to manage, deploy, and interact with a set of smart contracts
  * in a structured and controlled manner.
+ *
+ * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
  */
 abstract contract Module is IModule, ReentrancyGuard {
     using ModuleDeploymentLib for bytes;

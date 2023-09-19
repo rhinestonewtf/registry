@@ -19,6 +19,7 @@ import {
  * @title AttestationDelegation
  * @dev This contract provides a delegated approach to attesting and revoking attestations.
  *      The contract extends both IAttestation and Attestation.
+ * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
  */
 abstract contract AttestationDelegation is IAttestation, Attestation {
     /**
