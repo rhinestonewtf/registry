@@ -2,14 +2,12 @@
 
 pragma solidity 0.8.19;
 
-import { EMPTY_UID, AccessDenied, _time, ZERO_ADDRESS, InvalidResolver } from "../Common.sol";
+import { AccessDenied, _time, ZERO_ADDRESS, InvalidResolver } from "../Common.sol";
 import { ISchema, SchemaLib } from "../interface/ISchema.sol";
-
-import "../DataTypes.sol";
-
 import { IResolver } from "../external/IResolver.sol";
 import { ISchemaValidator } from "../external/ISchemaValidator.sol";
-import "forge-std/console2.sol";
+
+import "../DataTypes.sol";
 
 /**
  * @title Schema

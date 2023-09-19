@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { Attestation } from "./Attestation.sol";
-
 import { IAttestation } from "../interface/IAttestation.sol";
+import { Attestation } from "./Attestation.sol";
 import "../DataTypes.sol";
 import {
     ZERO_ADDRESS,

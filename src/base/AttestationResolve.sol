@@ -2,8 +2,10 @@
 pragma solidity ^0.8.19;
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
+
 import "../interface/IAttestation.sol";
 import { EIP712Verifier } from "./EIP712Verifier.sol";
+
 import { ZERO_ADDRESS, AccessDenied, uncheckedInc } from "../Common.sol";
 import { AttestationDataRef, writeAttestationData, readAttestationData } from "../DataTypes.sol";
 

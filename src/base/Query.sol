@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import {
-    AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
-} from "../Common.sol";
 import "../interface/IQuery.sol";
 import "./Attestation.sol";
 
+import {
+    AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
+} from "../Common.sol";
 /**
  * @title Query
  * @author zeroknots
  * Implements EIP-7484 to query attestations stored in the registry.
  * @dev This contract is abstract and provides utility functions to query attestations.
  */
+
 abstract contract Query is IQuery {
     /**
      * @inheritdoc IQuery
