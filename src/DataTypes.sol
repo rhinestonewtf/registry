@@ -26,8 +26,8 @@ struct ModuleRecord {
 }
 
 struct SchemaRecord {
+    uint48 registeredAt; // The time when the schema was registered (Unix timestamp).
     ISchemaValidator validator; // Optional external schema validator.
-    uint48 registeredAt;
     string schema; // Custom specification of the schema (e.g., an ABI).
 }
 

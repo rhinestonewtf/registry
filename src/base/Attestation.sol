@@ -250,7 +250,7 @@ abstract contract Attestation is IAttestation, AttestationResolve {
         }
 
         // get salt used for SSTORE2 to avoid collisions during CREATE2
-        bytes32 attestationSalt = _getAttestationSSTORESalt(attester, module);
+        bytes32 attestationSalt = AttestationLib.attestationSalt(attester, module);
 
         // write attestationdata with SSTORE2 to EVM, and prepare return value
         attestation = AttestationRecord({
@@ -268,27 +268,6 @@ abstract contract Attestation is IAttestation, AttestationResolve {
         // SSTORE attestation on registry storage
         _moduleToAttesterToAttestations[module][attester] = attestation;
         emit Attested(module, attester, schemaUID);
-    }
-    /**
-     * @dev Generates a unique salt for an attestation using the provided attester and module addresses.
-     * The salt is generated using a keccak256 hash of the module address, attester address, current timestamp, and chain ID.
-     *   This salt will be used for SSTORE2
-     *
-     * @param attester Address of the entity making the attestation.
-     * @param module Address of the module being attested to.
-     *
-     * @return dataPointerSalt A unique salt for the attestation data storage.
-     */
-
-    function _getAttestationSSTORESalt(
-        address attester,
-        address module
-    )
-        private
-        returns (bytes32 dataPointerSalt)
-    {
-        dataPointerSalt =
-            keccak256(abi.encodePacked(module, attester, block.timestamp, block.chainid));
     }
 
     /**
