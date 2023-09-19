@@ -144,15 +144,16 @@ The new version of the Registry is thus seperating resolver and schema validatio
 For feature of change requests, feel free to get in touch with us, or open PRs
 
 
-## Special Thanks
+
+## Credits & Special Thanks
+For the continious support and constructive feedback, we would like to thank:
 - [Ethereum Foundation](https://erc4337.mirror.xyz/hRn_41cef8oKn44ZncN9pXvY3VID6LZOtpLlktXYtmA)
 - ERC-4337 Team
 - Richard Meissner (Safe) @rimeissner
 - Taek @taek.eth
 - Biconomy
-
-## Credits
 - Rhinestone Registry is drawing inspiration of EAS
+
 
 ## Authors ✨
 
