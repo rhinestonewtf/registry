@@ -2,11 +2,18 @@
 
 pragma solidity ^0.8.0;
 
-import { AttestationRecord, ModuleRecord } from "../DataTypes.sol";
+import { AttestationRequestData, ModuleRecord } from "../DataTypes.sol";
 
 /**
  * @title The interface of an optional schema resolver.
  */
 interface ISchemaValidator {
-    function validateSchema(AttestationRecord calldata attestation) external view returns (bool);
+    function validateSchema(AttestationRequestData calldata attestation)
+        external
+        view
+        returns (bool);
+    function validateSchema(AttestationRequestData[] calldata attestations)
+        external
+        view
+        returns (bool);
 }

@@ -185,7 +185,14 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         returns (uint256 usedValue)
     {
         // only run this function if the selected schemaUID exists
-        _enforceExistingSchema(schemaUID);
+        SchemaRecord storage schema = _getSchema(schemaUID);
+        if (schema.registeredAt == 0) revert InvalidSchema();
+        // validate Schema
+        ISchemaValidator validator = schema.validator;
+        // if validator is set, call the validator
+        if (address(validator) != address(0)) {
+            if (!schema.validator.validateSchema(data)) revert InvalidAttestation();
+        }
 
         // caching length
         uint256 length = data.length;
@@ -302,7 +309,10 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         internal
         returns (uint256)
     {
-        _enforceExistingSchema(schemaUID);
+        // only run this function if the selected schemaUID exists
+        SchemaRecord storage schema = _getSchema(schemaUID);
+        if (schema.registeredAt == 0) revert InvalidSchema();
+        // dont need to call the validator here, that is only necessary when writing new attestation data
 
         // caching length
         uint256 length = data.length;
@@ -347,18 +357,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         }
 
         return _resolveAttestations(resolverUID, attestations, values, true, availableValue, last);
-    }
-
-    /**
-     * @dev Checks if the provided schemaUID corresponds to a registered schema in the contract.
-     *      If the schema does not exist, it reverts with an "InvalidSchema" error.
-     * @param schemaUID Unique identifier for the schema to be verified.
-     */
-    function _enforceExistingSchema(SchemaUID schemaUID) private view {
-        SchemaRecord storage schemaRecord = _getSchema(schemaUID);
-        if (schemaRecord.registeredAt == 0) {
-            revert InvalidSchema();
-        }
     }
 
     function _getAttestation(

@@ -2,10 +2,19 @@
 pragma solidity ^0.8.19;
 
 import "../ISchemaValidator.sol";
-import { AttestationRecord } from "../../DataTypes.sol";
+import { AttestationRequestData } from "../../DataTypes.sol";
 
 contract SimpleValidator is ISchemaValidator {
-    function validateSchema(AttestationRecord calldata attestation)
+    function validateSchema(AttestationRequestData calldata attestation)
+        external
+        pure
+        override
+        returns (bool)
+    {
+        return true;
+    }
+
+    function validateSchema(AttestationRequestData[] calldata attestation)
         external
         pure
         override

@@ -16,23 +16,6 @@ import "forge-std/console2.sol";
  *
  * @author zeroknots.eth
  *
- * @dev The Schema contract serves as a crucial component of a broader system for managing "schemas" within a
- * blockchain ecosystem. It provides functionality to register, retrieve and manage schemas. This contract is a
- * concrete implementation of the ISchema interface.
- *
- * @dev The main functionality of the Schema contract includes the registration of new schemas (`registerSchema` function)
- * and the retrieval of existing schemas (`getSchema` function). It also offers additional management features such as
- * setting bridges (`setBridges` function) and resolvers (`setResolver` function) for each schema.
- *
- * @dev Each new schema is registered with a UID that is calculated based on its data members using the `_getUID` function.
- * This UID is used as a key to map the schema record in the `_schemas` mapping. The system ensures uniqueness of the schemas
- * by validating that a schema with the same UID does not already exist.
- *
- * @dev Furthermore, the Schema contract introduces access control by ensuring that certain operations such as setting
- * bridges and resolvers can only be performed by the owner of the schema.
- *
- * @dev In summary, the Schema contract is an integral part of a larger system, providing the functionality to register,
- * retrieve, and manage schemas in a controlled and structured manner.
  */
 abstract contract Schema is ISchema {
     using SchemaLib for SchemaRecord;
@@ -48,7 +31,7 @@ abstract contract Schema is ISchema {
      */
     function registerSchema(
         string calldata schema,
-        ISchemaValidator validator
+        ISchemaValidator validator // OPTIONAL
     )
         external
         returns (SchemaUID)

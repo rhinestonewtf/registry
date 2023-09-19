@@ -39,7 +39,8 @@ interface ISchema {
      * @dev Ensures that the schema does not already exist and calculates a unique ID for it.
      *
      * @param schema The schema as a string representation.
-     * @param validator Contract address that validates this schema.
+     * @param validator OPTIONAL Contract address that validates this schema.
+     *     If not provided, all attestations made against this schema is assumed to be valid.
      *
      * @return The unique ID of the registered schema.
      */
