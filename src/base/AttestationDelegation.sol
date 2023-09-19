@@ -35,7 +35,11 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
     /**
      * @inheritdoc IAttestation
      */
-    function attest(DelegatedAttestationRequest calldata delegatedRequest) external payable {
+    function attest(DelegatedAttestationRequest calldata delegatedRequest)
+        external
+        payable
+        nonReentrant
+    {
         _verifyAttest(delegatedRequest);
 
         AttestationRequestData calldata data = delegatedRequest.data;
@@ -59,6 +63,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
     function multiAttest(MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests)
         external
         payable
+        nonReentrant
     {
         uint256 length = multiDelegatedRequests.length;
 
@@ -127,7 +132,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
     /**
      * @inheritdoc IAttestation
      */
-    function revoke(DelegatedRevocationRequest calldata request) external payable {
+    function revoke(DelegatedRevocationRequest calldata request) external payable nonReentrant {
         _verifyRevoke(request);
 
         RevocationRequestData[] memory data = new RevocationRequestData[](1);
@@ -144,6 +149,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
     function multiRevoke(MultiDelegatedRevocationRequest[] calldata multiDelegatedRequests)
         external
         payable
+        nonReentrant
     {
         // We are keeping track of the total available ETH amount that can be sent to resolvers and will keep deducting
         // from it to verify that there isn't any attempt to send too much ETH to resolvers. Please note that unless

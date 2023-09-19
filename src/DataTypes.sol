@@ -7,6 +7,7 @@ import { IResolver } from "./external/IResolver.sol";
                           STORAGE 
 //////////////////////////////////////////////////////////////*/
 
+// Struct that represents an attestation.
 struct AttestationRecord {
     SchemaUID schemaUID; // The unique identifier of the schema.
     address subject; // The recipient of the attestation i.e. module
@@ -14,12 +15,12 @@ struct AttestationRecord {
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
-    AttestationDataRef dataPointer; // SSTORE2 pointer to the attestation data. (saves gas)
+    AttestationDataRef dataPointer; // SSTORE2 pointer to the attestation data. (gas bad)
 }
 
 // Struct that represents Module artefact.
 struct ModuleRecord {
-    ResolverUID resolverUID;
+    ResolverUID resolverUID; // The unique identifier of the resolver.
     address implementation; // The deployed contract address
     address sender; // The address of the sender who deployed the contract
     bytes data; // Additional data related to the contract deployment

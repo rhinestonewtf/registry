@@ -12,6 +12,8 @@ import { InvalidResolver, _isContract, ZERO_ADDRESS } from "../Common.sol";
 import { ISchemaValidator } from "../external/ISchemaValidator.sol";
 import { IResolver } from "../external/IResolver.sol";
 
+import { ReentrancyGuard } from "solmate/utils/ReentrancyGuard.sol";
+
 /**
  * @title Module
  *
@@ -26,7 +28,7 @@ import { IResolver } from "../external/IResolver.sol";
  * @dev In conclusion, the Module is a central part of a system to manage, deploy, and interact with a set of smart contracts
  * in a structured and controlled manner.
  */
-abstract contract Module is IModule {
+abstract contract Module is IModule, ReentrancyGuard {
     using ModuleDeploymentLib for bytes;
     using ModuleDeploymentLib for address;
 
@@ -44,6 +46,7 @@ abstract contract Module is IModule {
     )
         external
         payable
+        nonReentrant
         returns (address moduleAddr)
     {
         ResolverRecord memory resolver = getResolver(resolverUID);
@@ -64,6 +67,7 @@ abstract contract Module is IModule {
     )
         external
         payable
+        nonReentrant
         returns (address moduleAddr)
     {
         ResolverRecord memory resolver = getResolver(resolverUID);
@@ -84,6 +88,7 @@ abstract contract Module is IModule {
     )
         external
         payable
+        nonReentrant
         returns (address moduleAddr)
     {
         ResolverRecord memory resolver = getResolver(resolverUID);
@@ -105,6 +110,7 @@ abstract contract Module is IModule {
         bytes calldata data
     )
         external
+        nonReentrant
     {
         ResolverRecord memory resolver = getResolver(resolverUID);
         if (resolver.schemaOwner == ZERO_ADDRESS) revert InvalidResolver();

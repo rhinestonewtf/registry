@@ -20,6 +20,7 @@ import {
 } from "../Common.sol";
 
 import { AttestationDataRef, writeAttestationData, readAttestationData } from "../DataTypes.sol";
+import { ReentrancyGuard } from "solmate/utils/ReentrancyGuard.sol";
 
 import { AttestationResolve } from "./AttestationResolve.sol";
 /**
@@ -27,7 +28,7 @@ import { AttestationResolve } from "./AttestationResolve.sol";
  * @dev Manages attestations and revocations for modules.
  */
 
-abstract contract Attestation is IAttestation, AttestationResolve {
+abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGuard {
     using ModuleDeploymentLib for address;
 
     // Mapping of module addresses to attester addresses to their attestation records.
@@ -48,7 +49,7 @@ abstract contract Attestation is IAttestation, AttestationResolve {
     /**
      * @inheritdoc IAttestation
      */
-    function attest(AttestationRequest calldata request) external payable {
+    function attest(AttestationRequest calldata request) external payable nonReentrant {
         AttestationRequestData calldata requestData = request.data;
 
         ModuleRecord storage moduleRecord = _getModule(request.data.subject);
@@ -69,7 +70,11 @@ abstract contract Attestation is IAttestation, AttestationResolve {
     /**
      * @inheritdoc IAttestation
      */
-    function multiAttest(MultiAttestationRequest[] calldata multiRequests) external payable {
+    function multiAttest(MultiAttestationRequest[] calldata multiRequests)
+        external
+        payable
+        nonReentrant
+    {
         uint256 length = multiRequests.length;
         uint256 availableValue = msg.value;
 
@@ -104,7 +109,7 @@ abstract contract Attestation is IAttestation, AttestationResolve {
     /**
      * @inheritdoc IAttestation
      */
-    function revoke(RevocationRequest calldata request) external payable {
+    function revoke(RevocationRequest calldata request) external payable nonReentrant {
         RevocationRequestData[] memory requests = new RevocationRequestData[](
             1
         );
@@ -118,7 +123,11 @@ abstract contract Attestation is IAttestation, AttestationResolve {
     /**
      * @inheritdoc IAttestation
      */
-    function multiRevoke(MultiRevocationRequest[] calldata multiRequests) external payable {
+    function multiRevoke(MultiRevocationRequest[] calldata multiRequests)
+        external
+        payable
+        nonReentrant
+    {
         // We are keeping track of the total available ETH amount that can be sent to resolvers and will keep deducting
         // from it to verify that there isn't any attempt to send too much ETH to resolvers. Please note that unless
         // some ETH was stuck in the contract by accident (which shouldn't happen in normal conditions), it won't be
@@ -251,6 +260,7 @@ abstract contract Attestation is IAttestation, AttestationResolve {
 
         // get salt used for SSTORE2 to avoid collisions during CREATE2
         bytes32 attestationSalt = AttestationLib.attestationSalt(attester, module);
+        AttestationDataRef sstore2Pointer = writeAttestationData(request.data, attestationSalt);
 
         // write attestationdata with SSTORE2 to EVM, and prepare return value
         attestation = AttestationRecord({
@@ -260,14 +270,14 @@ abstract contract Attestation is IAttestation, AttestationResolve {
             time: timeNow,
             expirationTime: request.expirationTime,
             revocationTime: 0,
-            dataPointer: writeAttestationData(request.data, attestationSalt)
+            dataPointer: sstore2Pointer
         });
 
         value = request.value;
 
         // SSTORE attestation on registry storage
         _moduleToAttesterToAttestations[module][attester] = attestation;
-        emit Attested(module, attester, schemaUID);
+        emit Attested(module, attester, schemaUID, sstore2Pointer);
     }
 
     /**

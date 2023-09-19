@@ -33,7 +33,12 @@ interface IAttestation {
      * @param schema The UID of the schema.
      */
 
-    event Attested(address indexed subject, address indexed attester, SchemaUID indexed schema);
+    event Attested(
+        address indexed subject,
+        address indexed attester,
+        SchemaUID schema,
+        AttestationDataRef indexed dataPointer
+    );
 
     /**
      * @dev Emitted when an attestation has been revoked.
