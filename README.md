@@ -73,7 +73,8 @@ Modules are smart contracts that act as modular components that can be added to 
 The registry is agnostic towards smart account or module implementations. Modules addresses and 
 deployment metadata are stored on the registry.
 
-Modules are registered on the Rhinestone Registry by [deploying](./docs/ModulesRegistration.md) the Module Bytecode with `CREATE2`
+Modules are registered on the Rhinestone Registry by [deploying](./docs/ModulesRegistration.md) the Module Bytecode with `CREATE2` or `CREATE3`
+Additionally its possible to register already deployed Modules, or use external Factories
 
 
 ### Users
