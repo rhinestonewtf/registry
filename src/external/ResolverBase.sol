@@ -89,23 +89,6 @@ abstract contract ResolverBase is IResolver {
      * @inheritdoc IResolver
      */
 
-    function propagation(
-        AttestationRecord calldata attestation,
-        address sender,
-        address to,
-        uint256 toChainId,
-        address moduleOnL2
-    )
-        external
-        payable
-        returns (bool)
-    {
-        return onPropagation(attestation, sender, to, toChainId, moduleOnL2);
-    }
-    /**
-     * @inheritdoc IResolver
-     */
-
     function multiAttest(
         AttestationRecord[] calldata attestations,
         uint256[] calldata values
@@ -243,17 +226,6 @@ abstract contract ResolverBase is IResolver {
         virtual
         returns (bool);
 
-    function onPropagation(
-        AttestationRecord calldata attestation,
-        address sender,
-        address to,
-        uint256 toChainId,
-        address moduleOnL2
-    )
-        internal
-        virtual
-        returns (bool);
-
     /**
      * @dev Ensures that only the RS contract can make this call.
      */
@@ -261,5 +233,13 @@ abstract contract ResolverBase is IResolver {
         if (msg.sender != _rs) {
             revert AccessDenied();
         }
+    }
+
+    function supportsInterface(bytes4 interfaceID) external pure returns (bool) {
+        return interfaceID == this.supportsInterface.selector
+            || interfaceID == this.isPayable.selector || interfaceID == this.attest.selector
+            || interfaceID == this.moduleRegistration.selector
+            || interfaceID == this.multiAttest.selector || interfaceID == this.revoke.selector
+            || interfaceID == this.multiRevoke.selector;
     }
 }

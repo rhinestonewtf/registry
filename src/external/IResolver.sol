@@ -3,11 +3,12 @@
 pragma solidity ^0.8.0;
 
 import { AttestationRecord, ModuleRecord } from "../DataTypes.sol";
+import { IERC165 } from "forge-std/interfaces/IERC165.sol";
 
 /**
  * @title The interface of an optional schema resolver.
  */
-interface IResolver {
+interface IResolver is IERC165 {
     /**
      * @dev Returns whether the resolver supports ETH transfers.
      */
@@ -30,28 +31,6 @@ interface IResolver {
      * @return Whether the registration is valid
      */
     function moduleRegistration(ModuleRecord calldata module) external payable returns (bool);
-
-    /**
-     * @dev Processes an Attestation Propagation
-     *
-     * @param attestation Attestation propagation artefact
-     * @param sender Sender of the message
-     * @param to Receiver of the message
-     * @param toChainId Chain ID of the receiver
-     * @param moduleOnL2 Module on L2
-     *
-     * @return Whether the  propagation is valid
-     */
-    function propagation(
-        AttestationRecord calldata attestation,
-        address sender,
-        address to,
-        uint256 toChainId,
-        address moduleOnL2
-    )
-        external
-        payable
-        returns (bool);
 
     /**
      * @dev Processes multiple attestations and verifies whether they are valid.

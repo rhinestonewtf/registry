@@ -51,18 +51,4 @@ contract ValueResolver is ResolverBase {
     {
         return true;
     }
-
-    function onPropagation(
-        AttestationRecord calldata attestation,
-        address sender,
-        address to,
-        uint256 toChainId,
-        address moduleOnL2
-    )
-        internal
-        override
-        returns (bool)
-    {
-        return true;
-    }
 }
