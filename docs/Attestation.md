@@ -38,6 +38,9 @@ struct AttestationRecord {
 }
 ```
 
+
+![Sequence Diagram](../public/docs/attestationOnly.svg)
+
 ### Building Trust
 
 Attestations within the [Registry] play a fundamental role in endorsing the authenticity and security of smart account modules.
