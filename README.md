@@ -98,7 +98,7 @@ various authorities, opening up a world of possibilities for rich, complex inter
 where entities can share, validate, and verify smart contracts across chains.
 
 
-![Sequence Diagram](./public/docs/sequence.svg)
+![Sequence Diagram](./public/docs/all.svg)
 
 
 ##  Changes V0.2

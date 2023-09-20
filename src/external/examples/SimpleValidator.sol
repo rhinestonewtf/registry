@@ -22,4 +22,6 @@ contract SimpleValidator is ISchemaValidator {
     {
         return true;
     }
+
+    function supportsInterface(bytes4 interfaceID) external view override returns (bool) { }
 }

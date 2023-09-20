@@ -64,8 +64,8 @@ struct AttestationRequest {
 struct DelegatedAttestationRequest {
     SchemaUID schemaUID; // The unique identifier of the schema.
     AttestationRequestData data; // The arguments of the attestation request.
-    bytes signature; // The signature data.
     address attester; // The attesting account.
+    bytes signature; // The signature data.
 }
 
 /**
@@ -112,8 +112,8 @@ struct RevocationRequest {
 struct DelegatedRevocationRequest {
     SchemaUID schemaUID; // The unique identifier of the schema.
     RevocationRequestData data; // The arguments of the revocation request.
-    bytes signature; // The signature data.
     address revoker; // The revoking account.
+    bytes signature; // The signature data.
 }
 
 /**
@@ -130,8 +130,8 @@ struct MultiRevocationRequest {
 struct MultiDelegatedRevocationRequest {
     SchemaUID schemaUID; // The unique identifier of the schema.
     RevocationRequestData[] data; // The arguments of the revocation requests.
-    bytes[] signatures; // The signatures data. Please note that the signatures are assumed to be signed with increasing nonces.
     address revoker; // The revoking account.
+    bytes[] signatures; // The signatures data. Please note that the signatures are assumed to be signed with increasing nonces.
 }
 
 /*//////////////////////////////////////////////////////////////

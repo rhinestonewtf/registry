@@ -81,7 +81,7 @@ interface IQuery {
         returns (AttestationRecord memory attestation);
 
     /**
-     * Find an attestations associated with a given module and authority.
+     * Find an attestations associated with a given module and attester.
      *
      * @notice Retrieves attestation records for a given module and a list of attesters.
      *

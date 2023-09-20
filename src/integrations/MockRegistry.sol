@@ -23,7 +23,7 @@ contract MockRegistry is IQuery {
 
     function verify(
         address module,
-        address[] memory authorities,
+        address[] memory attesters,
         uint256 threshold
     )
         external
@@ -35,7 +35,7 @@ contract MockRegistry is IQuery {
 
     function verifyUnsafe(
         address module,
-        address[] memory authorities,
+        address[] memory attesters,
         uint256 threshold
     )
         external
@@ -47,7 +47,7 @@ contract MockRegistry is IQuery {
 
     function findAttestation(
         address module,
-        address authority
+        address attester
     )
         external
         view
@@ -57,7 +57,7 @@ contract MockRegistry is IQuery {
 
     function findAttestations(
         address module,
-        address[] memory authority
+        address[] memory attersters
     )
         external
         view

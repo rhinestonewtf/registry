@@ -12,7 +12,7 @@ import { IQuery } from "../../interface/IQuery.sol";
  */
 abstract contract RegistryIntegration {
     IQuery public immutable registry; // Instance of the registry
-    address[] public trustedAttesters; // Address of the trusted authority for attesting
+    address[] public trustedAttesters; // Address of the trusted attesters
     uint256 public immutable threshold; // Number of attestations required for verification
 
     error TargetContractNotPermitted(address target);
