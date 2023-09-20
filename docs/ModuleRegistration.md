@@ -1,11 +1,15 @@
 
 # Module Registration
-The Module Registration function is used to deploy new smart account modules onto the Ethereum network. 
-The function uses the CREATE2/CREATE3, allowing the contract to determine the address where the smart 
-account module will be deployed before the actual deployment transaction is sent. 
-The registration process requires one schema ID to be associated with the new module.
 
-Every module is registered with a corsponding resolverUID.
+Module Registration serves as a paramount utility that enables the deployment of 
+innovative smart account modules onto the Ethereum blockchain. By leveraging the mechanics of 
+CREATE2 and CREATE3 opcodes, it endows users with the capability to proactively identify the intended address of 
+the smart account module, all before the execution of the deployment transaction. An essential aspect of this 
+procedure mandates the assignment of a singular schema ID with every nascent module.
+
+
+Every module upon its introduction is systematically coupled with its respective resolverUID.
+The [Resolver](./Resolver.md) can be used by eco-system builders to extend the registry with custom business logic.
 
 
 ```solidity
@@ -28,7 +32,6 @@ The registry supports different ways to register modules.
 ## Deploy Bytecode via Registry (CREATE2)
 
 Module Developers can deploy their module Bytecode directly with the registry.
-The chosed resolver will be used to validate the deployment.
 
 
 ```solidity
@@ -58,9 +61,12 @@ function deploy(
 ```
 
 ## Deploy Bytecode via Registry (CREATE3)
+
 Module Developers can deploy their module Bytecode directly with the registry.
-The Registry supports deployments via CREATE3 so the initcode of the module does not affect the modules deployment address. 
+The Registry supports deployments via [CREATE3](https://github.com/0xsequence/create3)
+so the initcode of the module does not affect the modules deployment address. 
 This feature can be very useful for cross-chain deployments.
+
 
 ```solidity
 /**
