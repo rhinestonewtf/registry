@@ -12,7 +12,7 @@ In v0.2 of the registry we wanted to allow attestations to one module to be made
 
 Schema can hold a string encoded ABI describtion that defines the data fields for attestations done against this schema.
 
-```solidty
+```solidity
 struct SchemaRecord {
     uint48 registeredAt; // The time when the schema was registered (Unix timestamp).
     ISchemaValidator validator; // Optional external schema validator.
@@ -27,7 +27,7 @@ can be provided to `abi.decode` all or parts of attestations made against the sc
 
 The implementation of this Validator is up to the Schema validators discression.
 
-```solidty
+```solidity
 interface ISchemaValidator is IERC165 {
     function validateSchema(AttestationRequestData calldata attestation)
         external

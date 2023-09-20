@@ -97,3 +97,7 @@ struct ResolverRecord {
     address schemaOwner; // The address of the account used to register the schema.
 }
 ```
+
+## Sequence Diagram
+
+![Schema](../public/docs/schema.svg)
