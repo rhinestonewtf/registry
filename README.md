@@ -29,9 +29,7 @@ various EVM chains.
 about the security poture of account abstraction modules, 
 serving as a seal of authenticity for the associated data. An entity known as an 
 Attestor forms these records, authenticating them with their Ethereum wallet 
-and then registering them on the Ethereum blockchain. The accessibility of 
-these attestations for verification is universal, provided one has access 
-to the Ethereum blockchain and the unique UID of the attestation.
+and then registering them on the Ethereum blockchain. 
 
 An attestation consists of two primary elements: the schema and the 
 attestation data. The schema acts as a standardized structure for 
@@ -39,8 +37,10 @@ creating and validating attestations, defining the data types,
 format, and composition. The Rhinestone Registry uses Solidity 
 ABI types as acceptable fields in these schemas. The attestation 
 data represents the actual information subject to attestation. 
+
 To be classified as a valid attestation, it should adhere to the 
-structure defined in the schema.
+structure defined in the schema. 
+The Registry allows for [external validation](./docs/Schemas.md#ischemavalidator) of attestation data against Schemas.
 
 The significance of attestations lies in their ability to 
 facilitate trust and credibility within the blockchain. In 
@@ -60,6 +60,20 @@ role as they establish a shared format and structure for attestation
 data, enabling the creation and verification of various attestations 
 in a trustless fashion. This functionality paves the way for 
 interoperability and composability amongst different attestation protocols and solutions.
+
+### Resolvers
+In the ever-evolving landscape of smart account
+modularity, extensibility of the registry is paramount. [Resolvers](./docs/Resolvers.md) in the Registry
+play a pivotal role in this regard. They stand as intermediaries or validators, 
+implementing specific hooks that are invoked by the Registry during 
+various critical operations:
+- attestation
+- revocation
+- module registration / deployment
+
+This architectural design aims to provide entities like smart account vendors or DAOs, with the 
+flexibility to incorporate custom business logic while maintaining the 
+robustness and security of the core functionalities implemented by the Registry
 
 ### Attestors
 Attestors refer to individuals or organizations responsible for 
@@ -87,7 +101,6 @@ trustworthiness of the Attestor.
 ### Ethereum ABI Types
 The Ethereum Application Binary Interface (ABI) stipulates the data 
 types that can be incorporated in smart contracts and other Ethereum transactions. 
-EAS accepts ABI types as valid fields for schemas.
 
 ## Architecture
 
@@ -105,7 +118,6 @@ where entities can share, validate, and verify smart contracts across chains.
 
 ### New Features
 
-* GAS Efficiency *
 - GAS consumption for both storing attestations and querying the request was reduced dramatically
 - non-delegated attestations can now be made without signature
 - full ERC1271 support
@@ -113,7 +125,6 @@ where entities can share, validate, and verify smart contracts across chains.
 - Removal of attestation UIDs
 - seperation of Schema Validation and external resolvers
 - restructured files for improved readability
-
 
 
 ### Breaking Changes
