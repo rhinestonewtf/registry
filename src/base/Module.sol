@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { ReentrancyGuard } from "solmate/utils/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "solmate/src/utils/ReentrancyGuard.sol";
 import { CREATE3 } from "solady/src/utils/CREATE3.sol";
 
 import { IModule } from "../interface/IModule.sol";

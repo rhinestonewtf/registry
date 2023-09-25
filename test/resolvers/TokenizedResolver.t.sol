@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "solmate/test/utils/mocks/MockERC20.sol";
+import "solmate/src/test/utils/mocks/MockERC20.sol";
 import "../utils/BaseTest.t.sol";
 import "../../src/external/examples/TokenizedResolver.sol";
 import "../../src/external/examples/SimpleValidator.sol";

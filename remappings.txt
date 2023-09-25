@@ -3,4 +3,5 @@ hashi/=lib/hashi/packages/evm/contracts/
 @openzeppelin/contracts/=lib/openzeppelin/openzeppelin-contracts/contracts/
 solidity-rlp/=lib/Solidity-RLP/
 checknsignatures/=lib/checknsignatures/
-solamate/=lib/solamate
+solmate/=lib/solmate
+solady/=lib/solady

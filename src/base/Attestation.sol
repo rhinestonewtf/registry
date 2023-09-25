@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { ReentrancyGuard } from "solmate/utils/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "solmate/src/utils/ReentrancyGuard.sol";
 
 import { EIP712Verifier } from "./EIP712Verifier.sol";
 import "../interface/IAttestation.sol";
@@ -192,7 +192,9 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         ISchemaValidator validator = schema.validator;
         // if validator is set, call the validator
         if (address(validator) != address(0)) {
-            if (!schema.validator.validateSchema(data)) revert InvalidAttestation();
+            if (!schema.validator.validateSchema(data)) {
+                revert InvalidAttestation();
+            }
         }
 
         // caching length
@@ -221,6 +223,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         usedValue =
             _resolveAttestations(resolverUID, attestations, values, false, availableValue, last);
     }
+
     /**
      * Writes an attestation record to storage and emits an event.
      *
