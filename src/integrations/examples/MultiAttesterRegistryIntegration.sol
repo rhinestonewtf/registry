@@ -39,7 +39,7 @@ abstract contract RegistryIntegration {
      */
 
     function _checkRegistry(address _contract) internal view returns (bool validCheck) {
-        registry.verify(_contract, trustedAttesters, threshold);
+        registry.checkN(_contract, trustedAttesters, threshold);
         return true;
     }
 

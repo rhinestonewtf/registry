@@ -7,6 +7,7 @@ import "./Attestation.sol";
 import {
     AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
 } from "../Common.sol";
+
 /**
  * @title Query
  * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
@@ -25,22 +26,22 @@ abstract contract Query is IQuery {
         public
         view
         override(IQuery)
-        returns (uint48 listedAt, uint48 revokedAt)
+        returns (uint48 attestedAt)
     {
         AttestationRecord storage attestation = _getAttestation(module, attester);
 
         uint48 expirationTime = attestation.expirationTime;
-        listedAt = expirationTime != 0 && expirationTime < block.timestamp ? 0 : attestation.time;
-        if (listedAt == 0) revert AttestationNotFound();
+        attestedAt = expirationTime != 0 && expirationTime < block.timestamp ? 0 : attestation.time;
+        if (attestedAt == 0) revert AttestationNotFound();
 
-        revokedAt = attestation.revocationTime;
+        uint48 revokedAt = attestation.revocationTime;
         if (revokedAt != 0) revert RevokedAttestation(attestation.attester);
     }
 
     /**
      * @inheritdoc IQuery
      */
-    function verify(
+    function checkN(
         address module,
         address[] calldata attesters,
         uint256 threshold
@@ -48,6 +49,7 @@ abstract contract Query is IQuery {
         external
         view
         override(IQuery)
+        returns (uint48[] memory)
     {
         uint256 attestersLength = attesters.length;
         if (attestersLength < threshold || threshold == 0) {
@@ -55,10 +57,10 @@ abstract contract Query is IQuery {
         }
 
         uint256 timeNow = block.timestamp;
+        uint48[] memory attestedAtArray = new uint48[](attestersLength);
 
         for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
             AttestationRecord storage attestation = _getAttestation(module, attesters[i]);
-
             if (attestation.revocationTime != 0) {
                 revert RevokedAttestation(attestation.attester);
             }
@@ -68,24 +70,27 @@ abstract contract Query is IQuery {
                 revert AttestationNotFound();
             }
 
+            attestedAtArray[i] = attestation.time;
+
             if (attestation.time == 0) continue;
 
             if (threshold != 0) --threshold;
         }
-        if (threshold == 0) return;
+        if (threshold == 0) return attestedAtArray;
         revert InsufficientAttestations();
     }
 
     /**
      * @inheritdoc IQuery
      */
-    function verifyUnsafe(
+    function checkNUnsafe(
         address module,
         address[] calldata attesters,
         uint256 threshold
     )
         external
         view
+        returns (uint48[] memory)
     {
         uint256 attestersLength = attesters.length;
         if (attestersLength < threshold || threshold == 0) {
@@ -93,19 +98,24 @@ abstract contract Query is IQuery {
         }
 
         uint256 timeNow = block.timestamp;
+        uint48[] memory attestedAtArray = new uint48[](attestersLength);
 
         for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
-            if (threshold == 0) return;
             AttestationRecord storage attestation = _getAttestation(module, attesters[i]);
+
+            attestedAtArray[i] = attestation.time;
 
             if (attestation.revocationTime != 0) continue;
 
             uint48 expirationTime = attestation.expirationTime;
-            uint48 listedAt = expirationTime != 0 && expirationTime < timeNow ? 0 : attestation.time;
-            if (listedAt == 0) continue;
+            uint48 attestedAt =
+                expirationTime != 0 && expirationTime < timeNow ? 0 : attestation.time;
+            attestedAtArray[i] = attestedAt;
+            if (attestedAt == 0) continue;
 
-            --threshold;
+            if (threshold != 0) --threshold;
         }
+        if (threshold == 0) return attestedAtArray;
         revert InsufficientAttestations();
     }
 
@@ -142,6 +152,7 @@ abstract contract Query is IQuery {
             attestations[i] = findAttestation(module, attesters[i]);
         }
     }
+
     /**
      * @notice Internal function to retrieve an attestation record.
      *

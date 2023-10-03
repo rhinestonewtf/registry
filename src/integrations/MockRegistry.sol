@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 
 import { IQuery } from "../interface/IQuery.sol";
 import { AttestationRecord } from "../DataTypes.sol";
+import { uncheckedInc } from "../Common.sol";
 
 /// @title MockRegistry
 /// @author zeroknots
@@ -16,12 +17,12 @@ contract MockRegistry is IQuery {
         external
         view
         override
-        returns (uint48 listedAt, uint48 revokedAt)
+        returns (uint48 listedAt)
     {
-        return (1234, 0);
+        return (1234);
     }
 
-    function verify(
+    function checkN(
         address module,
         address[] memory attesters,
         uint256 threshold
@@ -29,11 +30,17 @@ contract MockRegistry is IQuery {
         external
         view
         override
+        returns (uint48[] memory)
     {
-        return;
+        uint256 attestersLength = attesters.length;
+        uint48[] memory attestedAtArray = new uint48[](attestersLength);
+        for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
+            attestedAtArray[i] = 1234;
+        }
+        return attestedAtArray;
     }
 
-    function verifyUnsafe(
+    function checkNUnsafe(
         address module,
         address[] memory attesters,
         uint256 threshold
@@ -41,8 +48,14 @@ contract MockRegistry is IQuery {
         external
         view
         override
+        returns (uint48[] memory)
     {
-        return;
+        uint256 attestersLength = attesters.length;
+        uint48[] memory attestedAtArray = new uint48[](attestersLength);
+        for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
+            attestedAtArray[i] = 1234;
+        }
+        return attestedAtArray;
     }
 
     function findAttestation(

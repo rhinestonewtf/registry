@@ -40,6 +40,7 @@ abstract contract RegistryIntegrationStorageSlot {
         s.registry = IQuery(_registry);
         s.trustedAttester = _trustedAttester;
     }
+
     /**
      * @notice Internal function that checks the registry for a contract's status
      *
@@ -47,14 +48,9 @@ abstract contract RegistryIntegrationStorageSlot {
      *
      * @param _contract The address of the contract to be checked in the registry
      * @return listedAt The timestamp at which the contract was listed (0 if never listed)
-     * @return revokedAt The timestamp at which the contract was revoked (0 if never revoked)
      */
 
-    function _checkRegistry(address _contract)
-        internal
-        view
-        returns (uint48 listedAt, uint48 revokedAt)
-    {
+    function _checkRegistry(address _contract) internal view returns (uint48 listedAt) {
         RegistryIntegrationStorage.Storage storage s = RegistryIntegrationStorage.store();
         return s.registry.check(_contract, s.trustedAttester);
     }
@@ -67,11 +63,11 @@ abstract contract RegistryIntegrationStorageSlot {
      * @param _contract The address of the contract to be checked
      */
     modifier onlyWithRegistryCheck(address _contract) {
-        (uint48 listedAt, uint48 revokedAt) = _checkRegistry(_contract);
+        uint48 listedAt = _checkRegistry(_contract);
 
         // revert if contract was ever flagged or was never attested to
-        if (listedAt == 0 || revokedAt != 0) {
-            revert TargetContractNotPermitted(_contract, listedAt, revokedAt);
+        if (listedAt == 0) {
+            revert TargetContractNotPermitted(_contract, listedAt, 0);
         }
         _;
     }
