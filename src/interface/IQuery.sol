@@ -25,7 +25,7 @@ interface IQuery {
      *
      * @return attestedAt The time the attestation was listed. Returns 0 if not listed or expired.
      */
-    function check(address module, address attester) external view returns (uint48 attestedAt);
+    function check(address module, address attester) external view returns (uint256 attestedAt);
 
     /**
      * @notice Verifies the validity of attestations for a given module against a threshold.
@@ -46,7 +46,7 @@ interface IQuery {
     )
         external
         view
-        returns (uint48[] memory attestedAtArray);
+        returns (uint256[] memory attestedAtArray);
 
     /**
      * @notice Verifies attestations for a given module against a threshold, but does not check revocation.
@@ -65,7 +65,7 @@ interface IQuery {
     )
         external
         view
-        returns (uint48[] memory attestedAtArray);
+        returns (uint256[] memory attestedAtArray);
 
     /**
      * @notice Retrieves the attestation record for a given module and attester.

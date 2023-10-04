@@ -17,9 +17,9 @@ contract MockRegistry is IQuery {
         external
         view
         override
-        returns (uint48 listedAt)
+        returns (uint256 listedAt)
     {
-        return (1234);
+        return uint256(1234);
     }
 
     function checkN(
@@ -30,12 +30,12 @@ contract MockRegistry is IQuery {
         external
         view
         override
-        returns (uint48[] memory)
+        returns (uint256[] memory)
     {
         uint256 attestersLength = attesters.length;
-        uint48[] memory attestedAtArray = new uint48[](attestersLength);
+        uint256[] memory attestedAtArray = new uint256[](attestersLength);
         for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
-            attestedAtArray[i] = 1234;
+            attestedAtArray[i] = uint256(1234);
         }
         return attestedAtArray;
     }
@@ -48,12 +48,12 @@ contract MockRegistry is IQuery {
         external
         view
         override
-        returns (uint48[] memory)
+        returns (uint256[] memory)
     {
         uint256 attestersLength = attesters.length;
-        uint48[] memory attestedAtArray = new uint48[](attestersLength);
+        uint256[] memory attestedAtArray = new uint256[](attestersLength);
         for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
-            attestedAtArray[i] = 1234;
+            attestedAtArray[i] = uint256(1234);
         }
         return attestedAtArray;
     }

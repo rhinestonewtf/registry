@@ -14,7 +14,7 @@ abstract contract RegistryIntegration {
     IQuery public immutable registry; // Instance of the registry
     address public immutable trustedAttester; // Address of the trusted authority for attesting
 
-    error TargetContractNotPermitted(address target, uint48 listedAt, uint48 flaggedAt);
+    error TargetContractNotPermitted(address target, uint256 listedAt, uint256 flaggedAt);
 
     /**
      * @dev Constructs the contract and initializes the registry and the trusted attester
@@ -36,7 +36,7 @@ abstract contract RegistryIntegration {
      * @return listedAt The timestamp at which the contract was listed (0 if never listed)
      */
 
-    function _checkRegistry(address _contract) internal view returns (uint48 listedAt) {
+    function _checkRegistry(address _contract) internal view returns (uint256 listedAt) {
         return registry.check(_contract, trustedAttester);
     }
 
@@ -48,7 +48,7 @@ abstract contract RegistryIntegration {
      * @param _contract The address of the contract to be checked
      */
     modifier onlyWithRegistryCheck(address _contract) {
-        uint48 listedAt = _checkRegistry(_contract);
+        uint256 listedAt = _checkRegistry(_contract);
 
         // revert if contract was ever flagged or was never attested to
         if (listedAt == 0) {

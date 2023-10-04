@@ -27,7 +27,7 @@ library RegistryIntegrationStorage {
  * to interact with it by leveraging the IQuery registry
  */
 abstract contract RegistryIntegrationStorageSlot {
-    error TargetContractNotPermitted(address target, uint48 listedAt, uint48 flaggedAt);
+    error TargetContractNotPermitted(address target, uint256 listedAt, uint256 flaggedAt);
 
     /**
      * @dev Constructs the contract and initializes the registry and the trusted attester
@@ -50,7 +50,7 @@ abstract contract RegistryIntegrationStorageSlot {
      * @return listedAt The timestamp at which the contract was listed (0 if never listed)
      */
 
-    function _checkRegistry(address _contract) internal view returns (uint48 listedAt) {
+    function _checkRegistry(address _contract) internal view returns (uint256 listedAt) {
         RegistryIntegrationStorage.Storage storage s = RegistryIntegrationStorage.store();
         return s.registry.check(_contract, s.trustedAttester);
     }
@@ -63,7 +63,7 @@ abstract contract RegistryIntegrationStorageSlot {
      * @param _contract The address of the contract to be checked
      */
     modifier onlyWithRegistryCheck(address _contract) {
-        uint48 listedAt = _checkRegistry(_contract);
+        uint256 listedAt = _checkRegistry(_contract);
 
         // revert if contract was ever flagged or was never attested to
         if (listedAt == 0) {
