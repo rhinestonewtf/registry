@@ -1,6 +1,7 @@
 <img align="right" width="150" height="150" top="100" src="https://docs-9d8fk274h-rhinestone.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Frhinestone.d2796f13.png&w=2048&q=75">
 
-# Registry  [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![solidity](https://img.shields.io/badge/solidity-^0.8.19-lightgrey) [![Foundry][foundry-badge]][foundry]
+# Registry [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![solidity](https://img.shields.io/badge/solidity-^0.8.19-lightgrey) [![Foundry][foundry-badge]][foundry]
+
 [foundry]: https://getfoundry.sh
 [foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
 
@@ -8,163 +9,74 @@ This Contract is in active development. Do not use this in Prod!
 
 ## Intro
 
-Account abstraction (or smart accounts) will deliver three key enhancements for the Ethereum ecosystem; 
-improved UX, enhanced user security and greater wallet extensibility. Modular smart accounts are the next 
-frontier for supercharging these deliverables. However, it also opens up a number of new challenges that 
-could drastically undermine the objective by opening up a plethora of new attack vectors and security concerns for accounts. 
+Account abstraction (or smart accounts) will deliver three key enhancements for the Ethereum ecosystem:
+improved UX, enhanced user security and greater wallet extensibility. Modular smart accounts are the next
+frontier for achieving these goals. However, it also opens up a number of new challenges that
+could drastically undermine the objective by opening up a plethora of new attack vectors and security concerns for accounts.
 
-
-The [Rhinestone Registry] aims to solve this concern by providing a means of verifying the legitimacy and 
-security of independently built smart account modules for deployment and use across any integrated 
-smart account. [Rhinestone Registry] is a free, open and permissionless registry and verifications 
-system for smart account modules on the Ethereum platform. With an emphasis on contract security and 
-transparency, it allows attesters to register, verify, and dispatch verification statuses across 
-various EVM chains.
-
-
+The Registry aims to solve this concern by providing a means of verifying the legitimacy and
+security of independently built smart account modules for installation and use across any integrated
+smart account. It allows entities to attest to statements about modules and smart accounts to query these at module nstallation and/or execution time. The Registry is a Singleton that is free, open and permissionless. It also serves as the reference implementation for [ERC-7484](https://eips.ethereum.org/EIPS/eip-7484).
 
 ## Core Principles
+
 ### Attestations
-[Attestations](./docs/Attestation.md) represent digitally documented assertions made by any entity 
-about the security poture of account abstraction modules, 
-serving as a seal of authenticity for the associated data. An entity known as an 
-Attestor forms these records, authenticating them with their Ethereum wallet 
-and then registering them on the Ethereum blockchain. 
 
-An attestation consists of two primary elements: the schema and the 
-attestation data. The schema acts as a standardized structure for 
-creating and validating attestations, defining the data types, 
-format, and composition. The Rhinestone Registry uses Solidity 
-ABI types as acceptable fields in these schemas. The attestation 
-data represents the actual information subject to attestation. 
+Attestations on the Registry represent statements about Modules. An Attestation is made using a particular [Schema](./Schemas.md) that is used to encode and decode the Attestation data. The most important usecase for Attestations is to make statements about the security of a Module.
 
-To be classified as a valid attestation, it should adhere to the 
-structure defined in the schema. 
-The Registry allows for [external validation](./docs/Schemas.md#ischemavalidator) of attestation data against Schemas.
-
-The significance of attestations lies in their ability to 
-facilitate trust and credibility within the blockchain. In 
-scenarios lacking physical interaction or presence, verifying 
-the veracity or reliability of information can be demanding. 
-Attestations address this challenge by providing third-party 
-validation and a cryptographically signed confirmation of 
-information authenticity, thus enhancing the information's 
-trustworthiness for others.
+An attestation consists of two primary elements: the Schema and the
+Attestation data. The Schema acts as a standardized structure for
+creating and validating Attestations, defining how the Attestation data is encoded and decoded.
 
 ### Schemas
-[Schemas](./docs/Schema.md) represent predefined structures utilized for the formation and 
-verification of attestations. They define the data types, format, and 
-composition of an attestation. The Rhinestone Registry accepts Solidity 
-ABI types as acceptable fields for schemas. Schemas play an essential 
-role as they establish a shared format and structure for attestation 
-data, enabling the creation and verification of various attestations 
-in a trustless fashion. This functionality paves the way for 
-interoperability and composability amongst different attestation protocols and solutions.
+
+[Schemas](./docs/Schema.md) represent predefined structures utilized for the formation and
+verification of Attestation data. Using flexible Schemas rather than a single, fixed Schema allows Attesters to encode their data in a custom way, providing flexibility when creating Attestations. For example, the data of an Attestation about the outcome of the formal verification on a Module will have a very format than the data of an Attestation about what interfaces a Module supports.
 
 ### Resolvers
-In the ever-evolving landscape of smart account
-modularity, extensibility of the registry is paramount. [Resolvers](./docs/Resolvers.md) in the Registry
-play a pivotal role in this regard. They stand as intermediaries or validators, 
-implementing specific hooks that are invoked by the Registry during 
-various critical operations:
+
+Resolvers are external contracts that are tied to Modules and called when specific Registry actions are executed. These actions are:
+
 - attestation
 - revocation
 - module registration / deployment
 
-This architectural design aims to provide entities like smart account vendors or DAOs, with the 
-flexibility to incorporate custom business logic while maintaining the 
+This architectural design aims to provide entities like Smart Account vendors or DAOs, with the
+flexibility to incorporate custom business logic while maintaining the
 robustness and security of the core functionalities implemented by the Registry
 
-### Attestors
-Attestors refer to individuals or organizations responsible for 
-creating and signing attestations. They add the attestation to the 
-Ethereum blockchain, making it available for verification. Any 
-individual owning an Ethereum wallet can become an Attestor and 
-can formulate attestations for a variety of purposes.
+### Attesters
+
+Attesters are individuals or organizations responsible for
+creating and signing Attestations. They add the Attestation to the
+Registry, making it available for verification.
 
 ### Modules
-Modules are smart contracts that act as modular components that can be added to smart accounts. 
-The registry is agnostic towards smart account or module implementations. Modules addresses and 
+
+Modules are smart contracts that act as modular components that can be added to Smart Accounts.
+The registry is agnostic towards Smart Account or Module implementations. Only Module addresses and
 deployment metadata are stored on the registry.
 
-Modules are registered on the Rhinestone Registry by [deploying](./docs/ModulesRegistration.md) the Module Bytecode with `CREATE2` or `CREATE3`
-Additionally its possible to register already deployed Modules, or use external Factories
-
-
-### Users
-Users represent entities that depend on attestations to inform 
-decisions or initiate actions. They utilize the information enclosed 
-within the attestation to confirm its authenticity and integrity. The 
-backing for these attestations often lies in the reputation and 
-trustworthiness of the Attestor.
-
-### Ethereum ABI Types
-The Ethereum Application Binary Interface (ABI) stipulates the data 
-types that can be incorporated in smart contracts and other Ethereum transactions. 
+Modules are registered on the Registry either during, using `CREATE2`, `CREATE3` or a custom deployment factory, or after deployment.
 
 ## Architecture
 
-The Rhinestone Registry is designed as a permissionless hyperstructure. 
-This architecture enables the registry to effectively manage and coordinate various types of smart contracts, 
-spanning multiple developers and authorities. With this level of interconnectedness, smart contracts can freely interact with each other and with 
-various authorities, opening up a world of possibilities for rich, complex interactions. It promotes a decentralized, collaborative environment, 
-where entities can share, validate, and verify smart contracts across chains.
-
-
 ![Sequence Diagram](./public/docs/all.svg)
 
-
-##  Changes V0.2
-
-### New Features
-
-- GAS consumption for both storing attestations and querying the request was reduced dramatically
-- non-delegated attestations can now be made without signature
-- full ERC1271 support
-- SSTORE2 to store attestation data
-- Removal of attestation UIDs
-- seperation of Schema Validation and external resolvers
-- restructured files for improved readability
-
-
-### Breaking Changes
-
-Registry V0.2 introduces a major redesign and breaking changes to the regsitry code.
-
-*Removal of Hashi / Cross-chain propagation*
-While we love Hashi and believe strongly in the need of cross-chain propagation of attestations, we decided to move the propagation logic out of the registry.
-The main motiviation behind this is, that cross-chain Bytecode equivalence with new 
-OPCODEs will be limited. We believe a propagation implementation 
-that attesters can implement as a smart account module to propagate their own attestations will be a sufficient substitute.
-
-*Removal of Attestation UIDs*
-To reduce GAS while querying / checking the registry, we redesigned the attestation storage to no longer rely on UIDs.
-The chained attestation feature was removed for this redesign.
-
-*Splitting Resolvers and SchemaValidators*
-We received feature requests to allow attesters to make attestations on different schemas. 
-The new version of the Registry is thus seperating resolver and schema validation into two different optional external contracts
-
-
-
-### Prerequisites
-- Solidity version 0.8.19 or later
-
-
 ## Contribute
-For feature of change requests, feel free to get in touch with us, or open PRs
 
-
+For feature or change requests, feel free to open a PR or get in touch with us.
 
 ## Credits & Special Thanks
+
 For the continious support and constructive feedback, we would like to thank:
+
 - [Ethereum Foundation](https://erc4337.mirror.xyz/hRn_41cef8oKn44ZncN9pXvY3VID6LZOtpLlktXYtmA)
 - ERC-4337 Team
 - Richard Meissner (Safe) @rimeissner
 - Taek @taek.eth
 - Biconomy
-- Rhinestone Registry is drawing inspiration of EAS
-
+- Rhinestone Registry is drawing inspiration from EAS
 
 ## Authors ✨
 
@@ -174,7 +86,7 @@ For the continious support and constructive feedback, we would like to thank:
 <table>
   <tr>
     <td align="center"><a href="http://twitter.com/zeroknotsETH/"><img src="https://pbs.twimg.com/profile_images/1639062011387715590/bNmZ5Gpf_400x400.jpg" width="100px;" alt=""/><br /><sub><b>zeroknots</b></sub></a><br /><a href="https://github.com/rhinestonewtf/registry/commits?author=zeroknots" title="Code">💻</a></td>
-    <td align="center"><a href="https://twitter.com/abstractooor"><img src="https://pbs.twimg.com/profile_images/1563803892231675905/9heafdY__400x400.jpg" width="100px;" alt=""/><br /><sub><b>Konrad</b></sub></a><br /><a href="https://github.com/rhinestonewtf/registry/commits?author=kopy-kat" title="Code">💻<</a> </td>
+    <td align="center"><a href="https://twitter.com/abstractooor"><img src="https://avatars.githubusercontent.com/u/26718079" width="100px;" alt=""/><br /><sub><b>Konrad</b></sub></a><br /><a href="https://github.com/rhinestonewtf/registry/commits?author=kopy-kat" title="Code">💻</a> </td>
     
   </tr>
 </table>

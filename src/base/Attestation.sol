@@ -229,7 +229,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
      *
      * @dev the bytes metadata provided in the AttestationRequestData
      * is writted to the EVM with SSTORE2 to allow for large attestations without spending a lot of gas
-     *   https://mirror.xyz/0x53478A49d7c16D85082659BCE9EDba5a6FBFd1Cf/_DIgJiM0_ETNuAUOq77wklNJ-L6GHlBcvVrm2_jNvKo
      *
      * @param schemaUID The unique identifier of the schema being attested to.
      * @param resolverUID The unique identifier of the resolver for the module.
