@@ -53,7 +53,7 @@ interface ISchema {
 
     /**
      * @notice Registers a resolver and associates it with the caller.
-     * @dev This function allows the registration of a resolver by computing a unique ID and associating it with the schema owner.
+     * @dev This function allows the registration of a resolver by computing a unique ID and associating it with the owner.
      *      Emits a SchemaResolverRegistered event upon successful registration.
      *
      * @param _resolver Address of the IResolver to be registered.

@@ -1,16 +1,6 @@
-
 # Module Registration
 
-Module Registration serves as a paramount utility that enables the deployment of 
-innovative smart account modules onto the Ethereum blockchain. By leveraging the mechanics of 
-CREATE2 and CREATE3 opcodes, it endows users with the capability to proactively identify the intended address of 
-the smart account module, all before the execution of the deployment transaction. An essential aspect of this 
-procedure mandates the assignment of a singular schema ID with every nascent module.
-
-
-Every module upon its introduction is systematically coupled with its respective resolverUID.
-The [Resolver](./Resolver.md) can be used by eco-system builders to extend the registry with custom business logic.
-
+In order for Attesters to be able to make statements about a Module, the Module first needs to be registered on the Registry. This can be done as part of or after Module deployment. On registration, every module is tied to a [Resolver](./Resolvers.md) that is triggered on certain registry actions.
 
 ```solidity
 
@@ -24,15 +14,13 @@ struct ModuleRecord {
 
 ## Module Deployment
 
-The registry supports different ways to register modules.
-
+The registry supports different ways to register modules:
 
 ![Sequence Diagram](../public/docs/module-registration.svg)
 
 ## Deploy Bytecode via Registry (CREATE2)
 
-Module Developers can deploy their module Bytecode directly with the registry.
-
+Module Developers can deploy their module Bytecode directly via the registry.
 
 ```solidity
 /**
@@ -62,11 +50,10 @@ function deploy(
 
 ## Deploy Bytecode via Registry (CREATE3)
 
-Module Developers can deploy their module Bytecode directly with the registry.
-The Registry supports deployments via [CREATE3](https://github.com/0xsequence/create3)
-so the initcode of the module does not affect the modules deployment address. 
+Module Developers can deploy their module Bytecode directly via the registry.
+The Registry also supports deployments via [CREATE3](https://github.com/0xsequence/create3)
+so the initcode of the module does not affect the modules deployment address.
 This feature can be very useful for cross-chain deployments.
-
 
 ```solidity
 /**
@@ -96,7 +83,8 @@ function deployC3(
 
 ```
 
-The CREATE2 salt is calculated like this:
+The `CREATE3` salt is calculated like this:
+
 ```solidity
 bytes32 senderSalt = keccak256(abi.encodePacked(salt, msg.sender));
 
@@ -104,8 +92,8 @@ bytes32 senderSalt = keccak256(abi.encodePacked(salt, msg.sender));
 
 ## Deploy Bytecode via External Factory
 
-In order to make the integration into existing business logics possible, 
-the registry is able to utilize external factories that can be utilized to deploy the modules.
+In order to make the integration into existing business logics possible,
+the Registry is able to utilize external factories that can be utilized to deploy the modules.
 
 ```solidity
 /**
@@ -130,13 +118,12 @@ function deployViaFactory(
 
 ```
 
+## Register an existing Module
 
+The Registry also allows already-deployed modules to be registered. However, since it is impossible to determine the deployer post-deployment, there are two things to watch out for:
 
-## Register existing Module
-
-
-After deploying the module bytecode, the registry saves the deployment address as well as the chosen `resolverUID`, 
-in addition to the following metadata.
+1. The Deployer can set an arbitrary Resolver
+2. The address of the module deployer will be set to `address(0)`
 
 ```solidity
 /**

@@ -1,16 +1,11 @@
 ## Intro
 
-Attestations on the registry are abi.encoded bytes. To allow frontends or other integrations to decode the attestations, 
-the Registry is using Schema definition strings similar to EAS.
-
-## New Features
-
-In v0.2 of the registry we wanted to allow attestations to one module to be made agaist multiple schemas.
-
+Attestations on the registry are `abi.encoded` bytes. To allow frontends or other integrations to decode the attestations,
+the Registry uses Schema definition strings.
 
 ## Specs
 
-Schema can hold a string encoded ABI describtion that defines the data fields for attestations done against this schema.
+A Schema can hold a string encoded ABI describtion that defines the data fields for Attestations done against this schema.
 
 ```solidity
 struct SchemaRecord {
@@ -22,7 +17,7 @@ struct SchemaRecord {
 
 ### ISchemaValidator
 
-As an optional feasture to the registry, a `ISchemaValidator` 
+As an optional feasture to the registry, an `ISchemaValidator`
 can be provided to `abi.decode` all or parts of attestations made against the schema.
 
 The implementation of this Validator is up to the Schema validators discression.
@@ -39,4 +34,3 @@ interface ISchemaValidator is IERC165 {
         returns (bool);
 }
 ```
-
