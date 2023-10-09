@@ -54,7 +54,7 @@ contract QueryTest is AttestationTest {
         instancel1.registry.check(defaultModule1, vm.addr(auth1k));
     }
 
-    function testVerifyAttestation() public {
+    function testCheckNAttestation() public {
         testCreateAttestation();
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
@@ -69,7 +69,7 @@ contract QueryTest is AttestationTest {
         instancel1.registry.checkN(defaultModule1, authorities, 1);
     }
 
-    function testVerifyAttestation__RevertWhen__ThresholdNotMet() public {
+    function testCheckNAttestation__RevertWhen__ThresholdNotMet() public {
         testCreateAttestation();
         address[] memory authorities = new address[](2);
         authorities[0] = vm.addr(auth1k);
@@ -79,7 +79,7 @@ contract QueryTest is AttestationTest {
         instancel1.registry.checkN(defaultModule1, authorities, 2);
     }
 
-    function testVerifyAttestation__RevertWhen__Expired() public {
+    function testCheckNAttestation__RevertWhen__Expired() public {
         vm.warp(100);
         testCreateAttestation();
         AttestationRequestData memory attData = AttestationRequestData({
@@ -98,7 +98,7 @@ contract QueryTest is AttestationTest {
         instancel1.registry.checkN(defaultModule1, authorities, 1);
     }
 
-    function testVerifyAttestation__RevertWhen__Revoked() public {
+    function testCheckNAttestation__RevertWhen__Revoked() public {
         testCreateAttestation();
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
@@ -116,7 +116,7 @@ contract QueryTest is AttestationTest {
         instancel1.registry.checkN(defaultModule1, authorities, 1);
     }
 
-    function testVerifyAttestationUnsafe() public {
+    function testCheckNAttestationUnsafe() public {
         testCreateAttestation();
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
@@ -131,7 +131,7 @@ contract QueryTest is AttestationTest {
         instancel1.registry.checkNUnsafe(defaultModule1, authorities, 1);
     }
 
-    function testVerifyAttestationUnsafe__RevertWhen__ThresholdNotMet() public {
+    function testCheckNAttestationUnsafe__RevertWhen__ThresholdNotMet() public {
         testCreateAttestation();
         address[] memory authorities = new address[](2);
         authorities[0] = vm.addr(auth1k);
@@ -141,7 +141,7 @@ contract QueryTest is AttestationTest {
         instancel1.registry.checkNUnsafe(defaultModule1, authorities, 2);
     }
 
-    function testVerifyAttestationUnsafe__Expired() public {
+    function testCheckNAttestationUnsafe__Expired() public {
         vm.warp(100);
         testCreateAttestation();
         AttestationRequestData memory attData = AttestationRequestData({
@@ -159,7 +159,7 @@ contract QueryTest is AttestationTest {
         instancel1.registry.checkNUnsafe(defaultModule1, authorities, 1);
     }
 
-    function testVerifyAttestationUnsafe__Revoked() public {
+    function testCheckNAttestationUnsafe__Revoked() public {
         testCreateAttestation();
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,

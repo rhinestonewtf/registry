@@ -26,19 +26,15 @@ abstract contract Query is IQuery {
         public
         view
         override(IQuery)
-        returns (uint256)
+        returns (uint256 attestedAt)
     {
         AttestationRecord storage attestation = _getAttestation(module, attester);
 
-        uint48 expirationTime = attestation.expirationTime;
-        uint48 attestedAt =
-            expirationTime != 0 && expirationTime < block.timestamp ? 0 : attestation.time;
+        uint256 expirationTime = attestation.expirationTime;
+        attestedAt = expirationTime != 0 && expirationTime < block.timestamp ? 0 : attestation.time;
         if (attestedAt == 0) revert AttestationNotFound();
 
-        uint48 revokedAt = attestation.revocationTime;
-        if (revokedAt != 0) revert RevokedAttestation(attestation.attester);
-
-        return uint256(attestedAt);
+        if (attestation.revocationTime != 0) revert RevokedAttestation(attestation.attester);
     }
 
     /**
@@ -52,7 +48,7 @@ abstract contract Query is IQuery {
         external
         view
         override(IQuery)
-        returns (uint256[] memory)
+        returns (uint256[] memory attestedAtArray)
     {
         uint256 attestersLength = attesters.length;
         if (attestersLength < threshold || threshold == 0) {
@@ -60,7 +56,7 @@ abstract contract Query is IQuery {
         }
 
         uint256 timeNow = block.timestamp;
-        uint256[] memory attestedAtArray = new uint256[](attestersLength);
+        attestedAtArray = new uint256[](attestersLength);
 
         for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
             AttestationRecord storage attestation = _getAttestation(module, attesters[i]);
@@ -68,15 +64,15 @@ abstract contract Query is IQuery {
                 revert RevokedAttestation(attestation.attester);
             }
 
-            uint48 expirationTime = attestation.expirationTime;
+            uint256 expirationTime = attestation.expirationTime;
             if (expirationTime != 0 && expirationTime < timeNow) {
                 revert AttestationNotFound();
             }
 
-            attestedAtArray[i] = uint256(attestation.time);
+            uint256 attestationTime = attestation.time;
+            attestedAtArray[i] = attestationTime;
 
-            if (attestation.time == 0) continue;
-
+            if (attestationTime == 0) continue;
             if (threshold != 0) --threshold;
         }
         if (threshold == 0) return attestedAtArray;
@@ -93,7 +89,7 @@ abstract contract Query is IQuery {
     )
         external
         view
-        returns (uint256[] memory)
+        returns (uint256[] memory attestedAtArray)
     {
         uint256 attestersLength = attesters.length;
         if (attestersLength < threshold || threshold == 0) {
@@ -101,21 +97,20 @@ abstract contract Query is IQuery {
         }
 
         uint256 timeNow = block.timestamp;
-        uint256[] memory attestedAtArray = new uint256[](attestersLength);
+        attestedAtArray = new uint256[](attestersLength);
 
         for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
             AttestationRecord storage attestation = _getAttestation(module, attesters[i]);
 
-            attestedAtArray[i] = uint256(attestation.time);
+            attestedAtArray[i] = attestation.time;
 
             if (attestation.revocationTime != 0) continue;
 
-            uint48 expirationTime = attestation.expirationTime;
-            uint48 attestedAt =
+            uint256 expirationTime = attestation.expirationTime;
+            uint256 attestedAt =
                 expirationTime != 0 && expirationTime < timeNow ? 0 : attestation.time;
             attestedAtArray[i] = attestedAt;
             if (attestedAt == 0) continue;
-
             if (threshold != 0) --threshold;
         }
         if (threshold == 0) return attestedAtArray;
