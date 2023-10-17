@@ -2,6 +2,7 @@
 pragma solidity ^0.8.19;
 
 import { AttestationRecord } from "../DataTypes.sol";
+import { IERC7484 } from "./IERC7484.sol";
 
 /**
  * Query interface allows for the verification of attestations
@@ -10,7 +11,7 @@ import { AttestationRecord } from "../DataTypes.sol";
  * @author zeroknots
  */
 
-interface IQuery {
+interface IQuery is IERC7484 {
     error RevokedAttestation(address attester);
     error AttestationNotFound();
     error InsufficientAttestations();
