@@ -113,9 +113,7 @@ library SchemaLib {
      *
      * @return ResolverUID.
      */
-    function getUID(ResolverRecord memory resolver) internal view returns (ResolverUID) {
-        return ResolverUID.wrap(
-            keccak256(abi.encodePacked(resolver.resolver, block.timestamp, block.chainid))
-        );
+    function getUID(ResolverRecord memory resolver) internal pure returns (ResolverUID) {
+        return ResolverUID.wrap(keccak256(abi.encodePacked(resolver.resolver)));
     }
 }
