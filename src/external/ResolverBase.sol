@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.19;
+pragma solidity 0.8.21;
 
 import {
     AccessDenied, NO_EXPIRATION_TIME, NotFound, ZERO_ADDRESS, uncheckedInc
