@@ -1,12 +1,21 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import "./base/Schema.sol";
-import "./base/AttestationDelegation.sol";
-import "./base/Module.sol";
-import "./base/Query.sol";
-
-import "./interface/IRegistry.sol";
+import { Schema } from "./base/Schema.sol";
+import { AttestationDelegation } from "./base/AttestationDelegation.sol";
+import { Module } from "./base/Module.sol";
+import {
+    Query,
+    SchemaUID,
+    SchemaRecord,
+    AttestationResolve,
+    Attestation,
+    AttestationRecord,
+    ResolverUID,
+    ResolverRecord,
+    ModuleRecord
+} from "./base/Query.sol";
+import { IRegistry } from "./interface/IRegistry.sol";
 
 /**
  * @author zeroknots

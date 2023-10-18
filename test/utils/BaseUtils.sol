@@ -6,6 +6,13 @@ import "forge-std/Test.sol";
 import { SignatureCheckerLib } from "solady/src/utils/SignatureCheckerLib.sol";
 
 import "../../src/Registry.sol";
+import {
+    AttestationRequestData,
+    RevocationRequestData,
+    DelegatedAttestationRequest,
+    DelegatedRevocationRequest
+} from "../../src/base/AttestationDelegation.sol";
+import { ISchemaValidator, IResolver } from "../../src/interface/ISchema.sol";
 
 import "forge-std/console2.sol";
 

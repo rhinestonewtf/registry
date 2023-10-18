@@ -6,6 +6,7 @@ import "../src/lib/ModuleDeploymentLib.sol";
 import { IResolver } from "../src/external/IResolver.sol";
 import { InvalidSchema } from "../src/Common.sol";
 import "./utils/BaseTest.t.sol";
+import { IModule } from "../src/interface/IModule.sol";
 
 /// @title ModuleTest
 /// @author zeroknots

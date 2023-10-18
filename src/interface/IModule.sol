@@ -3,8 +3,13 @@ pragma solidity ^0.8.19;
 
 import { ResolverUID } from "../DataTypes.sol";
 
+/**
+ * Module interface allows for the deployment and registering of modules.
+ *
+ * @author zeroknots
+ */
 interface IModule {
-    // Event triggered when a contract is deployed.
+    // Event triggered when a module is deployed.
     event ModuleRegistration(address indexed implementation, bytes32 resolver);
     event ModuleDeployed(address indexed implementation, bytes32 indexed salt, bytes32 resolver);
     event ModuleDeployedExternalFactory(
@@ -12,7 +17,6 @@ interface IModule {
     );
 
     error AlreadyRegistered(address module);
-
     error InvalidDeployment();
 
     /**

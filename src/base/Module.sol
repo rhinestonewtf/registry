@@ -14,7 +14,13 @@ import { ISchemaValidator } from "../external/ISchemaValidator.sol";
 import { IResolver } from "../external/IResolver.sol";
 
 import { InvalidResolver, _isContract, ZERO_ADDRESS } from "../Common.sol";
-import "../DataTypes.sol";
+import {
+    ResolverRecord,
+    ModuleRecord,
+    ResolverUID,
+    AttestationRequestData,
+    RevocationRequestData
+} from "../DataTypes.sol";
 
 /**
  * @title Module
@@ -30,7 +36,7 @@ import "../DataTypes.sol";
  * @dev In conclusion, the Module is a central part of a system to manage, deploy, and interact with a set of smart contracts
  * in a structured and controlled manner.
  *
- * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
 abstract contract Module is IModule, ReentrancyGuard {
     using ModuleDeploymentLib for bytes;
@@ -62,6 +68,9 @@ abstract contract Module is IModule, ReentrancyGuard {
         emit ModuleDeployed(moduleAddr, salt, ResolverUID.unwrap(resolverUID));
     }
 
+    /**
+     * @inheritdoc IModule
+     */
     function deployC3(
         bytes calldata code,
         bytes calldata deployParams,
@@ -84,6 +93,9 @@ abstract contract Module is IModule, ReentrancyGuard {
         emit ModuleDeployed(moduleAddr, senderSalt, ResolverUID.unwrap(resolverUID));
     }
 
+    /**
+     * @inheritdoc IModule
+     */
     function deployViaFactory(
         address factory,
         bytes calldata callOnFactory,
@@ -108,6 +120,9 @@ abstract contract Module is IModule, ReentrancyGuard {
         emit ModuleDeployedExternalFactory(moduleAddr, factory, ResolverUID.unwrap(resolverUID));
     }
 
+    /**
+     * @inheritdoc IModule
+     */
     function register(
         ResolverUID resolverUID,
         address moduleAddress,
@@ -194,7 +209,7 @@ abstract contract Module is IModule, ReentrancyGuard {
      *
      * @param moduleAddress The address of the module to retrieve.
      *
-     * @return The module record associated with the given address.
+     * @return moduleRecord The module record associated with the given address.
      */
     function _getModule(address moduleAddress)
         internal
@@ -210,7 +225,7 @@ abstract contract Module is IModule, ReentrancyGuard {
      *
      * @param moduleAddress The address of the module to retrieve.
      *
-     * @return The module record associated with the given address.
+     * @return moduleRecord The module record associated with the given address.
      */
 
     function getModule(address moduleAddress) public view returns (ModuleRecord memory) {

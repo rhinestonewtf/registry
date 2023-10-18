@@ -3,7 +3,17 @@ pragma solidity ^0.8.19;
 
 import { IAttestation } from "../interface/IAttestation.sol";
 import { Attestation } from "./Attestation.sol";
-import "../DataTypes.sol";
+import {
+    DelegatedAttestationRequest,
+    MultiDelegatedAttestationRequest,
+    DelegatedRevocationRequest,
+    MultiDelegatedRevocationRequest,
+    AttestationRequestData,
+    ModuleRecord,
+    ResolverUID,
+    AttestationRecord,
+    RevocationRequestData
+} from "../DataTypes.sol";
 import {
     ZERO_ADDRESS,
     AccessDenied,
@@ -28,6 +38,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
      * @param version Version of the attestation.
      */
     constructor(string memory name, string memory version) Attestation(name, version) { }
+
     /*//////////////////////////////////////////////////////////////
                             ATTEST
     //////////////////////////////////////////////////////////////*/

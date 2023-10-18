@@ -3,14 +3,29 @@ pragma solidity ^0.8.19;
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
-import "../interface/IAttestation.sol";
+import {
+    IAttestation,
+    ResolverUID,
+    AttestationRecord,
+    SchemaUID,
+    SchemaRecord,
+    ModuleRecord,
+    ResolverRecord,
+    IResolver
+} from "../interface/IAttestation.sol";
 import { EIP712Verifier } from "./EIP712Verifier.sol";
 
 import { ZERO_ADDRESS, AccessDenied, uncheckedInc } from "../Common.sol";
 import { AttestationDataRef, writeAttestationData, readAttestationData } from "../DataTypes.sol";
 
+/**
+ * @title AttestationResolve
+ * @dev This contract provides functions to resolve non-delegated attestations and revocations.
+ * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
+ */
 abstract contract AttestationResolve is IAttestation, EIP712Verifier {
     using Address for address payable;
+
     /**
      * @dev Resolves a new attestation or a revocation of an existing attestation.
      *
@@ -23,7 +38,6 @@ abstract contract AttestationResolve is IAttestation, EIP712Verifier {
      *
      * @return Returns the total sent ETH amount.
      */
-
     function _resolveAttestation(
         ResolverUID resolverUID,
         AttestationRecord memory attestation,
@@ -170,10 +184,31 @@ abstract contract AttestationResolve is IAttestation, EIP712Verifier {
         }
     }
 
+    /**
+     * @dev Internal function to get a schema record
+     *
+     * @param uid The UID of the schema.
+     *
+     * @return schemaRecord The schema record.
+     */
     function _getSchema(SchemaUID uid) internal view virtual returns (SchemaRecord storage);
 
+    /**
+     * @dev Function to get a resolver record
+     *
+     * @param uid The UID of the resolver.
+     *
+     * @return resolverRecord The resolver record.
+     */
     function getResolver(ResolverUID uid) public view virtual returns (ResolverRecord memory);
 
+    /**
+     * @dev Internal function to get a module record
+     *
+     * @param moduleAddress The address of the module.
+     *
+     * @return moduleRecord The module record.
+     */
     function _getModule(address moduleAddress)
         internal
         view

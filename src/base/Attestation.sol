@@ -4,9 +4,19 @@ pragma solidity ^0.8.19;
 import { ReentrancyGuard } from "solmate/src/utils/ReentrancyGuard.sol";
 
 import { EIP712Verifier } from "./EIP712Verifier.sol";
-import "../interface/IAttestation.sol";
-import "./Schema.sol";
-import "./Module.sol";
+import {
+    IAttestation,
+    AttestationRecord,
+    AttestationRequest,
+    MultiAttestationRequest,
+    RevocationRequest,
+    MultiRevocationRequest,
+    AttestationLib,
+    ResolverRecord,
+    MultiDelegatedAttestationRequest
+} from "../interface/IAttestation.sol";
+import { SchemaUID, ResolverUID, SchemaRecord, ISchemaValidator } from "./Schema.sol";
+import { ModuleRecord, AttestationRequestData, RevocationRequestData } from "./Module.sol";
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
 import {
     ZERO_ADDRESS,
@@ -28,7 +38,6 @@ import { AttestationResolve } from "./AttestationResolve.sol";
  *
  * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
  */
-
 abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGuard {
     using ModuleDeploymentLib for address;
 
@@ -239,7 +248,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
      * @return attestation The written attestation record.
      * @return value The value associated with the attestation request.
      */
-
     function _writeAttestation(
         SchemaUID schemaUID,
         ResolverUID resolverUID,
@@ -362,6 +370,14 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         return _resolveAttestations(resolverUID, attestations, values, true, availableValue, last);
     }
 
+    /**
+     * @dev Returns the attestation record for a specific module and attester.
+     *
+     * @param module The module address.
+     * @param attester The attester address.
+     *
+     * @return attestationRecord The attestation record.
+     */
     function _getAttestation(
         address module,
         address attester

@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-
-pragma solidity 0.8.21;
+pragma solidity ^0.8.19;
 
 import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import { IERC1271 } from "@openzeppelin/contracts/interfaces/IERC1271.sol";
@@ -8,7 +7,13 @@ import { IERC1271 } from "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import { SignatureCheckerLib } from "solady/src/utils/SignatureCheckerLib.sol";
 
 import { InvalidSignature } from "../Common.sol";
-import "../DataTypes.sol";
+import {
+    AttestationRequestData,
+    SchemaUID,
+    DelegatedAttestationRequest,
+    RevocationRequestData,
+    DelegatedRevocationRequest
+} from "../DataTypes.sol";
 
 /**
  * @title Singature Verifier. If provided signed is a contract, this function will fallback to ERC1271
@@ -81,6 +86,15 @@ abstract contract EIP712Verifier is EIP712 {
         return _name;
     }
 
+    /**
+     * @dev Gets the attestation digest
+     *
+     * @param attData The data in the attestation request.
+     * @param schemaUid The UID of the schema.
+     * @param nonce The nonce of the attestation request.
+     *
+     * @return digest The attestation digest.
+     */
     function getAttestationDigest(
         AttestationRequestData memory attData,
         SchemaUID schemaUid,
@@ -93,6 +107,15 @@ abstract contract EIP712Verifier is EIP712 {
         digest = _attestationDigest(attData, schemaUid, nonce);
     }
 
+    /**
+     * @dev Gets the attestation digest
+     *
+     * @param attData The data in the attestation request.
+     * @param schemaUid The UID of the schema.
+     * @param attester The address of the attester.
+     *
+     * @return digest The attestation digest.
+     */
     function getAttestationDigest(
         AttestationRequestData memory attData,
         SchemaUID schemaUid,
@@ -106,6 +129,15 @@ abstract contract EIP712Verifier is EIP712 {
         digest = _attestationDigest(attData, schemaUid, nonce);
     }
 
+    /**
+     * @dev Gets the attestation digest
+     *
+     * @param data The data in the attestation request.
+     * @param schemaUid The UID of the schema.
+     * @param nonce  The nonce of the attestation request.
+     *
+     * @return digest The attestation digest.
+     */
     function _attestationDigest(
         AttestationRequestData memory data,
         SchemaUID schemaUid,
@@ -145,12 +177,27 @@ abstract contract EIP712Verifier is EIP712 {
         if (!valid) revert InvalidSignature();
     }
 
+    /**
+     * @dev Gets a new sequential nonce
+     *
+     * @param account The requested account.
+     *
+     * @return nonce The new nonce.
+     */
     function _newNonce(address account) private returns (uint256 nonce) {
         unchecked {
             nonce = ++_nonces[account];
         }
     }
 
+    /**
+     * @dev Gets the revocation digest
+     * @param revData The data in the revocation request.
+     * @param schemaUid The UID of the schema.
+     * @param revoker  The address of the revoker.
+     *
+     * @return digest The revocation digest.
+     */
     function getRevocationDigest(
         RevocationRequestData memory revData,
         SchemaUID schemaUid,
@@ -164,6 +211,14 @@ abstract contract EIP712Verifier is EIP712 {
         digest = _revocationDigest(schemaUid, revData.subject, revData.attester, nonce);
     }
 
+    /**
+     * @dev Gets the revocation digest
+     * @param schemaUid The UID of the schema.
+     * @param subject The address of the subject.
+     * @param nonce  The nonce of the attestation request.
+     *
+     * @return digest The revocation digest.
+     */
     function _revocationDigest(
         SchemaUID schemaUid,
         address subject,

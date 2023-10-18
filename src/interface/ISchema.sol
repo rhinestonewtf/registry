@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.19;
 
 import { IResolver } from "../external/IResolver.sol";
 import { ISchemaValidator } from "../external/ISchemaValidator.sol";
 import { SchemaUID, SchemaRecord, ResolverUID, ResolverRecord } from "../DataTypes.sol";
+import { IRegistry } from "./IRegistry.sol";
 
-import "./IRegistry.sol";
 /**
- * @title The global schema registry interface.
+ * @title The global schema interface.
  */
-
 interface ISchema {
     // Error to throw if the SchemaID already exists
     error AlreadyExists();
@@ -42,7 +40,7 @@ interface ISchema {
      * @param validator OPTIONAL Contract address that validates this schema.
      *     If not provided, all attestations made against this schema is assumed to be valid.
      *
-     * @return The unique ID of the registered schema.
+     * @return uid The unique ID of the registered schema.
      */
     function registerSchema(
         string calldata schema,

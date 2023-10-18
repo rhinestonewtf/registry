@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.19;
 
 // A representation of an empty/uninitialized UID.
 bytes32 constant EMPTY_UID = 0;
@@ -18,6 +18,9 @@ error NotFound();
 
 /**
  * @dev A helper function to work with unchecked iterators in loops.
+ * @param i The current index.
+ *
+ * @return j The next index.
  */
 function uncheckedInc(uint256 i) pure returns (uint256 j) {
     unchecked {
@@ -33,6 +36,12 @@ function _time() view returns (uint48) {
     return uint48(block.timestamp);
 }
 
+/**
+ * @dev Returns whether an address is a contract.
+ * @param account The address to check.
+ *
+ * @return true if `account` is a contract, false otherwise.
+ */
 function _isContract(address account) view returns (bool) {
     uint256 size;
     assembly {

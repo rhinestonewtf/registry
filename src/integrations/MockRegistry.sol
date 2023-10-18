@@ -5,10 +5,11 @@ import { IQuery } from "../interface/IQuery.sol";
 import { AttestationRecord } from "../DataTypes.sol";
 import { uncheckedInc } from "../Common.sol";
 
-/// @title MockRegistry
-/// @author zeroknots
-/// @notice ContractDescription
-
+/**
+ * @title MockRegistry
+ * @author zeroknots
+ * @notice Mock registry for testing purposes.
+ */
 contract MockRegistry is IQuery {
     function check(
         address plugin,

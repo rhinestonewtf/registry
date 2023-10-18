@@ -1,10 +1,29 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: AGPL-3.0-only
+pragma solidity ^0.8.19;
 
-pragma solidity ^0.8.0;
-
-import "../DataTypes.sol";
+import {
+    SchemaUID,
+    AttestationDataRef,
+    AttestationRequest,
+    AttestationRecord,
+    SchemaRecord,
+    MultiAttestationRequest,
+    ResolverRecord,
+    ModuleRecord,
+    IResolver,
+    DelegatedAttestationRequest,
+    MultiDelegatedAttestationRequest,
+    RevocationRequest,
+    ResolverUID,
+    DelegatedRevocationRequest,
+    MultiDelegatedRevocationRequest,
+    MultiRevocationRequest
+} from "../DataTypes.sol";
 import { IRegistry } from "./IRegistry.sol";
 
+/**
+ * @dev The global attestation interface.
+ */
 interface IAttestation {
     error AlreadyRevoked();
     error AlreadyRevokedOffchain();
@@ -13,7 +32,6 @@ interface IAttestation {
     error InvalidAttestation();
     error InvalidAttestationRefUID(bytes32 missingRefUID);
     error IncompatibleAttestation(bytes32 sourceCodeHash, bytes32 targetCodeHash);
-    error InvalidPropagation();
     error InvalidAttestations();
     error InvalidExpirationTime();
     error InvalidOffset();
@@ -23,8 +41,8 @@ interface IAttestation {
     error InvalidVerifier();
     error NotPayable();
     error WrongSchema();
-    error InvalidSender(address moduleAddr, address sender); // Emitted when the sender address is invalid.
-    error InvalidCaller(address moduleAddr, address yaruSender); // Emitted when the caller is not the Yaru contract.
+    error InvalidSender(address moduleAddr, address sender);
+
     /**
      * @dev Emitted when an attestation has been made.
      *
@@ -32,7 +50,6 @@ interface IAttestation {
      * @param attester The attesting account.
      * @param schema The UID of the schema.
      */
-
     event Attested(
         address indexed subject,
         address indexed attester,
@@ -99,6 +116,7 @@ interface IAttestation {
     function multiAttest(MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests)
         external
         payable;
+
     /**
      * @notice Revokes an existing attestation for a specified schema.
      *
@@ -132,6 +150,9 @@ interface IAttestation {
     function multiRevoke(MultiRevocationRequest[] calldata multiRequests) external payable;
 }
 
+/**
+ * @dev Library for attestation related functions.
+ */
 library AttestationLib {
     /**
      * @dev Generates a unique salt for an attestation using the provided attester and module addresses.
@@ -143,7 +164,6 @@ library AttestationLib {
      *
      * @return dataPointerSalt A unique salt for the attestation data storage.
      */
-
     function attestationSalt(
         address attester,
         address module

@@ -1,8 +1,11 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
 import { ISchemaValidator } from "./external/ISchemaValidator.sol";
 import { IResolver } from "./external/IResolver.sol";
+
+import { SSTORE2 } from "solady/src/utils/SSTORE2.sol";
+
 /*//////////////////////////////////////////////////////////////
                           STORAGE 
 //////////////////////////////////////////////////////////////*/
@@ -11,7 +14,7 @@ import { IResolver } from "./external/IResolver.sol";
 struct AttestationRecord {
     SchemaUID schemaUID; // The unique identifier of the schema.
     address subject; // The recipient of the attestation i.e. module
-    address attester; // The attester/sender of the attestation.
+    address attester; // The attesting account.
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
@@ -40,6 +43,7 @@ struct ResolverRecord {
 /*//////////////////////////////////////////////////////////////
                           Attestation Requests
 //////////////////////////////////////////////////////////////*/
+
 /**
  * @dev A struct representing the arguments of the attestation request.
  */
@@ -85,6 +89,7 @@ struct MultiDelegatedAttestationRequest {
     bytes[] signatures; // The signatures data. Please note that the signatures are assumed to be signed with increasing nonces.
     address attester; // The attesting account.
 }
+
 /*//////////////////////////////////////////////////////////////
                           Revocation Requests
 //////////////////////////////////////////////////////////////*/
@@ -94,7 +99,7 @@ struct MultiDelegatedAttestationRequest {
  */
 struct RevocationRequestData {
     address subject; // The UID of the attestation to revoke.
-    address attester;
+    address attester; // The attesting account.
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
 }
 
@@ -167,8 +172,6 @@ function resolverNotEq(ResolverUID uid1, ResolverUID uid2) pure returns (bool) {
 }
 
 type AttestationDataRef is address;
-
-import { SSTORE2 } from "solady/src/utils/SSTORE2.sol";
 
 function readAttestationData(AttestationDataRef dataPointer) view returns (bytes memory data) {
     data = SSTORE2.read(AttestationDataRef.unwrap(dataPointer));
