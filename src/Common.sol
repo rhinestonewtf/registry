@@ -5,7 +5,7 @@ pragma solidity ^0.8.19;
 bytes32 constant EMPTY_UID = 0;
 
 // A zero expiration represents an non-expiring attestation.
-uint48 constant NO_EXPIRATION_TIME = 0;
+uint256 constant ZERO_TIMESTAMP = 0;
 
 address constant ZERO_ADDRESS = address(0);
 

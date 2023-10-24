@@ -92,6 +92,9 @@ interface IAttestation {
 
     /**
      * @notice Creates multiple attestations for multiple schemas.
+     * @dev Although the registry supports batched attestations, the function only allows
+     *      batched Attestations for a single resolver.
+     *      If you want to attest to multiple resolvers, you need to call the function multiple times.
      *
      * @param multiRequests An array of multi attestation requests.
      */
@@ -100,7 +103,7 @@ interface IAttestation {
     /**
      * @notice Handles a single delegated attestation request
      *
-     * @dev The function verifies the attestation, wraps the data in an array and forwards it to the _attest() function
+     * @dev The function verifies the attestation, wraps the data in an array and forwards it to the _multiAttest() function
      *
      * @param delegatedRequest A delegated attestation request
      */
@@ -110,6 +113,9 @@ interface IAttestation {
      * @notice Function to handle multiple delegated attestation requests
      *
      * @dev It iterates over the attestation requests and processes them. It collects the returned UIDs into a list.
+     * @dev Although the registry supports batched attestations, the function only allows
+     *      batched Attestations for a single resolver.
+     *      If you want to attest to multiple resolvers, you need to call the function multiple times.
      *
      * @param multiDelegatedRequests An array of multiple delegated attestation requests
      */
@@ -136,6 +142,9 @@ interface IAttestation {
      * @notice Handles multiple delegated revocation requests
      *
      * @dev The function iterates over the multiDelegatedRequests array, verifies each revocation and revokes the request
+     * @dev Although the registry supports batched revocations, the function only allows
+     *      batched Attestations for a single resolver.
+     *      If you want to attest to multiple resolvers, you need to call the function multiple times.
      *
      * @param multiDelegatedRequests An array of multiple delegated revocation requests
      */
@@ -145,6 +154,9 @@ interface IAttestation {
 
     /**
      * @notice Revokes multiple existing attestations for multiple schemas.
+     * @dev Although the registry supports batched revocations, the function only allows
+     *      batched Attestations for a single resolver.
+     *      If you want to attest to multiple resolvers, you need to call the function multiple times.
      * @param multiRequests An array of multi revocation requests.
      */
     function multiRevoke(MultiRevocationRequest[] calldata multiRequests) external payable;

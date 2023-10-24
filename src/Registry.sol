@@ -21,7 +21,7 @@ import { IRegistry } from "./interface/IRegistry.sol";
  * @author zeroknots
  */
 contract Registry is Schema, Query, AttestationDelegation, Module {
-    constructor(string memory name, string memory version) AttestationDelegation(name, version) { }
+    constructor() { }
 
     /*//////////////////////////////////////////////////////////////
                             Helper Functions

@@ -6,6 +6,9 @@ import { IERC165 } from "forge-std/interfaces/IERC165.sol";
 
 /**
  * @title The interface of an optional schema resolver.
+ * @dev The resolver is responsible for validating the schema and attestation data.
+ * @dev The resolver is also responsible for processing the attestation and revocation requests.
+ *
  */
 interface IResolver is IERC165 {
     /**

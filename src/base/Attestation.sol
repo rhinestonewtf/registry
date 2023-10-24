@@ -22,7 +22,7 @@ import {
     ZERO_ADDRESS,
     AccessDenied,
     NotFound,
-    NO_EXPIRATION_TIME,
+    ZERO_TIMESTAMP,
     InvalidLength,
     uncheckedInc,
     InvalidSchema,
@@ -47,10 +47,8 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
 
     /**
      * @notice Constructs a new Attestation contract instance.
-     * @param name The name of the contract.
-     * @param version The version of the contract.
      */
-    constructor(string memory name, string memory version) EIP712Verifier(name, version) { }
+    constructor() { }
 
     /*//////////////////////////////////////////////////////////////
                               ATTEST
@@ -73,8 +71,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             _writeAttestation(request.schemaUID, resolverUID, requestData, msg.sender, _time());
 
         // trigger the resolver procedure
-        uint256 usedValue =
-            _resolveAttestations(resolverUID, attestations, values, false, msg.value, true);
+        _resolveAttestations(resolverUID, attestations, values, false, msg.value, true);
     }
 
     /**
@@ -88,9 +85,13 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         uint256 length = multiRequests.length;
         uint256 availableValue = msg.value;
 
+        // Batched Revocations can only be done for a single resolver. See IAttestation.sol
         ModuleRecord storage moduleRecord = _getModule(multiRequests[0].data[0].subject);
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
+            // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there
+            // is a remainder - it will be refunded back to the attester (something that we can only verify during the
+            // last and final batch).
             bool last;
             unchecked {
                 last = i == length - 1;
@@ -98,7 +99,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
 
             // Process the current batch of attestations.
             MultiAttestationRequest calldata multiRequest = multiRequests[i];
-            uint256 usedValue = _attest(
+            uint256 usedValue = _multiAttest(
                 multiRequest.schemaUID,
                 moduleRecord.resolverUID,
                 multiRequest.data,
@@ -144,6 +145,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         // possible to send too much ETH anyway.
         uint256 availableValue = msg.value;
 
+        // Batched Revocations can only be done for a single resolver. See IAttestation.sol
         ModuleRecord memory moduleRecord = _getModule(multiRequests[0].data[0].subject);
         uint256 requestsLength = multiRequests.length;
 
@@ -183,7 +185,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
      *
      * @return usedValue Amount of ETH used.
      */
-    function _attest(
+    function _multiAttest(
         SchemaUID schemaUID,
         ResolverUID resolverUID,
         AttestationRequestData[] calldata data,
@@ -196,11 +198,12 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
     {
         // only run this function if the selected schemaUID exists
         SchemaRecord storage schema = _getSchema(schemaUID);
-        if (schema.registeredAt == 0) revert InvalidSchema();
+        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
         // validate Schema
         ISchemaValidator validator = schema.validator;
         // if validator is set, call the validator
-        if (address(validator) != address(0)) {
+        if (address(validator) != ZERO_ADDRESS) {
+            // revert if ISchemaValidator returns false
             if (!schema.validator.validateSchema(data)) {
                 revert InvalidAttestation();
             }
@@ -215,6 +218,8 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         AttestationRecord[] memory attestations = new AttestationRecord[](
             length
         );
+
+        // msg.values used for resolver
         uint256[] memory values = new uint256[](length);
 
         // write every attesatation provided to registry's storage
@@ -259,7 +264,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         returns (AttestationRecord memory attestation, uint256 value)
     {
         // Ensure that either no expiration time was set or that it was set in the future.
-        if (request.expirationTime != NO_EXPIRATION_TIME && request.expirationTime <= timeNow) {
+        if (request.expirationTime != ZERO_TIMESTAMP && request.expirationTime <= timeNow) {
             revert InvalidExpirationTime();
         }
         // caching module address. gas bad
@@ -287,7 +292,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             attester: attester,
             time: timeNow,
             expirationTime: request.expirationTime,
-            revocationTime: 0,
+            revocationTime: uint48(ZERO_TIMESTAMP),
             dataPointer: sstore2Pointer
         });
 
@@ -322,8 +327,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
     {
         // only run this function if the selected schemaUID exists
         SchemaRecord storage schema = _getSchema(schemaUID);
-        if (schema.registeredAt == 0) revert InvalidSchema();
-        // dont need to call the validator here, that is only necessary when writing new attestation data
+        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
 
         // caching length
         uint256 length = data.length;
@@ -359,6 +363,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
                     revert AlreadyRevoked();
                 }
 
+                // not caching time() to avoid "stack too deep"
                 attestation.revocationTime = _time();
 
                 attestations[i] = attestation;

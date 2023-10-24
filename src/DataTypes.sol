@@ -13,7 +13,7 @@ import { SSTORE2 } from "solady/src/utils/SSTORE2.sol";
 // Struct that represents an attestation.
 struct AttestationRecord {
     SchemaUID schemaUID; // The unique identifier of the schema.
-    address subject; // The recipient of the attestation i.e. module
+    address subject; // The implementation address of the module that is being attested.
     address attester; // The attesting account.
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
@@ -26,7 +26,7 @@ struct ModuleRecord {
     ResolverUID resolverUID; // The unique identifier of the resolver.
     address implementation; // The deployed contract address
     address sender; // The address of the sender who deployed the contract
-    bytes data; // Additional data related to the contract deployment
+    bytes metadata; // Additional data related to the contract deployment
 }
 
 struct SchemaRecord {
@@ -98,7 +98,7 @@ struct MultiDelegatedAttestationRequest {
  * @dev A struct representing the arguments of the revocation request.
  */
 struct RevocationRequestData {
-    address subject; // The UID of the attestation to revoke.
+    address subject; // The module address.
     address attester; // The attesting account.
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
 }
@@ -183,5 +183,9 @@ function writeAttestationData(
 )
     returns (AttestationDataRef dataPointer)
 {
+    /**
+     * @dev We are using CREATE2 to deterministically generate the address of the attestation data.
+     * Checking if an attestation pointer already exists, would cost more GAS in the average case.
+     */
     dataPointer = AttestationDataRef.wrap(SSTORE2.writeDeterministic(attestationData, salt));
 }

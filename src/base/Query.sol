@@ -13,9 +13,7 @@ import {
     ModuleRecord
 } from "./Attestation.sol";
 
-import {
-    AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
-} from "../Common.sol";
+import { AccessDenied, NotFound, ZERO_TIMESTAMP, InvalidLength, uncheckedInc } from "../Common.sol";
 
 /**
  * @title Query

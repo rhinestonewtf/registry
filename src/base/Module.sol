@@ -30,7 +30,7 @@ import {
  *
  * @dev The primary responsibility of the Module is to deploy and manage modules. A module is a smart contract
  * that has been deployed through the Module. The details of each module, such as its address, code hash, schema ID,
- * sender address, deploy parameters hash, and additional data are stored in a struct and mapped to the module's address in
+ * sender address, deploy parameters hash, and additional metadata are stored in a struct and mapped to the module's address in
  * the `_modules` mapping for easy access and management.
  *
  * @dev In conclusion, the Module is a central part of a system to manage, deploy, and interact with a set of smart contracts
@@ -51,7 +51,7 @@ abstract contract Module is IModule, ReentrancyGuard {
         bytes calldata code,
         bytes calldata deployParams,
         bytes32 salt,
-        bytes calldata data,
+        bytes calldata metadata,
         ResolverUID resolverUID
     )
         external
@@ -64,7 +64,7 @@ abstract contract Module is IModule, ReentrancyGuard {
 
         (moduleAddr,,) = code.deploy(deployParams, salt, msg.value);
 
-        _register(moduleAddr, msg.sender, resolver, resolverUID, data);
+        _register(moduleAddr, msg.sender, resolver, resolverUID, metadata);
         emit ModuleDeployed(moduleAddr, salt, ResolverUID.unwrap(resolverUID));
     }
 
@@ -75,7 +75,7 @@ abstract contract Module is IModule, ReentrancyGuard {
         bytes calldata code,
         bytes calldata deployParams,
         bytes32 salt,
-        bytes calldata data,
+        bytes calldata metadata,
         ResolverUID resolverUID
     )
         external
@@ -89,7 +89,7 @@ abstract contract Module is IModule, ReentrancyGuard {
         bytes32 senderSalt = keccak256(abi.encodePacked(salt, msg.sender));
         moduleAddr = CREATE3.deploy(senderSalt, creationCode, msg.value);
 
-        _register(moduleAddr, msg.sender, resolver, resolverUID, data);
+        _register(moduleAddr, msg.sender, resolver, resolverUID, metadata);
         emit ModuleDeployed(moduleAddr, senderSalt, ResolverUID.unwrap(resolverUID));
     }
 
@@ -99,7 +99,7 @@ abstract contract Module is IModule, ReentrancyGuard {
     function deployViaFactory(
         address factory,
         bytes calldata callOnFactory,
-        bytes calldata data,
+        bytes calldata metadata,
         ResolverUID resolverUID
     )
         external
@@ -116,7 +116,7 @@ abstract contract Module is IModule, ReentrancyGuard {
         if (moduleAddr == ZERO_ADDRESS) revert InvalidDeployment();
         if (_isContract(moduleAddr) != true) revert InvalidDeployment();
 
-        _register(moduleAddr, msg.sender, resolver, resolverUID, data);
+        _register(moduleAddr, msg.sender, resolver, resolverUID, metadata);
         emit ModuleDeployedExternalFactory(moduleAddr, factory, ResolverUID.unwrap(resolverUID));
     }
 
@@ -126,7 +126,7 @@ abstract contract Module is IModule, ReentrancyGuard {
     function register(
         ResolverUID resolverUID,
         address moduleAddress,
-        bytes calldata data
+        bytes calldata metadata
     )
         external
         nonReentrant
@@ -134,7 +134,13 @@ abstract contract Module is IModule, ReentrancyGuard {
         ResolverRecord memory resolver = getResolver(resolverUID);
         if (resolver.schemaOwner == ZERO_ADDRESS) revert InvalidResolver();
 
-        _register(moduleAddress, ZERO_ADDRESS, resolver, resolverUID, data);
+        _register({
+            moduleAddress: moduleAddress,
+            sender: ZERO_ADDRESS, // setting sender to address(0) since anyone can invoke this function
+            resolver: resolver,
+            resolverUID: resolverUID,
+            metadata: metadata
+        });
         emit ModuleRegistration(moduleAddress, ResolverUID.unwrap(resolverUID));
     }
 
@@ -145,14 +151,14 @@ abstract contract Module is IModule, ReentrancyGuard {
      * @param sender Address of the sender registering the module.
      * @param resolver Resolver record associated with the module.
      * @param resolverUID Unique ID of the resolver.
-     * @param data Data associated with the module.
+     * @param metadata Data associated with the module.
      */
     function _register(
         address moduleAddress,
         address sender,
         ResolverRecord memory resolver,
         ResolverUID resolverUID,
-        bytes calldata data
+        bytes calldata metadata
     )
         private
     {
@@ -164,12 +170,12 @@ abstract contract Module is IModule, ReentrancyGuard {
             revert InvalidDeployment();
         }
 
-        // Store module data in _modules mapping
+        // Store module metadata in _modules mapping
         ModuleRecord memory moduleRegistration = ModuleRecord({
             implementation: moduleAddress,
             resolverUID: resolverUID,
             sender: sender,
-            data: data
+            metadata: metadata
         });
 
         _resolveRegistration(resolver.resolver, moduleRegistration);

@@ -204,7 +204,7 @@ library RegistryTestLib {
             code: bytecode,
             deployParams: constructorArgs,
             salt: 0,
-            data: "",
+            metadata: "",
             resolverUID: resolverUID
         });
 
@@ -219,7 +219,7 @@ contract RegistryTestTools {
     function _setupInstance(string memory name) internal returns (RegistryInstance memory) {
         RegistryInstance memory instance;
 
-        Registry registry = new Registry(name, "0.0.1");
+        Registry registry = new Registry();
 
         instance = RegistryInstance(registry, name);
         return instance;

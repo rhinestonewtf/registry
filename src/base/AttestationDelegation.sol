@@ -18,7 +18,7 @@ import {
     ZERO_ADDRESS,
     AccessDenied,
     NotFound,
-    NO_EXPIRATION_TIME,
+    ZERO_TIMESTAMP,
     InvalidLength,
     uncheckedInc,
     InvalidSchema,
@@ -34,10 +34,8 @@ import {
 abstract contract AttestationDelegation is IAttestation, Attestation {
     /**
      * @dev Initializes the contract with a name and version for the attestation.
-     * @param name Name of the attestation.
-     * @param version Version of the attestation.
      */
-    constructor(string memory name, string memory version) Attestation(name, version) { }
+    constructor() { }
 
     /*//////////////////////////////////////////////////////////////
                             ATTEST
@@ -64,8 +62,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             delegatedRequest.schemaUID, resolverUID, data, delegatedRequest.attester, _time()
         );
 
-        uint256 usedValue =
-            _resolveAttestations(resolverUID, attestations, values, false, msg.value, true);
+        _resolveAttestations(resolverUID, attestations, values, false, msg.value, true);
     }
 
     /**
@@ -84,7 +81,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         // possible to send too much ETH anyway.
         uint256 availableValue = msg.value;
 
-        // this breaks the functionality to multiAttest on different modules right?
+        // Batched Revocations can only be done for a single resolver. See IAttestation.sol
         ModuleRecord memory moduleRecord = _getModule(multiDelegatedRequests[0].data[0].subject);
         // I think it would be much better to move this into the for loop so we can iterate over the requests.
         // Its possible that the MultiAttestationRequests is attesting different modules, that thus have different resolvers
@@ -122,7 +119,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             }
 
             // Process the current batch of attestations.
-            uint256 usedValue = _attest(
+            uint256 usedValue = _multiAttest(
                 multiDelegatedRequest.schemaUID,
                 moduleRecord.resolverUID,
                 data,
@@ -169,6 +166,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         uint256 availableValue = msg.value;
         uint256 length = multiDelegatedRequests.length;
 
+        // Batched Revocations can only be done for a single resolver. See IAttestation.sol
         ModuleRecord memory moduleRecord = _getModule(multiDelegatedRequests[0].data[0].subject);
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
