@@ -37,7 +37,7 @@ contract SimpleRegistryIntegrationTest is BaseTest {
     }
 
     function testGasRegistryCheck() public {
-        bytes32 attestationUid = instancel1.mockAttestation(defaultSchema1, auth1k, defaultModule1);
+        instancel1.mockAttestation(defaultSchema1, auth1k, defaultModule1);
         harness.query(defaultModule1);
     }
 }

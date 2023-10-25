@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { AttestationRecord } from "../Common.sol";
+import { AttestationRecord } from "../DataTypes.sol";
+import { IERC7484 } from "./IERC7484.sol";
 
 /**
  * Query interface allows for the verification of attestations
@@ -9,88 +10,92 @@ import { AttestationRecord } from "../Common.sol";
  *
  * @author zeroknots
  */
-
-interface IQuery {
-    error RevokedAttestation(bytes32 attestationId);
+interface IQuery is IERC7484 {
+    error RevokedAttestation(address attester);
     error AttestationNotFound();
     error InsufficientAttestations();
 
     /**
-     * Verify an attestation associated with a given module and authority.
+     * @notice Queries the attestation status of a specific attester for a given module.
      *
-     * @param plugin The address of the module to verify
-     * @param trustedEntity The address of the authority issuing the attestation
-     * @return listedAt timestamp  Not zero if the attesation is valid
-     * @return revokedAt timestamp not zero if the attestation was revoked.
+     * @dev If an attestation is not found or is revoked, the function will revert.
+     *
+     * @param module The address of the module being queried.
+     * @param attester The address of the attester whose status is being queried.
+     *
+     * @return attestedAt The time the attestation was listed. Returns 0 if not listed or expired.
      */
+    function check(address module, address attester) external view returns (uint256 attestedAt);
 
-    function check(
-        address plugin,
-        address trustedEntity
+    /**
+     * @notice Verifies the validity of attestations for a given module against a threshold.
+     *
+     * @dev This function will revert if the threshold is not met.
+     * @dev Will also revert if any of the attestations have been revoked (even if threshold is met).
+     *
+     * @param module The address of the module being verified.
+     * @param attesters The list of attesters whose attestations are being verified.
+     * @param threshold The minimum number of valid attestations required.
+     *
+     * @return attestedAtArray The list of attestation times associated with the given module and attesters.
+     */
+    function checkN(
+        address module,
+        address[] memory attesters,
+        uint256 threshold
     )
         external
         view
-        returns (uint48 listedAt, uint48 revokedAt);
+        returns (uint256[] memory attestedAtArray);
 
     /**
-     * Verify a set of attestations associated with a given module and a list of authorities.
-     * @dev Will revert if threshold is not met.
-     * @dev Will revert if any of the attestations have been revoked (even if threshold is met)!
+     * @notice Verifies attestations for a given module against a threshold, but does not check revocation.
      *
-     * @param module The address of the module to verify
-     * @param authorities The list of authorities issuing the attestations
-     * @param threshold The minimum number of valid attestations required
+     * @dev This function will revert if the threshold is not met.
+     * @dev Does not revert on revoked attestations but treats them the same as non-existent attestations.
+     *
+     * @param module The address of the module being verified.
+     * @param attesters The list of attesters whose attestations are being verified.
+     * @param threshold The minimum number of valid attestations required.
      */
-    function verify(
+    function checkNUnsafe(
         address module,
-        address[] memory authorities,
+        address[] memory attesters,
         uint256 threshold
     )
         external
-        view;
+        view
+        returns (uint256[] memory attestedAtArray);
 
     /**
-     * Verify a set of attestations associated with a given module and a list of authorities.
-     * @dev Will revert if threshold is not met.
-     * @dev Will NOT revert if any of the attestations have been revoked.
+     * @notice Retrieves the attestation record for a given module and attester.
      *
-     * @param module The address of the module to verify
-     * @param authorities The list of authorities issuing the attestations
-     * @param threshold The minimum number of valid attestations required
-     */
-    function verifyUnsafe(
-        address module,
-        address[] memory authorities,
-        uint256 threshold
-    )
-        external
-        view;
-
-    /**
-     * Find an attestation associated with a given module and authority.
+     * @param module The address of the module being queried.
+     * @param attester The address of the attester whose record is being retrieved.
      *
-     * @param module The address of the module
-     * @param authority The address of the authority issuing the attestation
-     * @return attestation The attestation associated with the module and authority
+     * @return attestation The attestation record associated with the given module and attester.
      */
     function findAttestation(
         address module,
-        address authority
+        address attester
     )
         external
         view
         returns (AttestationRecord memory attestation);
 
     /**
-     * Find an attestations associated with a given module and authority.
+     * Find an attestations associated with a given module and attester.
      *
-     * @param module The address of the module
-     * @param authority The address of the authority issuing the attestation
-     * @return attestations The attestations associated with the module and authority
+     * @notice Retrieves attestation records for a given module and a list of attesters.
+     *
+     * @param module The address of the module being queried.
+     * @param attesters The list of attesters whose records are being retrieved.
+     *
+     * @return attestations The list of attestation records associated with the given module and attesters.
      */
-    function findAttestation(
+    function findAttestations(
         address module,
-        address[] memory authority
+        address[] memory attesters
     )
         external
         view

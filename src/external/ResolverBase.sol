@@ -1,24 +1,16 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: AGPL-3.0-only
+pragma solidity ^0.8.19;
 
-pragma solidity 0.8.19;
-
-import {
-    AccessDenied,
-    NO_EXPIRATION_TIME,
-    NotFound,
-    uncheckedInc,
-    AttestationRecord,
-    ModuleRecord
-} from "../Common.sol";
-
-import { ISchemaResolver } from "./ISchemaResolver.sol";
+import { AccessDenied, ZERO_TIMESTAMP, NotFound, ZERO_ADDRESS, uncheckedInc } from "../Common.sol";
+import { AttestationRecord, ModuleRecord } from "../DataTypes.sol";
+import { IResolver } from "./IResolver.sol";
 
 /**
  * @title A base resolver contract
  *
  * @author zeroknots.eth
  */
-abstract contract SchemaResolver is ISchemaResolver {
+abstract contract ResolverBase is IResolver {
     error InsufficientValue();
     error NotPayable();
     error InvalidRS();
@@ -35,7 +27,7 @@ abstract contract SchemaResolver is ISchemaResolver {
      * @param rs The address of the global RS contract.
      */
     constructor(address rs) {
-        if (rs == address(0)) {
+        if (rs == ZERO_ADDRESS) {
             revert InvalidRS();
         }
         _rs = rs;
@@ -50,7 +42,7 @@ abstract contract SchemaResolver is ISchemaResolver {
     }
 
     /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
     function isPayable() public pure virtual returns (bool) {
         return false;
@@ -66,7 +58,7 @@ abstract contract SchemaResolver is ISchemaResolver {
     }
 
     /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
     function attest(AttestationRecord calldata attestation)
         external
@@ -78,7 +70,7 @@ abstract contract SchemaResolver is ISchemaResolver {
     }
 
     /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
     function moduleRegistration(ModuleRecord calldata module)
         external
@@ -90,24 +82,7 @@ abstract contract SchemaResolver is ISchemaResolver {
     }
 
     /**
-     * @inheritdoc ISchemaResolver
-     */
-
-    function propagation(
-        AttestationRecord calldata attestation,
-        address sender,
-        address to,
-        uint256 toChainId,
-        address moduleOnL2
-    )
-        external
-        payable
-        returns (bool)
-    {
-        return onPropagation(attestation, sender, to, toChainId, moduleOnL2);
-    }
-    /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
 
     function multiAttest(
@@ -149,7 +124,7 @@ abstract contract SchemaResolver is ISchemaResolver {
     }
 
     /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
     function revoke(AttestationRecord calldata attestation)
         external
@@ -161,7 +136,7 @@ abstract contract SchemaResolver is ISchemaResolver {
     }
 
     /**
-     * @inheritdoc ISchemaResolver
+     * @inheritdoc IResolver
      */
     function multiRevoke(
         AttestationRecord[] calldata attestations,
@@ -247,17 +222,6 @@ abstract contract SchemaResolver is ISchemaResolver {
         virtual
         returns (bool);
 
-    function onPropagation(
-        AttestationRecord calldata attestation,
-        address sender,
-        address to,
-        uint256 toChainId,
-        address moduleOnL2
-    )
-        internal
-        virtual
-        returns (bool);
-
     /**
      * @dev Ensures that only the RS contract can make this call.
      */
@@ -265,5 +229,13 @@ abstract contract SchemaResolver is ISchemaResolver {
         if (msg.sender != _rs) {
             revert AccessDenied();
         }
+    }
+
+    function supportsInterface(bytes4 interfaceID) external pure returns (bool) {
+        return interfaceID == this.supportsInterface.selector
+            || interfaceID == this.isPayable.selector || interfaceID == this.attest.selector
+            || interfaceID == this.moduleRegistration.selector
+            || interfaceID == this.multiAttest.selector || interfaceID == this.revoke.selector
+            || interfaceID == this.multiRevoke.selector;
     }
 }

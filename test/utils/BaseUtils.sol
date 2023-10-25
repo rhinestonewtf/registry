@@ -2,26 +2,17 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-/*//////////////////////////////////////////////////////////////
-                  Import Hashi Core Components
-//////////////////////////////////////////////////////////////*/
 
-import "hashi/Hashi.sol";
-import "hashi/GiriGiriBashi.sol";
-// Hashi's contract to dispatch messages to L2
-import "hashi/Yaho.sol";
-// Hashi's contract to receive messages from L1
-import "hashi/Yaru.sol";
-
-/*//////////////////////////////////////////////////////////////
-                      Hashi Bridge adapters
-//////////////////////////////////////////////////////////////*/
-import "hashi/adapters/AMB/AMBAdapter.sol";
-import "hashi/adapters/AMB/IAMB.sol";
-import "hashi/adapters/AMB/AMBMessageRelayer.sol";
-import "hashi/adapters/AMB/test/MockAMB.sol";
+import { SignatureCheckerLib } from "solady/src/utils/SignatureCheckerLib.sol";
 
 import "../../src/Registry.sol";
+import {
+    AttestationRequestData,
+    RevocationRequestData,
+    DelegatedAttestationRequest,
+    DelegatedRevocationRequest
+} from "../../src/base/AttestationDelegation.sol";
+import { ISchemaValidator, IResolver } from "../../src/interface/ISchema.sol";
 
 import "forge-std/console2.sol";
 
@@ -35,82 +26,64 @@ function getAddr(uint256 pk) pure returns (address) {
 struct RegistryInstance {
     Registry registry;
     string name;
-    Yaho yaho;
-    Yaru yaru;
-}
-
-struct HashiEnv {
-    Hashi hashi;
-    GiriGiriBashi giriGiriBashi;
-    Yaho yaho;
-    Yaru yaru;
-    MockAMB amb;
-    AMBMessageRelay ambMessageRelay;
-    AMBAdapter ambAdapter;
 }
 
 library RegistryTestLib {
     function mockAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        SchemaUID schemaUID,
         uint256 attesterKey,
         address moduleAddr
     )
         public
-        returns (bytes32 attestationUid)
     {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: moduleAddr,
             expirationTime: uint48(0),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 0
         });
-        return newAttestation(instance, schemaId, attesterKey, attData);
+        newAttestation(instance, schemaUID, attesterKey, attData);
     }
 
     function mockAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        SchemaUID schemaUID,
         uint256 attesterKey,
         AttestationRequestData memory attData
     )
         public
-        returns (bytes32 attestationUid)
     {
-        return newAttestation(instance, schemaId, attesterKey, attData);
+        newAttestation(instance, schemaUID, attesterKey, attData);
     }
 
     function newAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        SchemaUID schemaUID,
         uint256 attesterKey,
         AttestationRequestData memory attData
     )
         public
-        returns (bytes32 attestationUid)
     {
-        EIP712Signature memory signature = signAttestation(instance, schemaId, attesterKey, attData);
+        bytes memory signature = signAttestation(instance, schemaUID, attesterKey, attData);
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
-            schema: schemaId,
+            schemaUID: schemaUID,
             data: attData,
-            signature: abi.encode(signature),
+            signature: signature,
             attester: getAddr(attesterKey)
         });
-
-        attestationUid = instance.registry.attest(req);
+        instance.registry.attest(req);
     }
 
     function signAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        SchemaUID schemaId,
         uint256 attesterPk,
         AttestationRequestData memory attData
     )
         internal
         view
-        returns (EIP712Signature memory sig)
+        returns (bytes memory sig)
     {
         uint256 nonce = instance.registry.getNonce(getAddr(attesterPk)) + 1;
         bytes32 digest = instance.registry.getAttestationDigest({
@@ -120,20 +93,24 @@ library RegistryTestLib {
         });
 
         (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
-        sig = EIP712Signature({ v: v, r: r, s: s });
+        sig = abi.encodePacked(r, s, v);
+        require(
+            SignatureCheckerLib.isValidSignatureNow(getAddr(attesterPk), digest, sig) == true,
+            "Internal Error"
+        );
     }
 
     function signAttestation(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        SchemaUID schemaId,
         uint256 attesterPk,
         AttestationRequestData[] memory attData
     )
         internal
         view
-        returns (EIP712Signature[] memory sig)
+        returns (bytes[] memory sig)
     {
-        sig = new EIP712Signature[](attData.length);
+        sig = new bytes[](attData.length);
 
         uint256 nonce = instance.registry.getNonce(getAddr(attesterPk)) + 1;
 
@@ -145,50 +122,78 @@ library RegistryTestLib {
             });
 
             (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
-            sig[i] = EIP712Signature({ v: v, r: r, s: s });
+            sig[i] = abi.encodePacked(r, s, v);
+
+            require(
+                SignatureCheckerLib.isValidSignatureNow(getAddr(attesterPk), digest, sig[i]) == true,
+                "Internal Error"
+            );
         }
     }
 
     function revokeAttestation(
         RegistryInstance memory instance,
-        bytes32 attestationUid,
-        bytes32 schemaId,
+        address module,
+        SchemaUID schemaId,
         uint256 attesterPk
     )
         public
     {
         RevocationRequestData memory revoke =
-            RevocationRequestData({ uid: attestationUid, value: 0 });
+            RevocationRequestData({ subject: module, attester: getAddr(attesterPk), value: 0 });
 
         bytes32 digest =
             instance.registry.getRevocationDigest(revoke, schemaId, getAddr(attesterPk));
 
         (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
-        EIP712Signature memory signature = EIP712Signature({ v: v, r: r, s: s });
+        bytes memory signature = abi.encodePacked(r, s, v);
 
         DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
-            schema: schemaId,
+            schemaUID: schemaId,
             data: revoke,
-            signature: abi.encode(signature),
+            signature: signature,
             revoker: getAddr(attesterPk)
         });
         instance.registry.revoke(req);
     }
 
+    function registerSchemaAndResolver(
+        RegistryInstance memory instance,
+        string memory abiString,
+        ISchemaValidator validator,
+        IResolver resolver
+    )
+        internal
+        returns (SchemaUID schemaId, ResolverUID resolverId)
+    {
+        schemaId = registerSchema(instance, abiString, validator);
+        resolverId = registerResolver(instance, resolver);
+    }
+
     function registerSchema(
         RegistryInstance memory instance,
         string memory abiString,
-        ISchemaResolver resolver
+        ISchemaValidator validator
     )
         internal
-        returns (bytes32 schemaId)
+        returns (SchemaUID schemaId)
     {
-        return instance.registry.registerSchema(abiString, resolver);
+        return instance.registry.registerSchema(abiString, validator);
+    }
+
+    function registerResolver(
+        RegistryInstance memory instance,
+        IResolver resolver
+    )
+        internal
+        returns (ResolverUID resolverUID)
+    {
+        resolverUID = instance.registry.registerResolver(resolver);
     }
 
     function deployAndRegister(
         RegistryInstance memory instance,
-        bytes32 schemaId,
+        ResolverUID resolverUID,
         bytes memory bytecode,
         bytes memory constructorArgs
     )
@@ -199,63 +204,24 @@ library RegistryTestLib {
             code: bytecode,
             deployParams: constructorArgs,
             salt: 0,
-            data: "",
-            schemaId: schemaId
+            metadata: "",
+            resolverUID: resolverUID
         });
+
+        ModuleRecord memory moduleRecord = instance.registry.getModule(moduleAddr);
+        require(moduleRecord.resolverUID == resolverUID, "resolverUID mismatch");
     }
 }
 
 contract RegistryTestTools {
     using RegistryTestLib for RegistryInstance;
 
-    function _setupHashi(address hashiSigner) internal returns (HashiEnv memory hashiEnv) {
-        Hashi hashi = new Hashi();
-        GiriGiriBashi giriGiriBashi = new GiriGiriBashi(
-            hashiSigner,
-            address(hashi)
-        );
-        Yaho yaho = new Yaho();
-        MockAMB amb = new MockAMB();
-        Yaru yaru = new Yaru(
-            IHashi(address(hashi)),
-            address(yaho),
-            block.chainid
-        );
-        AMBMessageRelay ambMessageRelay = new AMBMessageRelay(
-            IAMB(address(amb)),
-            yaho
-        );
-        AMBAdapter ambAdapter = new AMBAdapter(
-            IAMB(address(amb)),
-            address(ambMessageRelay),
-            bytes32(block.chainid)
-        );
-
-        hashiEnv = HashiEnv({
-            hashi: hashi,
-            giriGiriBashi: giriGiriBashi,
-            yaho: yaho,
-            yaru: yaru,
-            amb: amb,
-            ambMessageRelay: ambMessageRelay,
-            ambAdapter: ambAdapter
-        });
-    }
-
-    function _setupInstance(
-        string memory name,
-        Yaho yaho,
-        Yaru yaru,
-        address l1Registry
-    )
-        internal
-        returns (RegistryInstance memory)
-    {
+    function _setupInstance(string memory name) internal returns (RegistryInstance memory) {
         RegistryInstance memory instance;
 
-        Registry registry = new Registry(yaho, yaru, l1Registry, name, "0.0.1");
+        Registry registry = new Registry();
 
-        instance = RegistryInstance(registry, name, yaho, yaru);
+        instance = RegistryInstance(registry, name);
         return instance;
     }
 }

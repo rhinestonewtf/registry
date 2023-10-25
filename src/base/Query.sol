@@ -1,165 +1,184 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
+import { IQuery } from "../interface/IQuery.sol";
 import {
-    AccessDenied, NotFound, NO_EXPIRATION_TIME, InvalidLength, uncheckedInc
-} from "../Common.sol";
-import "../interface/IQuery.sol";
-import "./Attestation.sol";
+    AttestationRecord,
+    SchemaUID,
+    SchemaRecord,
+    AttestationResolve,
+    Attestation,
+    ResolverUID,
+    ResolverRecord,
+    ModuleRecord
+} from "./Attestation.sol";
 
-import "forge-std/console2.sol";
+import { AccessDenied, NotFound, ZERO_TIMESTAMP, InvalidLength, uncheckedInc } from "../Common.sol";
 
-/// @title RSRegistry
-/// @author zeroknots
-/// @notice The global attestation registry.
+/**
+ * @title Query
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
+ * Implements EIP-7484 to query attestations stored in the registry.
+ * @dev This contract is abstract and provides utility functions to query attestations.
+ */
 abstract contract Query is IQuery {
     /**
      * @inheritdoc IQuery
      */
     function check(
         address module,
-        address authority
+        address attester
     )
         public
         view
-        returns (uint48 listedAt, uint48 revokedAt)
+        override(IQuery)
+        returns (uint256 attestedAt)
     {
-        AttestationRecord storage attestation = _findAttestation(module, authority);
+        AttestationRecord storage attestation = _getAttestation(module, attester);
 
-        uint48 expirationTime = attestation.expirationTime;
-        listedAt = expirationTime != 0 && expirationTime < block.timestamp ? 0 : attestation.time;
-        if (listedAt == 0) revert AttestationNotFound();
+        uint256 expirationTime = attestation.expirationTime;
+        attestedAt = expirationTime != ZERO_TIMESTAMP && expirationTime < block.timestamp
+            ? ZERO_TIMESTAMP
+            : attestation.time;
+        if (attestedAt == ZERO_TIMESTAMP) revert AttestationNotFound();
 
-        revokedAt = attestation.revocationTime;
-        if (revokedAt != 0) revert RevokedAttestation(attestation.uid);
+        if (attestation.revocationTime != ZERO_TIMESTAMP) {
+            revert RevokedAttestation(attestation.attester);
+        }
     }
 
     /**
      * @inheritdoc IQuery
      */
-    function verify(
+    function checkN(
         address module,
-        address[] calldata authorities,
+        address[] calldata attesters,
         uint256 threshold
     )
         external
         view
+        override(IQuery)
+        returns (uint256[] memory attestedAtArray)
     {
-        uint256 authoritiesLength = authorities.length;
-        if (authoritiesLength < threshold || threshold == 0) {
-            threshold = authoritiesLength;
+        uint256 attestersLength = attesters.length;
+        if (attestersLength < threshold || threshold == 0) {
+            threshold = attestersLength;
         }
 
         uint256 timeNow = block.timestamp;
+        attestedAtArray = new uint256[](attestersLength);
 
-        for (uint256 i; i < authoritiesLength; i = uncheckedInc(i)) {
-            AttestationRecord storage attestation = _findAttestation(module, authorities[i]);
-
-            if (attestation.revocationTime != 0) {
-                revert RevokedAttestation(attestation.uid);
+        for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
+            AttestationRecord storage attestation =
+                _getAttestation({ moduleAddress: module, attester: attesters[i] });
+            if (attestation.revocationTime != ZERO_TIMESTAMP) {
+                revert RevokedAttestation(attestation.attester);
             }
 
-            uint48 expirationTime = attestation.expirationTime;
-            if (expirationTime != 0 && expirationTime < timeNow) {
+            uint256 expirationTime = attestation.expirationTime;
+            if (expirationTime != ZERO_TIMESTAMP && expirationTime < timeNow) {
                 revert AttestationNotFound();
             }
 
-            if (attestation.time == 0) continue;
+            uint256 attestationTime = attestation.time;
+            attestedAtArray[i] = attestationTime;
 
+            if (attestationTime == ZERO_TIMESTAMP) continue;
             if (threshold != 0) --threshold;
         }
-        if (threshold == 0) return;
+        if (threshold == 0) return attestedAtArray;
         revert InsufficientAttestations();
     }
 
     /**
      * @inheritdoc IQuery
      */
-    function verifyUnsafe(
+    function checkNUnsafe(
         address module,
-        address[] calldata authorities,
+        address[] calldata attesters,
         uint256 threshold
     )
         external
         view
+        returns (uint256[] memory attestedAtArray)
     {
-        uint256 authoritiesLength = authorities.length;
-        if (authoritiesLength < threshold || threshold == 0) {
-            threshold = authoritiesLength;
+        uint256 attestersLength = attesters.length;
+        if (attestersLength < threshold || threshold == 0) {
+            threshold = attestersLength;
         }
 
         uint256 timeNow = block.timestamp;
+        attestedAtArray = new uint256[](attestersLength);
 
-        for (uint256 i; i < authoritiesLength; i = uncheckedInc(i)) {
-            if (threshold == 0) return;
-            AttestationRecord storage attestation = _findAttestation(module, authorities[i]);
+        for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
+            AttestationRecord storage attestation =
+                _getAttestation({ moduleAddress: module, attester: attesters[i] });
 
-            if (attestation.revocationTime != 0) continue;
+            attestedAtArray[i] = attestation.time;
 
-            uint48 expirationTime = attestation.expirationTime;
-            uint48 listedAt = expirationTime != 0 && expirationTime < timeNow ? 0 : attestation.time;
-            if (listedAt == 0) continue;
+            if (attestation.revocationTime != ZERO_TIMESTAMP) continue;
 
-            --threshold;
+            uint256 expirationTime = attestation.expirationTime;
+            uint256 attestedAt = expirationTime != ZERO_TIMESTAMP && expirationTime < timeNow
+                ? ZERO_TIMESTAMP
+                : attestation.time;
+            attestedAtArray[i] = attestedAt;
+            if (attestedAt == ZERO_TIMESTAMP) continue;
+            if (threshold != 0) --threshold;
         }
+        if (threshold == 0) return attestedAtArray;
         revert InsufficientAttestations();
     }
 
-    function _findAttestation(
-        address module,
-        address authority
-    )
-        internal
-        view
-        returns (AttestationRecord storage attestation)
-    {
-        bytes32 attestionId = _getAttestation(module, authority);
-        attestation = _getAttestation(attestionId);
-    }
-
     /**
      * @inheritdoc IQuery
      */
     function findAttestation(
         address module,
-        address authority
+        address attesters
     )
         public
         view
+        override(IQuery)
         returns (AttestationRecord memory attestation)
     {
-        bytes32 attestionId = _getAttestation(module, authority);
-        attestation = _getAttestation(attestionId);
+        attestation = _getAttestation(module, attesters);
     }
 
     /**
      * @inheritdoc IQuery
      */
-    function findAttestation(
+    function findAttestations(
         address module,
-        address[] memory authorities
+        address[] memory attesters
     )
         external
         view
+        override(IQuery)
         returns (AttestationRecord[] memory attestations)
     {
-        uint256 authoritiesLength = authorities.length;
-        attestations = new AttestationRecord[](authoritiesLength);
-        for (uint256 i; i < authoritiesLength; i = uncheckedInc(i)) {
-            attestations[i] = findAttestation(module, authorities[i]);
+        uint256 attesterssLength = attesters.length;
+        attestations = new AttestationRecord[](attesterssLength);
+        for (uint256 i; i < attesterssLength; i = uncheckedInc(i)) {
+            attestations[i] = findAttestation(module, attesters[i]);
         }
     }
 
-    function _getAttestation(
-        address module,
-        address authority
-    )
-        internal
-        view
-        virtual
-        returns (bytes32);
+    /**
+     * @notice Internal function to retrieve an attestation record.
+     *
+     * @dev This is a virtual function and is meant to be overridden in derived contracts.
+     *
+     * @param moduleAddress The address of the module for which the attestation is retrieved.
+     * @param attester The address of the attester whose record is being retrieved.
+     *
+     * @return Attestation record associated with the given module and attester.
+     */
 
-    function _getAttestation(bytes32 attestationId)
+    function _getAttestation(
+        address moduleAddress,
+        address attester
+    )
         internal
         view
         virtual

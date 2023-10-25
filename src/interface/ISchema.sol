@@ -1,23 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+pragma solidity ^0.8.19;
 
-pragma solidity ^0.8.0;
-
-import { ISchemaResolver } from "../resolver/ISchemaResolver.sol";
-
-/**
- * @title A struct representing a record for a submitted schema.
- * Inspired by schema definitions of EAS (Ethereum Attestation Service)
- */
-struct SchemaRecord {
-    bytes32 uid; // The unique identifier of the schema.
-    ISchemaResolver resolver; // Optional schema resolver.
-    string schema; // Custom specification of the schema (e.g., an ABI).
-    address schemaOwner; // The address of the account used to register the schema.
-    address[] bridges; // bridges that must be used for L2 propagation
-}
+import { IResolver } from "../external/IResolver.sol";
+import { ISchemaValidator } from "../external/ISchemaValidator.sol";
+import { SchemaUID, SchemaRecord, ResolverUID, ResolverRecord } from "../DataTypes.sol";
+import { IRegistry } from "./IRegistry.sol";
 
 /**
- * @title The global schema registry interface.
+ * @title The global schema interface.
  */
 interface ISchema {
     // Error to throw if the SchemaID already exists
@@ -29,7 +19,9 @@ interface ISchema {
      * @param uid The schema UID.
      * @param registerer The address of the account used to register the schema.
      */
-    event Registered(bytes32 indexed uid, address registerer);
+    event SchemaRegistered(SchemaUID indexed uid, address registerer);
+
+    event SchemaResolverRegistered(ResolverUID indexed uid, address registerer);
 
     /**
      * @dev Emitted when a new schema resolver
@@ -37,54 +29,89 @@ interface ISchema {
      * @param uid The schema UID.
      * @param resolver The address of the resolver.
      */
-    event NewResolver(bytes32 indexed uid, address resolver);
+    event NewSchemaResolver(ResolverUID indexed uid, address resolver);
 
     /**
-     * @dev Submits and reserves a new schema
+     * @notice Registers a new schema.
      *
-     * @param schema The schema data schema.
-     * @param resolver An optional schema resolver.
+     * @dev Ensures that the schema does not already exist and calculates a unique ID for it.
      *
-     * @return The UID of the new schema.
+     * @param schema The schema as a string representation.
+     * @param validator OPTIONAL Contract address that validates this schema.
+     *     If not provided, all attestations made against this schema is assumed to be valid.
+     *
+     * @return uid The unique ID of the registered schema.
      */
     function registerSchema(
         string calldata schema,
-        ISchemaResolver resolver
+        ISchemaValidator validator
     )
         external
-        returns (bytes32);
+        returns (SchemaUID);
 
     /**
-     * @dev Sets the bridges for a schema
+     * @notice Registers a resolver and associates it with the caller.
+     * @dev This function allows the registration of a resolver by computing a unique ID and associating it with the owner.
+     *      Emits a SchemaResolverRegistered event upon successful registration.
      *
-     * @param uid The schema UID.
-     * @param bridges An array of bridge addresses.
+     * @param _resolver Address of the IResolver to be registered.
+     *
+     * @return uid The unique ID (ResolverUID) associated with the registered resolver.
      */
-    function setBridges(bytes32 uid, address[] calldata bridges) external;
+
+    function registerResolver(IResolver _resolver) external returns (ResolverUID);
 
     /**
-     * @dev Returns the bridges for a schema
+     * @notice Updates the resolver for a given UID.
      *
-     * @param uid The schema UID.
+     * @dev Can only be called by the owner of the schema.
      *
-     * @return An array of bridge addresses.
+     * @param uid The UID of the schema to update.
+     * @param resolver The new resolver interface.
      */
-    function getBridges(bytes32 uid) external view returns (address[] memory);
+    function setResolver(ResolverUID uid, IResolver resolver) external;
 
     /**
-     * @dev Sets a resolver for a schema
-     *
-     * @param uid The schema UID.
-     * @param resolver The new resolver address.
-     */
-    function setResolver(bytes32 uid, ISchemaResolver resolver) external;
-
-    /**
-     * @dev Returns an existing schema by UID
+     * @notice Retrieves the schema record for a given UID.
      *
      * @param uid The UID of the schema to retrieve.
      *
-     * @return The schema record.
+     * @return The schema record associated with the given UID.
      */
-    function getSchema(bytes32 uid) external view returns (SchemaRecord memory);
+    function getSchema(SchemaUID uid) external view returns (SchemaRecord memory);
+
+    /**
+     * @notice Retrieves the resolver record for a given UID.
+     *
+     * @param uid The UID of the resolver to retrieve.
+     *
+     * @return The resolver record associated with the given UID.
+     */
+    function getResolver(ResolverUID uid) external view returns (ResolverRecord memory);
+}
+
+library SchemaLib {
+    /**
+     * @dev Calculates a UID for a given schema.
+     *
+     * @param schemaRecord The input schema.
+     *
+     * @return schema UID.
+     */
+    function getUID(SchemaRecord memory schemaRecord) internal pure returns (SchemaUID) {
+        return SchemaUID.wrap(
+            keccak256(abi.encodePacked(schemaRecord.schema, address(schemaRecord.validator)))
+        );
+    }
+
+    /**
+     * @dev Calculates a UID for a given resolver.
+     *
+     * @param resolver The input schema.
+     *
+     * @return ResolverUID.
+     */
+    function getUID(ResolverRecord memory resolver) internal pure returns (ResolverUID) {
+        return ResolverUID.wrap(keccak256(abi.encodePacked(resolver.resolver)));
+    }
 }

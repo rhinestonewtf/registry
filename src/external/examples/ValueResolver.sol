@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "../SchemaResolver.sol";
-import "../../Common.sol";
+import { ResolverBase, AttestationRecord, ModuleRecord } from "../ResolverBase.sol";
 
-/// @title ValueResolver
-/// @author zeroknots
-/// @notice A resolver for value (ETH) attestations.
-
-contract ValueResolver is SchemaResolver {
+/**
+ * @title ValueResolver
+ * @author zeroknots
+ * @notice A resolver for value (ETH) attestations.
+ */
+contract ValueResolver is ResolverBase {
     uint256 immutable fee = 10;
 
-    constructor(address rs) SchemaResolver(rs) { }
+    constructor(address rs) ResolverBase(rs) { }
 
     function onAttest(
         AttestationRecord calldata attestation,
@@ -44,20 +44,6 @@ contract ValueResolver is SchemaResolver {
     function onModuleRegistration(
         ModuleRecord calldata module,
         uint256 value
-    )
-        internal
-        override
-        returns (bool)
-    {
-        return true;
-    }
-
-    function onPropagation(
-        AttestationRecord calldata attestation,
-        address sender,
-        address to,
-        uint256 toChainId,
-        address moduleOnL2
     )
         internal
         override

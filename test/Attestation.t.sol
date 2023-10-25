@@ -8,6 +8,14 @@ import "./utils/ERC1271Attester.sol";
 
 import "./utils/BaseTest.t.sol";
 
+struct SampleAttestation {
+    address[] dependencies;
+    string comment;
+    string url;
+    bytes32 hash;
+    uint256 severity;
+}
+
 /// @title AttestationTest
 /// @author zeroknots
 contract AttestationTest is BaseTest {
@@ -17,66 +25,59 @@ contract AttestationTest is BaseTest {
         super.setUp();
     }
 
-    function testCreateAttestation() public returns (bytes32 attestationUid) {
-        attestationUid = instancel1.mockAttestation(defaultSchema1, auth1k, defaultModule1);
-        assertTrue(attestationUid != bytes32(0));
+    function testCreateAttestation() public {
+        instancel1.mockAttestation(defaultSchema1, auth1k, defaultModule1);
+    }
+
+    function testCreateLargeAttestation() public {
+        SampleAttestation memory sample = SampleAttestation({
+            dependencies: new address[](20),
+            comment: "This is a test!!",
+            url: "https://www.rhinestone.wtf",
+            hash: bytes32(0),
+            severity: 0
+        });
+        bytes memory data = abi.encode(sample);
+
+        console2.log(data.length);
+
+        AttestationRequestData memory attData = AttestationRequestData({
+            subject: defaultModule1,
+            expirationTime: uint48(0),
+            data: data,
+            value: 0
+        });
+
+        instancel1.newAttestation(defaultSchema1, auth1k, attData);
     }
 
     function testRevokeAttestation() public {
-        bytes32 attestationUid = testCreateAttestation();
-        instancel1.revokeAttestation(attestationUid, defaultSchema1, auth1k);
+        testCreateAttestation();
+        instancel1.revokeAttestation(defaultModule1, defaultSchema1, auth1k);
         AttestationRecord memory attestation =
             instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
         assertTrue(attestation.revocationTime != 0);
     }
 
-    function testCreateChainedAttestation()
-        public
-        returns (bytes32 attestationUid1, bytes32 attestationUid2)
-    {
-        attestationUid1 = testCreateAttestation();
-
-        AttestationRequestData memory chainedAttestation = AttestationRequestData({
+    function testReAttest() public {
+        AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
-            propagateable: true,
-            refUID: attestationUid1, //  <-- here is the reference
-            data: abi.encode(true),
+            data: "123",
             value: 0
         });
+        instancel1.newAttestation(defaultSchema1, auth1k, attData);
+        instancel1.revokeAttestation(defaultModule1, defaultSchema1, auth1k);
+        vm.warp(400);
 
-        attestationUid2 = instancel1.newAttestation(defaultSchema1, auth2k, chainedAttestation);
+        attData.data = "456";
+        uint48 time = uint48(block.timestamp);
+        instancel1.newAttestation(defaultSchema1, auth1k, attData);
 
-        // revert if other schema is supplied
-        vm.expectRevert(abi.encodeWithSelector(Attestation.InvalidAttestation.selector));
-        instancel1.newAttestation(defaultSchema2, auth2k, chainedAttestation);
-
-        AttestationRequestData memory referencingOtherModule = AttestationRequestData({
-            subject: defaultModule2, // <-- here is the reference of the wrong module
-            expirationTime: uint48(0),
-            propagateable: true,
-            refUID: attestationUid1, //  <-- here is the reference
-            data: abi.encode(true),
-            value: 0
-        });
-
-        vm.expectRevert(abi.encodeWithSelector(Attestation.InvalidAttestation.selector));
-        instancel1.newAttestation(defaultSchema1, auth2k, referencingOtherModule);
-
-        // this should work
-        instancel1.newAttestation(defaultSchema2, auth2k, referencingOtherModule);
-    }
-
-    function testBrokenChainAttestation()
-        public
-        returns (bytes32 revokedAttestation, bytes32 chainedAttestation)
-    {
-        (bytes32 attestationUid1, bytes32 attestationUid2) = testCreateChainedAttestation();
-        instancel1.revokeAttestation(attestationUid1, defaultSchema1, auth1k);
         AttestationRecord memory attestation =
             instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
-        assertTrue(attestation.revocationTime != 0);
-        return (attestationUid1, attestationUid2);
+
+        assertTrue(attestation.time == time);
     }
 
     function testAttestationNonExistingSchema() public {
@@ -90,18 +91,16 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 0
         });
 
-        EIP712Signature memory sig = EIP712Signature({ v: 27, r: "", s: "" });
+        bytes memory sig = EXPECTED_SIGNATURE;
 
         DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
-            schema: defaultSchema1,
+            schemaUID: defaultSchema1,
             data: attData,
-            signature: abi.encode(sig),
+            signature: sig,
             attester: address(attester)
         });
 
@@ -110,14 +109,12 @@ contract AttestationTest is BaseTest {
 
     function testMultiAttest() public {
         address anotherModule = instancel1.deployAndRegister(
-            defaultSchema1, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
+            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
         AttestationRequestData memory attData1 = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 0
         });
@@ -125,8 +122,6 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData2 = AttestationRequestData({
             subject: anotherModule,
             expirationTime: uint48(0),
-            propagateable: true,
-            refUID: "",
             data: abi.encode(true),
             value: 0
         });
@@ -137,19 +132,14 @@ contract AttestationTest is BaseTest {
         attArray[0] = attData1;
         attArray[1] = attData2;
 
-        EIP712Signature[] memory sigs = instancel1.signAttestation(defaultSchema1, auth1k, attArray);
-
-        bytes[] memory sigsBytes = new bytes[](sigs.length);
-        for (uint256 index = 0; index < sigs.length; index++) {
-            sigsBytes[index] = abi.encode(sigs[index]);
-        }
+        bytes[] memory sigs = instancel1.signAttestation(defaultSchema1, auth1k, attArray);
 
         MultiDelegatedAttestationRequest[] memory reqs = new MultiDelegatedAttestationRequest[](1);
         MultiDelegatedAttestationRequest memory req1 = MultiDelegatedAttestationRequest({
-            schema: defaultSchema1,
+            schemaUID: defaultSchema1,
             data: attArray,
             attester: vm.addr(auth1k),
-            signatures: sigsBytes
+            signatures: sigs
         });
         reqs[0] = req1;
 

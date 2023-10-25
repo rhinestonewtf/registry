@@ -1,61 +1,56 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+pragma solidity ^0.8.19;
 
-pragma solidity 0.8.19;
+import { EIP712 } from "solady/src/utils/EIP712.sol";
 
-import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
-import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import { IERC1271 } from "@openzeppelin/contracts/interfaces/IERC1271.sol";
+import { SignatureCheckerLib } from "solady/src/utils/SignatureCheckerLib.sol";
 
-import "forge-std/console2.sol";
-
-// prettier-ignore
+import { InvalidSignature } from "../Common.sol";
 import {
-    AttestationRequest,
     AttestationRequestData,
+    SchemaUID,
     DelegatedAttestationRequest,
-    DelegatedRevocationRequest,
-    RevocationRequest,
-    RevocationRequestData
-} from "../interface/IAttestation.sol";
-
-import { EIP712Signature, InvalidSignature } from "../Common.sol";
+    RevocationRequestData,
+    DelegatedRevocationRequest
+} from "../DataTypes.sol";
 
 /**
- * @title EIP712 typed signatures verifier for EAS delegated attestations.
+ * @title Singature Verifier. If provided signed is a contract, this function will fallback to ERC1271
  *
- * @author zeroknots.eth
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
 abstract contract EIP712Verifier is EIP712 {
     // The hash of the data type used to relay calls to the attest function. It's the value of
     bytes32 private constant ATTEST_TYPEHASH =
-        keccak256("Attest(bytes32,address,uint48,bool,bytes32,bytes32,uint256)");
+        keccak256("AttestationRequestData(address,uint48,uint256,bytes)");
 
     // The hash of the data type used to relay calls to the revoke function. It's the value of
-    bytes32 private constant REVOKE_TYPEHASH = keccak256("Revoke(bytes32,bytes32,uint256)");
-
-    // bytes4(keccak256("isValidSignature(bytes32,bytes)")
-    bytes4 private constant ERC1271_RETURN_VALID_SIGNATURE = 0x1626ba7e;
-
-    // The user readable name of the signing domain.
-    string private _name;
+    bytes32 private constant REVOKE_TYPEHASH =
+        keccak256("RevocationRequestData(address,address,uint256)");
 
     // Replay protection nonces.
     mapping(address => uint256) private _nonces;
 
     /**
      * @dev Creates a new EIP712Verifier instance.
-     *
-     * @param version The current major version of the signing domain
      */
-    constructor(string memory name, string memory version) EIP712(name, version) {
-        _name = name;
+    constructor() { }
+
+    function _domainNameAndVersion()
+        internal
+        pure
+        override
+        returns (string memory name, string memory version)
+    {
+        name = "Registry";
+        version = "0.2";
     }
 
     /**
      * @dev Returns the domain separator used in the encoding of the signatures for attest, and revoke.
      */
     function getDomainSeparator() public view returns (bytes32) {
-        return _domainSeparatorV4();
+        return _domainSeparator();
     }
 
     /**
@@ -84,15 +79,17 @@ abstract contract EIP712Verifier is EIP712 {
     }
 
     /**
-     * Returns the EIP712 name.
+     * @dev Gets the attestation digest
+     *
+     * @param attData The data in the attestation request.
+     * @param schemaUid The UID of the schema.
+     * @param nonce The nonce of the attestation request.
+     *
+     * @return digest The attestation digest.
      */
-    function getName() public view returns (string memory) {
-        return _name;
-    }
-
     function getAttestationDigest(
         AttestationRequestData memory attData,
-        bytes32 schemaUid,
+        SchemaUID schemaUid,
         uint256 nonce
     )
         public
@@ -102,9 +99,18 @@ abstract contract EIP712Verifier is EIP712 {
         digest = _attestationDigest(attData, schemaUid, nonce);
     }
 
+    /**
+     * @dev Gets the attestation digest
+     *
+     * @param attData The data in the attestation request.
+     * @param schemaUid The UID of the schema.
+     * @param attester The address of the attester.
+     *
+     * @return digest The attestation digest.
+     */
     function getAttestationDigest(
         AttestationRequestData memory attData,
-        bytes32 schemaUid,
+        SchemaUID schemaUid,
         address attester
     )
         public
@@ -115,23 +121,32 @@ abstract contract EIP712Verifier is EIP712 {
         digest = _attestationDigest(attData, schemaUid, nonce);
     }
 
+    /**
+     * @dev Gets the attestation digest
+     *
+     * @param data The data in the attestation request.
+     * @param schemaUid The UID of the schema.
+     * @param nonce  The nonce of the attestation request.
+     *
+     * @return digest The attestation digest.
+     */
     function _attestationDigest(
         AttestationRequestData memory data,
-        bytes32 schemaUid,
+        SchemaUID schemaUid,
         uint256 nonce
     )
         private
         view
         returns (bytes32 digest)
     {
-        digest = _hashTypedDataV4(
+        digest = _hashTypedData(
             keccak256(
                 abi.encode(
                     ATTEST_TYPEHASH,
+                    block.chainid,
                     schemaUid,
                     data.subject,
                     data.expirationTime,
-                    data.refUID,
                     keccak256(data.data),
                     nonce
                 )
@@ -148,19 +163,36 @@ abstract contract EIP712Verifier is EIP712 {
         AttestationRequestData memory data = request.data;
 
         uint256 nonce = _newNonce(request.attester);
-        bytes32 digest = _attestationDigest(data, request.schema, nonce);
-        _verifySignature(digest, request.signature, request.attester);
+        bytes32 digest = _attestationDigest(data, request.schemaUID, nonce);
+        bool valid =
+            SignatureCheckerLib.isValidSignatureNow(request.attester, digest, request.signature);
+        if (!valid) revert InvalidSignature();
     }
 
+    /**
+     * @dev Gets a new sequential nonce
+     *
+     * @param account The requested account.
+     *
+     * @return nonce The new nonce.
+     */
     function _newNonce(address account) private returns (uint256 nonce) {
         unchecked {
             nonce = ++_nonces[account];
         }
     }
 
+    /**
+     * @dev Gets the revocation digest
+     * @param revData The data in the revocation request.
+     * @param schemaUid The UID of the schema.
+     * @param revoker  The address of the revoker.
+     *
+     * @return digest The revocation digest.
+     */
     function getRevocationDigest(
         RevocationRequestData memory revData,
-        bytes32 schemaUid,
+        SchemaUID schemaUid,
         address revoker
     )
         public
@@ -168,20 +200,32 @@ abstract contract EIP712Verifier is EIP712 {
         returns (bytes32 digest)
     {
         uint256 nonce = getNonce(revoker) + 1;
-        digest = _revocationDigest(schemaUid, revData.uid, nonce);
+        digest = _revocationDigest(schemaUid, revData.subject, revData.attester, nonce);
     }
 
+    /**
+     * @dev Gets the revocation digest
+     * @param schemaUid The UID of the schema.
+     * @param subject The address of the subject.
+     * @param nonce  The nonce of the attestation request.
+     *
+     * @return digest The revocation digest.
+     */
     function _revocationDigest(
-        bytes32 schemaUid,
-        bytes32 revocationId,
+        SchemaUID schemaUid,
+        address subject,
+        address attester,
         uint256 nonce
     )
         private
         view
         returns (bytes32 digest)
     {
-        digest =
-            _hashTypedDataV4(keccak256(abi.encode(REVOKE_TYPEHASH, schemaUid, revocationId, nonce)));
+        digest = _hashTypedData(
+            keccak256(
+                abi.encode(REVOKE_TYPEHASH, block.chainid, schemaUid, subject, attester, nonce)
+            )
+        );
     }
 
     /**
@@ -193,42 +237,9 @@ abstract contract EIP712Verifier is EIP712 {
         RevocationRequestData memory data = request.data;
 
         uint256 nonce = _newNonce(request.revoker);
-        bytes32 digest = _revocationDigest(request.schema, data.uid, nonce);
-        _verifySignature(digest, request.signature, request.revoker);
-    }
-
-    function _verifySignature(
-        bytes32 digest,
-        bytes memory signature,
-        address signer
-    )
-        internal
-        view
-    {
-        // check if signer is EOA or contract
-        if (_isContract(signer)) {
-            if (
-                IERC1271(signer).isValidSignature(digest, signature)
-                    != ERC1271_RETURN_VALID_SIGNATURE
-            ) {
-                revert InvalidSignature();
-            }
-        } else {
-            EIP712Signature memory eip712Signature = abi.decode(signature, (EIP712Signature));
-            if (
-                ECDSA.recover(digest, eip712Signature.v, eip712Signature.r, eip712Signature.s)
-                    != signer
-            ) {
-                revert InvalidSignature();
-            }
-        }
-    }
-
-    function _isContract(address account) internal view returns (bool) {
-        uint256 size;
-        assembly {
-            size := extcodesize(account)
-        }
-        return size > 0;
+        bytes32 digest = _revocationDigest(request.schemaUID, data.subject, data.attester, nonce);
+        bool valid =
+            SignatureCheckerLib.isValidSignatureNow(request.revoker, digest, request.signature);
+        if (!valid) revert InvalidSignature();
     }
 }
