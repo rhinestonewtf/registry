@@ -107,8 +107,8 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
 
             MultiDelegatedAttestationRequest calldata multiDelegatedRequest =
                 multiDelegatedRequests[i];
-            AttestationRequestData[] calldata data = multiDelegatedRequest.data;
-            uint256 dataLength = data.length;
+            AttestationRequestData[] calldata attestationRequestDatas = multiDelegatedRequest.data;
+            uint256 dataLength = attestationRequestDatas.length;
 
             // Ensure that no inputs are missing.
             if (dataLength == 0 || dataLength != multiDelegatedRequest.signatures.length) {
@@ -120,7 +120,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
                 _verifyAttest(
                     DelegatedAttestationRequest({
                         schemaUID: multiDelegatedRequest.schemaUID,
-                        data: data[j],
+                        data: attestationRequestDatas[j],
                         signature: multiDelegatedRequest.signatures[j],
                         attester: multiDelegatedRequest.attester
                     })
@@ -131,7 +131,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             uint256 usedValue = _multiAttest({
                 schemaUID: multiDelegatedRequest.schemaUID,
                 resolverUID: moduleRecord.resolverUID,
-                attestationRequestDatas: data,
+                attestationRequestDatas: attestationRequestDatas,
                 attester: multiDelegatedRequest.attester,
                 availableValue: availableValue,
                 isLastAttestation: last
@@ -160,7 +160,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         _multiRevoke({
             schemaUID: request.schemaUID,
             resolverUID: moduleRecord.resolverUID,
-            data: data,
+            revocationRequestDatas: data,
             revoker: request.revoker,
             availableValue: msg.value,
             isLastRevocation: true
@@ -196,8 +196,8 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             }
 
             MultiDelegatedRevocationRequest memory multiDelegatedRequest = multiDelegatedRequests[i];
-            RevocationRequestData[] memory data = multiDelegatedRequest.data;
-            uint256 dataLength = data.length;
+            RevocationRequestData[] memory revocationRequestDatas = multiDelegatedRequest.data;
+            uint256 dataLength = revocationRequestDatas.length;
 
             // Ensure that no inputs are missing.
             if (dataLength == 0 || dataLength != multiDelegatedRequest.signatures.length) {
@@ -209,7 +209,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
                 _verifyRevoke(
                     DelegatedRevocationRequest({
                         schemaUID: multiDelegatedRequest.schemaUID,
-                        data: data[j],
+                        data: revocationRequestDatas[j],
                         signature: multiDelegatedRequest.signatures[j],
                         revoker: multiDelegatedRequest.revoker
                     })
@@ -220,7 +220,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             availableValue -= _multiRevoke({
                 schemaUID: multiDelegatedRequest.schemaUID,
                 resolverUID: moduleRecord.resolverUID,
-                data: data,
+                revocationRequestDatas: revocationRequestDatas,
                 revoker: multiDelegatedRequest.revoker,
                 availableValue: availableValue,
                 isLastRevocation: last

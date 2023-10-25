@@ -132,12 +132,12 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
     function revoke(RevocationRequest calldata request) external payable nonReentrant {
         ModuleRecord memory moduleRecord = _getModule({ moduleAddress: request.data.subject });
 
-        AttestationRecord memory attestation =
+        AttestationRecord memory attestationRecord =
             _revoke({ schemaUID: request.schemaUID, request: request.data, revoker: msg.sender });
 
         _resolveAttestation({
             resolverUID: moduleRecord.resolverUID,
-            attestationRecord: attestation,
+            attestationRecord: attestationRecord,
             value: 0,
             isRevocation: true,
             availableValue: msg.value,
@@ -180,7 +180,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             availableValue -= _multiRevoke({
                 schemaUID: multiRequest.schemaUID,
                 resolverUID: moduleRecord.resolverUID,
-                data: multiRequest.data,
+                revocationRequestDatas: multiRequest.data,
                 revoker: msg.sender,
                 availableValue: availableValue,
                 isLastRevocation: isLastRevocation
@@ -229,7 +229,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         // caching current time as it will be used in the for loop
 
         // for loop will run and save the return values in these two arrays
-        AttestationRecord[] memory attestations = new AttestationRecord[](
+        AttestationRecord[] memory attestationRecords = new AttestationRecord[](
             length
         );
 
@@ -238,7 +238,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
 
         // write every attesatation provided to registry's storage
         for (uint256 i; i < length; i = uncheckedInc(i)) {
-            (attestations[i], values[i]) = _writeAttestation({
+            (attestationRecords[i], values[i]) = _writeAttestation({
                 schemaUID: schemaUID,
                 resolverUID: resolverUID,
                 attestationRequestData: attestationRequestDatas[i],
@@ -249,7 +249,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         // trigger the resolver procedure
         usedValue = _resolveAttestations({
             resolverUID: resolverUID,
-            attestationRecords: attestations,
+            attestationRecords: attestationRecords,
             values: values,
             isRevocation: false,
             availableValue: availableValue,
@@ -268,7 +268,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
      * @param attestationRequestData The data for the attestation request.
      * @param attester The address of the entity making the attestation.
      *
-     * @return attestation The written attestation record.
+     * @return attestationRecord The written attestation record.
      * @return value The value associated with the attestation request.
      */
     function _writeAttestation(
@@ -278,7 +278,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         address attester
     )
         internal
-        returns (AttestationRecord memory attestation, uint256 value)
+        returns (AttestationRecord memory attestationRecord, uint256 value)
     {
         uint48 timeNow = _time();
         // Ensure that either no expiration time was set or that it was set in the future.
@@ -310,7 +310,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         });
 
         // write attestationdata with SSTORE2 to EVM, and prepare return value
-        attestation = AttestationRecord({
+        attestationRecord = AttestationRecord({
             schemaUID: schemaUID,
             subject: module,
             attester: attester,
@@ -323,7 +323,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         value = attestationRequestData.value;
 
         // SSTORE attestation on registry storage
-        _moduleToAttesterToAttestations[module][attester] = attestation;
+        _moduleToAttesterToAttestations[module][attester] = attestationRecord;
         emit Attested(module, attester, schemaUID, sstore2Pointer);
     }
 
@@ -371,7 +371,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
      * @dev Revokes an existing attestation to a specific schema.
      *
      * @param schemaUID The unique identifier of the schema that was used to attest.
-     * @param data The arguments of the revocation requests.
+     * @param revocationRequestDatas The arguments of the revocation requests.
      * @param revoker The revoking account.
      * @param availableValue The total available ETH amount that can be sent to the resolver.
      * @param isLastRevocation Whether this is the last attestations/revocations set.
@@ -381,7 +381,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
     function _multiRevoke(
         SchemaUID schemaUID,
         ResolverUID resolverUID,
-        RevocationRequestData[] memory data,
+        RevocationRequestData[] memory revocationRequestDatas,
         address revoker,
         uint256 availableValue,
         bool isLastRevocation
@@ -394,24 +394,23 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
 
         // caching length
-        uint256 length = data.length;
-        AttestationRecord[] memory attestations = new AttestationRecord[](
+        uint256 length = revocationRequestDatas.length;
+        AttestationRecord[] memory attestationRecords = new AttestationRecord[](
             length
         );
         uint256[] memory values = new uint256[](length);
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
-            RevocationRequestData memory request = data[i];
+            RevocationRequestData memory revocationRequests = revocationRequestDatas[i];
 
-            _moduleToAttesterToAttestations[request.subject][request.attester];
-
-            attestations[i] = _revoke({ schemaUID: schemaUID, request: request, revoker: revoker });
-            values[i] = request.value;
+            attestationRecords[i] =
+                _revoke({ schemaUID: schemaUID, request: revocationRequests, revoker: revoker });
+            values[i] = revocationRequests.value;
         }
 
         return _resolveAttestations({
             resolverUID: resolverUID,
-            attestationRecords: attestations,
+            attestationRecords: attestationRecords,
             values: values,
             isRevocation: true,
             availableValue: availableValue,
