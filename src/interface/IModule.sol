@@ -3,8 +3,13 @@ pragma solidity ^0.8.19;
 
 import { ResolverUID } from "../DataTypes.sol";
 
+/**
+ * Module interface allows for the deployment and registering of modules.
+ *
+ * @author zeroknots
+ */
 interface IModule {
-    // Event triggered when a contract is deployed.
+    // Event triggered when a module is deployed.
     event ModuleRegistration(address indexed implementation, bytes32 resolver);
     event ModuleDeployed(address indexed implementation, bytes32 indexed salt, bytes32 resolver);
     event ModuleDeployedExternalFactory(
@@ -12,7 +17,6 @@ interface IModule {
     );
 
     error AlreadyRegistered(address module);
-
     error InvalidDeployment();
 
     /**
@@ -23,7 +27,9 @@ interface IModule {
      * @param code The bytecode for the module.
      * @param deployParams Parameters required for deployment.
      * @param salt Salt for creating the address.
-     * @param data Data associated with the module.
+     * @param metadata Data associated with the module.
+     *          Entities can use this to store additional information about the module.
+     *          This metadata will be forwarded to the resolver.
      * @param resolverUID Unique ID of the resolver.
      *
      * @return moduleAddr The address of the deployed module.
@@ -32,7 +38,7 @@ interface IModule {
         bytes calldata code,
         bytes calldata deployParams,
         bytes32 salt,
-        bytes calldata data,
+        bytes calldata metadata,
         ResolverUID resolverUID
     )
         external
@@ -48,7 +54,9 @@ interface IModule {
      * @param code The bytecode for the module.
      * @param deployParams Parameters required for deployment.
      * @param salt Initial salt for creating the final salt.
-     * @param data Data associated with the module.
+     * @param metadata Data associated with the module.
+     *          Entities can use this to store additional information about the module.
+     *          This metadata will be forwarded to the resolver.
      * @param resolverUID Unique ID of the resolver.
      *
      * @return moduleAddr The address of the deployed module.
@@ -57,7 +65,7 @@ interface IModule {
         bytes calldata code,
         bytes calldata deployParams,
         bytes32 salt,
-        bytes calldata data,
+        bytes calldata metadata,
         ResolverUID resolverUID
     )
         external
@@ -69,7 +77,9 @@ interface IModule {
      *
      * @param factory Address of the factory contract.
      * @param callOnFactory Encoded call to be made on the factory contract.
-     * @param data Data associated with the module.
+     * @param metadata Data associated with the module.
+     *          Entities can use this to store additional information about the module.
+     *          This metadata will be forwarded to the resolver.
      * @param resolverUID Unique ID of the resolver.
      *
      * @return moduleAddr The address of the deployed module.
@@ -77,7 +87,7 @@ interface IModule {
     function deployViaFactory(
         address factory,
         bytes calldata callOnFactory,
-        bytes calldata data,
+        bytes calldata metadata,
         ResolverUID resolverUID
     )
         external
@@ -86,15 +96,19 @@ interface IModule {
 
     /**
      * @notice Registers an existing module with the contract.
+     * @dev since anyone can register an existing module,
+     *      the 'sender' attribute in ModuleRecord will be address(0)
      *
      * @param resolverUID Unique ID of the resolver.
      * @param moduleAddress Address of the module.
-     * @param data Data associated with the module.
+     * @param metadata Data associated with the module.
+     *          Entities can use this to store additional information about the module.
+     *          This metadata will be forwarded to the resolver.
      */
     function register(
         ResolverUID resolverUID,
         address moduleAddress,
-        bytes calldata data
+        bytes calldata metadata
     )
         external;
 }

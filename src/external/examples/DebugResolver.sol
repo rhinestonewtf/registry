@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "forge-std/console2.sol";
 import { ResolverBase } from "../ResolverBase.sol";
 import { AttestationRecord, ModuleRecord } from "../../DataTypes.sol";
+import { console2 } from "forge-std/console2.sol";
 
-/// @title DebugResolver
-/// @author zeroknots
-/// @notice A debug resolver for testing purposes.
-
+/**
+ * @title DebugResolver
+ * @author zeroknots
+ * @notice A debug resolver for testing purposes.
+ */
 contract DebugResolver is ResolverBase {
     constructor(address rs) ResolverBase(rs) { }
 
@@ -27,8 +28,8 @@ contract DebugResolver is ResolverBase {
     }
 
     function onRevoke(
-        AttestationRecord calldata, /*attestation*/
-        uint256 /*value*/
+        AttestationRecord calldata attestation,
+        uint256 value
     )
         internal
         pure

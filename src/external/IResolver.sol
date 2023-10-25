@@ -1,12 +1,14 @@
-// SPDX-License-Identifier: MIT
-
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: AGPL-3.0-only
+pragma solidity ^0.8.19;
 
 import { AttestationRecord, ModuleRecord } from "../DataTypes.sol";
 import { IERC165 } from "forge-std/interfaces/IERC165.sol";
 
 /**
  * @title The interface of an optional schema resolver.
+ * @dev The resolver is responsible for validating the schema and attestation data.
+ * @dev The resolver is also responsible for processing the attestation and revocation requests.
+ *
  */
 interface IResolver is IERC165 {
     /**

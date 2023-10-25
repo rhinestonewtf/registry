@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+pragma solidity ^0.8.19;
 
-pragma solidity 0.8.21;
-
-import { AccessDenied, _time, ZERO_ADDRESS, InvalidResolver } from "../Common.sol";
+import { AccessDenied, _time, ZERO_TIMESTAMP, ZERO_ADDRESS, InvalidResolver } from "../Common.sol";
 import { ISchema, SchemaLib } from "../interface/ISchema.sol";
 import { IResolver } from "../external/IResolver.sol";
 import { ISchemaValidator } from "../external/ISchemaValidator.sol";
 
-import "../DataTypes.sol";
+import { SchemaRecord, ResolverRecord, SchemaUID, ResolverUID } from "../DataTypes.sol";
 
 /**
  * @title Schema
  *
- * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  *
  */
 abstract contract Schema is ISchema {
@@ -32,28 +31,26 @@ abstract contract Schema is ISchema {
         ISchemaValidator validator // OPTIONAL
     )
         external
-        returns (SchemaUID)
+        returns (SchemaUID uid)
     {
         SchemaRecord memory schemaRecord =
             SchemaRecord({ validator: validator, registeredAt: _time(), schema: schema });
 
         // Computing a unique ID for the schema using its properties
-        SchemaUID uid = schemaRecord.getUID();
+        uid = schemaRecord.getUID();
 
-        if (_schemas[uid].registeredAt != 0) revert AlreadyExists();
+        if (_schemas[uid].registeredAt != ZERO_TIMESTAMP) revert AlreadyExists();
 
         // Storing schema in the _schemas mapping
         _schemas[uid] = schemaRecord;
 
         emit SchemaRegistered(uid, msg.sender);
-
-        return uid;
     }
 
     /**
      * @inheritdoc ISchema
      */
-    function registerResolver(IResolver _resolver) external returns (ResolverUID) {
+    function registerResolver(IResolver _resolver) external returns (ResolverUID uid) {
         if (address(_resolver) == ZERO_ADDRESS) revert InvalidResolver();
 
         // build a ResolverRecord from the input
@@ -61,7 +58,7 @@ abstract contract Schema is ISchema {
             ResolverRecord({ resolver: _resolver, schemaOwner: msg.sender });
 
         // Computing a unique ID for the schema using its properties
-        ResolverUID uid = resolver.getUID();
+        uid = resolver.getUID();
 
         // Checking if a schema with this UID already exists -> resolver can never be ZERO_ADDRESS
         if (address(_resolvers[uid].resolver) != ZERO_ADDRESS) {
@@ -72,8 +69,6 @@ abstract contract Schema is ISchema {
         _resolvers[uid] = resolver;
 
         emit SchemaResolverRegistered(uid, msg.sender);
-
-        return uid;
     }
 
     /**
@@ -92,10 +87,20 @@ abstract contract Schema is ISchema {
         return _schemas[uid];
     }
 
-    function _getSchema(SchemaUID uid) internal view virtual returns (SchemaRecord storage) {
-        return _schemas[uid];
+    /**
+     * @dev Internal function to get a schema record
+     *
+     * @param schemaUID The UID of the schema.
+     *
+     * @return schemaRecord The schema record.
+     */
+    function _getSchema(SchemaUID schemaUID) internal view virtual returns (SchemaRecord storage) {
+        return _schemas[schemaUID];
     }
 
+    /**
+     * @inheritdoc ISchema
+     */
     function getResolver(ResolverUID uid) public view virtual returns (ResolverRecord memory) {
         return _resolvers[uid];
     }

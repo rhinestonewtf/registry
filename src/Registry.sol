@@ -1,18 +1,27 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import "./base/Schema.sol";
-import "./base/AttestationDelegation.sol";
-import "./base/Module.sol";
-import "./base/Query.sol";
-
-import "./interface/IRegistry.sol";
+import { Schema } from "./base/Schema.sol";
+import { AttestationDelegation } from "./base/AttestationDelegation.sol";
+import { Module } from "./base/Module.sol";
+import {
+    Query,
+    SchemaUID,
+    SchemaRecord,
+    AttestationResolve,
+    Attestation,
+    AttestationRecord,
+    ResolverUID,
+    ResolverRecord,
+    ModuleRecord
+} from "./base/Query.sol";
+import { IRegistry } from "./interface/IRegistry.sol";
 
 /**
  * @author zeroknots
  */
 contract Registry is Schema, Query, AttestationDelegation, Module {
-    constructor(string memory name, string memory version) AttestationDelegation(name, version) { }
+    constructor() { }
 
     /*//////////////////////////////////////////////////////////////
                             Helper Functions
@@ -28,7 +37,7 @@ contract Registry is Schema, Query, AttestationDelegation, Module {
         override(AttestationResolve, Schema)
         returns (SchemaRecord storage)
     {
-        return super._getSchema(uid);
+        return super._getSchema({ schemaUID: uid });
     }
 
     function _getAttestation(

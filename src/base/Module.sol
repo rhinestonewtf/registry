@@ -14,7 +14,13 @@ import { ISchemaValidator } from "../external/ISchemaValidator.sol";
 import { IResolver } from "../external/IResolver.sol";
 
 import { InvalidResolver, _isContract, ZERO_ADDRESS } from "../Common.sol";
-import "../DataTypes.sol";
+import {
+    ResolverRecord,
+    ModuleRecord,
+    ResolverUID,
+    AttestationRequestData,
+    RevocationRequestData
+} from "../DataTypes.sol";
 
 /**
  * @title Module
@@ -24,13 +30,13 @@ import "../DataTypes.sol";
  *
  * @dev The primary responsibility of the Module is to deploy and manage modules. A module is a smart contract
  * that has been deployed through the Module. The details of each module, such as its address, code hash, schema ID,
- * sender address, deploy parameters hash, and additional data are stored in a struct and mapped to the module's address in
+ * sender address, deploy parameters hash, and additional metadata are stored in a struct and mapped to the module's address in
  * the `_modules` mapping for easy access and management.
  *
  * @dev In conclusion, the Module is a central part of a system to manage, deploy, and interact with a set of smart contracts
  * in a structured and controlled manner.
  *
- * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
 abstract contract Module is IModule, ReentrancyGuard {
     using ModuleDeploymentLib for bytes;
@@ -45,7 +51,7 @@ abstract contract Module is IModule, ReentrancyGuard {
         bytes calldata code,
         bytes calldata deployParams,
         bytes32 salt,
-        bytes calldata data,
+        bytes calldata metadata,
         ResolverUID resolverUID
     )
         external
@@ -58,15 +64,24 @@ abstract contract Module is IModule, ReentrancyGuard {
 
         (moduleAddr,,) = code.deploy(deployParams, salt, msg.value);
 
-        _register(moduleAddr, msg.sender, resolver, resolverUID, data);
+        _register({
+            moduleAddress: moduleAddr,
+            sender: msg.sender,
+            resolver: resolver,
+            resolverUID: resolverUID,
+            metadata: metadata
+        });
         emit ModuleDeployed(moduleAddr, salt, ResolverUID.unwrap(resolverUID));
     }
 
+    /**
+     * @inheritdoc IModule
+     */
     function deployC3(
         bytes calldata code,
         bytes calldata deployParams,
         bytes32 salt,
-        bytes calldata data,
+        bytes calldata metadata,
         ResolverUID resolverUID
     )
         external
@@ -80,14 +95,23 @@ abstract contract Module is IModule, ReentrancyGuard {
         bytes32 senderSalt = keccak256(abi.encodePacked(salt, msg.sender));
         moduleAddr = CREATE3.deploy(senderSalt, creationCode, msg.value);
 
-        _register(moduleAddr, msg.sender, resolver, resolverUID, data);
+        _register({
+            moduleAddress: moduleAddr,
+            sender: msg.sender,
+            resolver: resolver,
+            resolverUID: resolverUID,
+            metadata: metadata
+        });
         emit ModuleDeployed(moduleAddr, senderSalt, ResolverUID.unwrap(resolverUID));
     }
 
+    /**
+     * @inheritdoc IModule
+     */
     function deployViaFactory(
         address factory,
         bytes calldata callOnFactory,
-        bytes calldata data,
+        bytes calldata metadata,
         ResolverUID resolverUID
     )
         external
@@ -104,14 +128,23 @@ abstract contract Module is IModule, ReentrancyGuard {
         if (moduleAddr == ZERO_ADDRESS) revert InvalidDeployment();
         if (_isContract(moduleAddr) != true) revert InvalidDeployment();
 
-        _register(moduleAddr, msg.sender, resolver, resolverUID, data);
+        _register({
+            moduleAddress: moduleAddr,
+            sender: msg.sender,
+            resolver: resolver,
+            resolverUID: resolverUID,
+            metadata: metadata
+        });
         emit ModuleDeployedExternalFactory(moduleAddr, factory, ResolverUID.unwrap(resolverUID));
     }
 
+    /**
+     * @inheritdoc IModule
+     */
     function register(
         ResolverUID resolverUID,
         address moduleAddress,
-        bytes calldata data
+        bytes calldata metadata
     )
         external
         nonReentrant
@@ -119,25 +152,34 @@ abstract contract Module is IModule, ReentrancyGuard {
         ResolverRecord memory resolver = getResolver(resolverUID);
         if (resolver.schemaOwner == ZERO_ADDRESS) revert InvalidResolver();
 
-        _register(moduleAddress, ZERO_ADDRESS, resolver, resolverUID, data);
+        _register({
+            moduleAddress: moduleAddress,
+            sender: ZERO_ADDRESS, // setting sender to address(0) since anyone can invoke this function
+            resolver: resolver,
+            resolverUID: resolverUID,
+            metadata: metadata
+        });
         emit ModuleRegistration(moduleAddress, ResolverUID.unwrap(resolverUID));
     }
 
     /**
      * @dev Registers a module, ensuring it's not already registered.
+     *  This function ensures that the module is a contract.
+     *  Also ensures that moduleAddress is not ZERO_ADDRESS
+     * 
      *
      * @param moduleAddress Address of the module.
      * @param sender Address of the sender registering the module.
      * @param resolver Resolver record associated with the module.
      * @param resolverUID Unique ID of the resolver.
-     * @param data Data associated with the module.
+     * @param metadata Data associated with the module.
      */
     function _register(
         address moduleAddress,
         address sender,
         ResolverRecord memory resolver,
         ResolverUID resolverUID,
-        bytes calldata data
+        bytes calldata metadata
     )
         private
     {
@@ -145,19 +187,21 @@ abstract contract Module is IModule, ReentrancyGuard {
         if (_modules[moduleAddress].implementation != ZERO_ADDRESS) {
             revert AlreadyRegistered(moduleAddress);
         }
-        if (_isContract(moduleAddress) != true) {
-            revert InvalidDeployment();
-        }
+        // revert if moduleAddress is NOT a contract
+        if (!_isContract(moduleAddress)) revert InvalidDeployment();
 
-        // Store module data in _modules mapping
+        // Store module metadata in _modules mapping
         ModuleRecord memory moduleRegistration = ModuleRecord({
             implementation: moduleAddress,
             resolverUID: resolverUID,
             sender: sender,
-            data: data
+            metadata: metadata
         });
 
-        _resolveRegistration(resolver.resolver, moduleRegistration);
+        _resolveRegistration({
+            resolverContract: resolver.resolver,
+            moduleRegistration: moduleRegistration
+        });
 
         _modules[moduleAddress] = moduleRegistration;
     }
@@ -165,17 +209,17 @@ abstract contract Module is IModule, ReentrancyGuard {
     /**
      * @dev Resolves the module registration using the provided resolver.
      *
-     * @param resolver Resolver to validate the module registration.
+     * @param resolverContract Resolver to validate the module registration.
      * @param moduleRegistration Module record to be registered.
      */
     function _resolveRegistration(
-        IResolver resolver,
+        IResolver resolverContract,
         ModuleRecord memory moduleRegistration
     )
         private
     {
-        if (address(resolver) == ZERO_ADDRESS) return;
-        if (resolver.moduleRegistration(moduleRegistration) == false) {
+        if (address(resolverContract) == ZERO_ADDRESS) return;
+        if (resolverContract.moduleRegistration(moduleRegistration) == false) {
             revert InvalidDeployment();
         }
     }
@@ -194,7 +238,7 @@ abstract contract Module is IModule, ReentrancyGuard {
      *
      * @param moduleAddress The address of the module to retrieve.
      *
-     * @return The module record associated with the given address.
+     * @return moduleRecord The module record associated with the given address.
      */
     function _getModule(address moduleAddress)
         internal
@@ -210,7 +254,7 @@ abstract contract Module is IModule, ReentrancyGuard {
      *
      * @param moduleAddress The address of the module to retrieve.
      *
-     * @return The module record associated with the given address.
+     * @return moduleRecord The module record associated with the given address.
      */
 
     function getModule(address moduleAddress) public view returns (ModuleRecord memory) {

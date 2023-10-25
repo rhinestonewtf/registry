@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "../ResolverBase.sol";
-import "../../Common.sol";
+import { ResolverBase, AttestationRecord, ModuleRecord } from "../ResolverBase.sol";
 
-/// @title ValueResolver
-/// @author zeroknots
-/// @notice A resolver for value (ETH) attestations.
-
+/**
+ * @title ValueResolver
+ * @author zeroknots
+ * @notice A resolver for value (ETH) attestations.
+ */
 contract ValueResolver is ResolverBase {
     uint256 immutable fee = 10;
 

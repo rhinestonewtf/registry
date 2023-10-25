@@ -1,10 +1,29 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: AGPL-3.0-only
+pragma solidity ^0.8.19;
 
-pragma solidity ^0.8.0;
-
-import "../DataTypes.sol";
+import {
+    SchemaUID,
+    AttestationDataRef,
+    AttestationRequest,
+    AttestationRecord,
+    SchemaRecord,
+    MultiAttestationRequest,
+    ResolverRecord,
+    ModuleRecord,
+    IResolver,
+    DelegatedAttestationRequest,
+    MultiDelegatedAttestationRequest,
+    RevocationRequest,
+    ResolverUID,
+    DelegatedRevocationRequest,
+    MultiDelegatedRevocationRequest,
+    MultiRevocationRequest
+} from "../DataTypes.sol";
 import { IRegistry } from "./IRegistry.sol";
 
+/**
+ * @dev The global attestation interface.
+ */
 interface IAttestation {
     error AlreadyRevoked();
     error AlreadyRevokedOffchain();
@@ -13,7 +32,6 @@ interface IAttestation {
     error InvalidAttestation();
     error InvalidAttestationRefUID(bytes32 missingRefUID);
     error IncompatibleAttestation(bytes32 sourceCodeHash, bytes32 targetCodeHash);
-    error InvalidPropagation();
     error InvalidAttestations();
     error InvalidExpirationTime();
     error InvalidOffset();
@@ -23,8 +41,8 @@ interface IAttestation {
     error InvalidVerifier();
     error NotPayable();
     error WrongSchema();
-    error InvalidSender(address moduleAddr, address sender); // Emitted when the sender address is invalid.
-    error InvalidCaller(address moduleAddr, address yaruSender); // Emitted when the caller is not the Yaru contract.
+    error InvalidSender(address moduleAddr, address sender);
+
     /**
      * @dev Emitted when an attestation has been made.
      *
@@ -32,7 +50,6 @@ interface IAttestation {
      * @param attester The attesting account.
      * @param schema The UID of the schema.
      */
-
     event Attested(
         address indexed subject,
         address indexed attester,
@@ -44,10 +61,10 @@ interface IAttestation {
      * @dev Emitted when an attestation has been revoked.
      *
      * @param subject The subject of the attestation.
-     * @param attester The attesting account.
+     * @param  revoker The attesting account.
      * @param schema The UID of the schema.
      */
-    event Revoked(address indexed subject, address indexed attester, SchemaUID indexed schema);
+    event Revoked(address indexed subject, address indexed revoker, SchemaUID indexed schema);
 
     /**
      * @dev Emitted when a data has been timestamped.
@@ -75,6 +92,9 @@ interface IAttestation {
 
     /**
      * @notice Creates multiple attestations for multiple schemas.
+     * @dev Although the registry supports batched attestations, the function only allows
+     *      batched Attestations for a single resolver.
+     *      If you want to attest to multiple resolvers, you need to call the function multiple times.
      *
      * @param multiRequests An array of multi attestation requests.
      */
@@ -83,7 +103,7 @@ interface IAttestation {
     /**
      * @notice Handles a single delegated attestation request
      *
-     * @dev The function verifies the attestation, wraps the data in an array and forwards it to the _attest() function
+     * @dev The function verifies the attestation, wraps the data in an array and forwards it to the _multiAttest() function
      *
      * @param delegatedRequest A delegated attestation request
      */
@@ -93,12 +113,16 @@ interface IAttestation {
      * @notice Function to handle multiple delegated attestation requests
      *
      * @dev It iterates over the attestation requests and processes them. It collects the returned UIDs into a list.
+     * @dev Although the registry supports batched attestations, the function only allows
+     *      batched Attestations for a single resolver.
+     *      If you want to attest to multiple resolvers, you need to call the function multiple times.
      *
      * @param multiDelegatedRequests An array of multiple delegated attestation requests
      */
     function multiAttest(MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests)
         external
         payable;
+
     /**
      * @notice Revokes an existing attestation for a specified schema.
      *
@@ -108,7 +132,7 @@ interface IAttestation {
     /**
      * @notice Handles a single delegated revocation request
      *
-     * @dev The function verifies the revocation, prepares data for the _revoke() function and revokes the requestZ
+     * @dev The function verifies the revocation, prepares data for the _multiRevoke() function and revokes the requestZ
      *
      * @param request A delegated revocation request
      */
@@ -118,6 +142,9 @@ interface IAttestation {
      * @notice Handles multiple delegated revocation requests
      *
      * @dev The function iterates over the multiDelegatedRequests array, verifies each revocation and revokes the request
+     * @dev Although the registry supports batched revocations, the function only allows
+     *      batched Attestations for a single resolver.
+     *      If you want to attest to multiple resolvers, you need to call the function multiple times.
      *
      * @param multiDelegatedRequests An array of multiple delegated revocation requests
      */
@@ -127,11 +154,17 @@ interface IAttestation {
 
     /**
      * @notice Revokes multiple existing attestations for multiple schemas.
+     * @dev Although the registry supports batched revocations, the function only allows
+     *      batched Attestations for a single resolver.
+     *      If you want to attest to multiple resolvers, you need to call the function multiple times.
      * @param multiRequests An array of multi revocation requests.
      */
     function multiRevoke(MultiRevocationRequest[] calldata multiRequests) external payable;
 }
 
+/**
+ * @dev Library for attestation related functions.
+ */
 library AttestationLib {
     /**
      * @dev Generates a unique salt for an attestation using the provided attester and module addresses.
@@ -143,7 +176,6 @@ library AttestationLib {
      *
      * @return dataPointerSalt A unique salt for the attestation data storage.
      */
-
     function attestationSalt(
         address attester,
         address module

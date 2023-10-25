@@ -6,6 +6,13 @@ import "forge-std/Test.sol";
 import { SignatureCheckerLib } from "solady/src/utils/SignatureCheckerLib.sol";
 
 import "../../src/Registry.sol";
+import {
+    AttestationRequestData,
+    RevocationRequestData,
+    DelegatedAttestationRequest,
+    DelegatedRevocationRequest
+} from "../../src/base/AttestationDelegation.sol";
+import { ISchemaValidator, IResolver } from "../../src/interface/ISchema.sol";
 
 import "forge-std/console2.sol";
 
@@ -197,7 +204,7 @@ library RegistryTestLib {
             code: bytecode,
             deployParams: constructorArgs,
             salt: 0,
-            data: "",
+            metadata: "",
             resolverUID: resolverUID
         });
 
@@ -212,7 +219,7 @@ contract RegistryTestTools {
     function _setupInstance(string memory name) internal returns (RegistryInstance memory) {
         RegistryInstance memory instance;
 
-        Registry registry = new Registry(name, "0.0.1");
+        Registry registry = new Registry();
 
         instance = RegistryInstance(registry, name);
         return instance;

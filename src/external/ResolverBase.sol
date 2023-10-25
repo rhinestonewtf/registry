@@ -1,12 +1,8 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: AGPL-3.0-only
+pragma solidity ^0.8.19;
 
-pragma solidity 0.8.21;
-
-import {
-    AccessDenied, NO_EXPIRATION_TIME, NotFound, ZERO_ADDRESS, uncheckedInc
-} from "../Common.sol";
-import "../DataTypes.sol";
-
+import { AccessDenied, ZERO_TIMESTAMP, NotFound, ZERO_ADDRESS, uncheckedInc } from "../Common.sol";
+import { AttestationRecord, ModuleRecord } from "../DataTypes.sol";
 import { IResolver } from "./IResolver.sol";
 
 /**
