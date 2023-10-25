@@ -3,7 +3,7 @@ solc_version = "0.8.21"
 src = 'src'
 out = 'out'
 libs = ['lib']
-
+evm_version = 'paris'
 
 [fmt]
 bracket_spacing = true
