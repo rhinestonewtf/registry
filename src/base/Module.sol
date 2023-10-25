@@ -164,6 +164,9 @@ abstract contract Module is IModule, ReentrancyGuard {
 
     /**
      * @dev Registers a module, ensuring it's not already registered.
+     *  This function ensures that the module is a contract.
+     *  Also ensures that moduleAddress is not ZERO_ADDRESS
+     * 
      *
      * @param moduleAddress Address of the module.
      * @param sender Address of the sender registering the module.
@@ -184,9 +187,8 @@ abstract contract Module is IModule, ReentrancyGuard {
         if (_modules[moduleAddress].implementation != ZERO_ADDRESS) {
             revert AlreadyRegistered(moduleAddress);
         }
-        if (_isContract(moduleAddress) != true) {
-            revert InvalidDeployment();
-        }
+        // revert if moduleAddress is NOT a contract
+        if (!_isContract(moduleAddress)) revert InvalidDeployment();
 
         // Store module metadata in _modules mapping
         ModuleRecord memory moduleRegistration = ModuleRecord({
