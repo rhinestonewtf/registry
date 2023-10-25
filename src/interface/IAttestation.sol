@@ -61,10 +61,10 @@ interface IAttestation {
      * @dev Emitted when an attestation has been revoked.
      *
      * @param subject The subject of the attestation.
-     * @param attester The attesting account.
+     * @param  revoker The attesting account.
      * @param schema The UID of the schema.
      */
-    event Revoked(address indexed subject, address indexed attester, SchemaUID indexed schema);
+    event Revoked(address indexed subject, address indexed revoker, SchemaUID indexed schema);
 
     /**
      * @dev Emitted when a data has been timestamped.

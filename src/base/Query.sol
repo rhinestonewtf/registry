@@ -37,10 +37,14 @@ abstract contract Query is IQuery {
         AttestationRecord storage attestation = _getAttestation(module, attester);
 
         uint256 expirationTime = attestation.expirationTime;
-        attestedAt = expirationTime != 0 && expirationTime < block.timestamp ? 0 : attestation.time;
-        if (attestedAt == 0) revert AttestationNotFound();
+        attestedAt = expirationTime != ZERO_TIMESTAMP && expirationTime < block.timestamp
+            ? ZERO_TIMESTAMP
+            : attestation.time;
+        if (attestedAt == ZERO_TIMESTAMP) revert AttestationNotFound();
 
-        if (attestation.revocationTime != 0) revert RevokedAttestation(attestation.attester);
+        if (attestation.revocationTime != ZERO_TIMESTAMP) {
+            revert RevokedAttestation(attestation.attester);
+        }
     }
 
     /**
@@ -65,20 +69,21 @@ abstract contract Query is IQuery {
         attestedAtArray = new uint256[](attestersLength);
 
         for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
-            AttestationRecord storage attestation = _getAttestation(module, attesters[i]);
-            if (attestation.revocationTime != 0) {
+            AttestationRecord storage attestation =
+                _getAttestation({ moduleAddress: module, attester: attesters[i] });
+            if (attestation.revocationTime != ZERO_TIMESTAMP) {
                 revert RevokedAttestation(attestation.attester);
             }
 
             uint256 expirationTime = attestation.expirationTime;
-            if (expirationTime != 0 && expirationTime < timeNow) {
+            if (expirationTime != ZERO_TIMESTAMP && expirationTime < timeNow) {
                 revert AttestationNotFound();
             }
 
             uint256 attestationTime = attestation.time;
             attestedAtArray[i] = attestationTime;
 
-            if (attestationTime == 0) continue;
+            if (attestationTime == ZERO_TIMESTAMP) continue;
             if (threshold != 0) --threshold;
         }
         if (threshold == 0) return attestedAtArray;
@@ -106,17 +111,19 @@ abstract contract Query is IQuery {
         attestedAtArray = new uint256[](attestersLength);
 
         for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
-            AttestationRecord storage attestation = _getAttestation(module, attesters[i]);
+            AttestationRecord storage attestation =
+                _getAttestation({ moduleAddress: module, attester: attesters[i] });
 
             attestedAtArray[i] = attestation.time;
 
-            if (attestation.revocationTime != 0) continue;
+            if (attestation.revocationTime != ZERO_TIMESTAMP) continue;
 
             uint256 expirationTime = attestation.expirationTime;
-            uint256 attestedAt =
-                expirationTime != 0 && expirationTime < timeNow ? 0 : attestation.time;
+            uint256 attestedAt = expirationTime != ZERO_TIMESTAMP && expirationTime < timeNow
+                ? ZERO_TIMESTAMP
+                : attestation.time;
             attestedAtArray[i] = attestedAt;
-            if (attestedAt == 0) continue;
+            if (attestedAt == ZERO_TIMESTAMP) continue;
             if (threshold != 0) --threshold;
         }
         if (threshold == 0) return attestedAtArray;
@@ -162,14 +169,14 @@ abstract contract Query is IQuery {
      *
      * @dev This is a virtual function and is meant to be overridden in derived contracts.
      *
-     * @param module The address of the module for which the attestation is retrieved.
+     * @param moduleAddress The address of the module for which the attestation is retrieved.
      * @param attester The address of the attester whose record is being retrieved.
      *
      * @return Attestation record associated with the given module and attester.
      */
 
     function _getAttestation(
-        address module,
+        address moduleAddress,
         address attester
     )
         internal

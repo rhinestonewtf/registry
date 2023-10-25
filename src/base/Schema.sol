@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { AccessDenied, _time, ZERO_ADDRESS, InvalidResolver } from "../Common.sol";
+import { AccessDenied, _time, ZERO_TIMESTAMP, ZERO_ADDRESS, InvalidResolver } from "../Common.sol";
 import { ISchema, SchemaLib } from "../interface/ISchema.sol";
 import { IResolver } from "../external/IResolver.sol";
 import { ISchemaValidator } from "../external/ISchemaValidator.sol";
@@ -39,7 +39,7 @@ abstract contract Schema is ISchema {
         // Computing a unique ID for the schema using its properties
         uid = schemaRecord.getUID();
 
-        if (_schemas[uid].registeredAt != 0) revert AlreadyExists();
+        if (_schemas[uid].registeredAt != ZERO_TIMESTAMP) revert AlreadyExists();
 
         // Storing schema in the _schemas mapping
         _schemas[uid] = schemaRecord;

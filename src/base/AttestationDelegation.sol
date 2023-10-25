@@ -51,18 +51,26 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
     {
         _verifyAttest(delegatedRequest);
 
-        AttestationRequestData calldata data = delegatedRequest.data;
-        ModuleRecord storage moduleRecord = _getModule(delegatedRequest.data.subject);
+        AttestationRequestData calldata attestationRequestData = delegatedRequest.data;
+        ModuleRecord storage moduleRecord =
+            _getModule({ moduleAddress: delegatedRequest.data.subject });
         ResolverUID resolverUID = moduleRecord.resolverUID;
 
-        AttestationRecord[] memory attestations = new AttestationRecord[](1);
-        uint256[] memory values = new uint256[](1);
+        (AttestationRecord memory attestationRecord, uint256 value) = _writeAttestation({
+            schemaUID: delegatedRequest.schemaUID,
+            resolverUID: resolverUID,
+            attestationRequestData: attestationRequestData,
+            attester: delegatedRequest.attester
+        });
 
-        (attestations[0], values[0]) = _writeAttestation(
-            delegatedRequest.schemaUID, resolverUID, data, delegatedRequest.attester, _time()
-        );
-
-        _resolveAttestations(resolverUID, attestations, values, false, msg.value, true);
+        _resolveAttestation({
+            resolverUID: resolverUID,
+            attestationRecord: attestationRecord,
+            value: value,
+            isRevocation: false,
+            availableValue: msg.value,
+            isLastAttestation: true
+        });
     }
 
     /**
@@ -82,7 +90,8 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         uint256 availableValue = msg.value;
 
         // Batched Revocations can only be done for a single resolver. See IAttestation.sol
-        ModuleRecord memory moduleRecord = _getModule(multiDelegatedRequests[0].data[0].subject);
+        ModuleRecord memory moduleRecord =
+            _getModule({ moduleAddress: multiDelegatedRequests[0].data[0].subject });
         // I think it would be much better to move this into the for loop so we can iterate over the requests.
         // Its possible that the MultiAttestationRequests is attesting different modules, that thus have different resolvers
         // gas bad
@@ -106,7 +115,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
                 revert InvalidLength();
             }
 
-            // Verify EIP712 signatures. Please note that the signatures are assumed to be signed with increasing nonces.
+            // Verify signatures. Note that the signatures are assumed to be signed with increasing nonces.
             for (uint256 j; j < dataLength; j = uncheckedInc(j)) {
                 _verifyAttest(
                     DelegatedAttestationRequest({
@@ -119,14 +128,14 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             }
 
             // Process the current batch of attestations.
-            uint256 usedValue = _multiAttest(
-                multiDelegatedRequest.schemaUID,
-                moduleRecord.resolverUID,
-                data,
-                multiDelegatedRequest.attester,
-                availableValue,
-                last
-            );
+            uint256 usedValue = _multiAttest({
+                schemaUID: multiDelegatedRequest.schemaUID,
+                resolverUID: moduleRecord.resolverUID,
+                attestationRequestDatas: data,
+                attester: multiDelegatedRequest.attester,
+                availableValue: availableValue,
+                isLastAttestation: last
+            });
 
             // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
             availableValue -= usedValue;
@@ -146,11 +155,16 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         RevocationRequestData[] memory data = new RevocationRequestData[](1);
         data[0] = request.data;
 
-        ModuleRecord memory moduleRecord = _getModule(request.data.subject);
+        ModuleRecord memory moduleRecord = _getModule({ moduleAddress: request.data.subject });
 
-        _multiRevoke(
-            request.schemaUID, moduleRecord.resolverUID, data, request.revoker, msg.value, true
-        );
+        _multiRevoke({
+            schemaUID: request.schemaUID,
+            resolverUID: moduleRecord.resolverUID,
+            data: data,
+            revoker: request.revoker,
+            availableValue: msg.value,
+            isLastRevocation: true
+        });
     }
 
     /**
@@ -169,7 +183,8 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         uint256 length = multiDelegatedRequests.length;
 
         // Batched Revocations can only be done for a single resolver. See IAttestation.sol
-        ModuleRecord memory moduleRecord = _getModule(multiDelegatedRequests[0].data[0].subject);
+        ModuleRecord memory moduleRecord =
+            _getModule({ moduleAddress: multiDelegatedRequests[0].data[0].subject });
 
         for (uint256 i; i < length; i = uncheckedInc(i)) {
             // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there
@@ -202,14 +217,14 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             }
 
             // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
-            availableValue -= _multiRevoke(
-                multiDelegatedRequest.schemaUID,
-                moduleRecord.resolverUID,
-                data,
-                multiDelegatedRequest.revoker,
-                availableValue,
-                last
-            );
+            availableValue -= _multiRevoke({
+                schemaUID: multiDelegatedRequest.schemaUID,
+                resolverUID: moduleRecord.resolverUID,
+                data: data,
+                revoker: multiDelegatedRequest.revoker,
+                availableValue: availableValue,
+                isLastRevocation: last
+            });
         }
     }
 }
