@@ -64,7 +64,13 @@ abstract contract Module is IModule, ReentrancyGuard {
 
         (moduleAddr,,) = code.deploy(deployParams, salt, msg.value);
 
-        _register(moduleAddr, msg.sender, resolver, resolverUID, metadata);
+        _register({
+            moduleAddress: moduleAddr,
+            sender: msg.sender,
+            resolver: resolver,
+            resolverUID: resolverUID,
+            metadata: metadata
+        });
         emit ModuleDeployed(moduleAddr, salt, ResolverUID.unwrap(resolverUID));
     }
 
@@ -89,7 +95,13 @@ abstract contract Module is IModule, ReentrancyGuard {
         bytes32 senderSalt = keccak256(abi.encodePacked(salt, msg.sender));
         moduleAddr = CREATE3.deploy(senderSalt, creationCode, msg.value);
 
-        _register(moduleAddr, msg.sender, resolver, resolverUID, metadata);
+        _register({
+            moduleAddress: moduleAddr,
+            sender: msg.sender,
+            resolver: resolver,
+            resolverUID: resolverUID,
+            metadata: metadata
+        });
         emit ModuleDeployed(moduleAddr, senderSalt, ResolverUID.unwrap(resolverUID));
     }
 
@@ -116,7 +128,13 @@ abstract contract Module is IModule, ReentrancyGuard {
         if (moduleAddr == ZERO_ADDRESS) revert InvalidDeployment();
         if (_isContract(moduleAddr) != true) revert InvalidDeployment();
 
-        _register(moduleAddr, msg.sender, resolver, resolverUID, metadata);
+        _register({
+            moduleAddress: moduleAddr,
+            sender: msg.sender,
+            resolver: resolver,
+            resolverUID: resolverUID,
+            metadata: metadata
+        });
         emit ModuleDeployedExternalFactory(moduleAddr, factory, ResolverUID.unwrap(resolverUID));
     }
 
@@ -146,6 +164,9 @@ abstract contract Module is IModule, ReentrancyGuard {
 
     /**
      * @dev Registers a module, ensuring it's not already registered.
+     *  This function ensures that the module is a contract.
+     *  Also ensures that moduleAddress is not ZERO_ADDRESS
+     * 
      *
      * @param moduleAddress Address of the module.
      * @param sender Address of the sender registering the module.
@@ -166,9 +187,8 @@ abstract contract Module is IModule, ReentrancyGuard {
         if (_modules[moduleAddress].implementation != ZERO_ADDRESS) {
             revert AlreadyRegistered(moduleAddress);
         }
-        if (_isContract(moduleAddress) != true) {
-            revert InvalidDeployment();
-        }
+        // revert if moduleAddress is NOT a contract
+        if (!_isContract(moduleAddress)) revert InvalidDeployment();
 
         // Store module metadata in _modules mapping
         ModuleRecord memory moduleRegistration = ModuleRecord({
@@ -178,7 +198,10 @@ abstract contract Module is IModule, ReentrancyGuard {
             metadata: metadata
         });
 
-        _resolveRegistration(resolver.resolver, moduleRegistration);
+        _resolveRegistration({
+            resolverContract: resolver.resolver,
+            moduleRegistration: moduleRegistration
+        });
 
         _modules[moduleAddress] = moduleRegistration;
     }
@@ -186,17 +209,17 @@ abstract contract Module is IModule, ReentrancyGuard {
     /**
      * @dev Resolves the module registration using the provided resolver.
      *
-     * @param resolver Resolver to validate the module registration.
+     * @param resolverContract Resolver to validate the module registration.
      * @param moduleRegistration Module record to be registered.
      */
     function _resolveRegistration(
-        IResolver resolver,
+        IResolver resolverContract,
         ModuleRecord memory moduleRegistration
     )
         private
     {
-        if (address(resolver) == ZERO_ADDRESS) return;
-        if (resolver.moduleRegistration(moduleRegistration) == false) {
+        if (address(resolverContract) == ZERO_ADDRESS) return;
+        if (resolverContract.moduleRegistration(moduleRegistration) == false) {
             revert InvalidDeployment();
         }
     }

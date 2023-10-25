@@ -17,7 +17,7 @@ import {
 /**
  * @title Singature Verifier. If provided signed is a contract, this function will fallback to ERC1271
  *
- * @author rhinestone | zeroknots.eth
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
 abstract contract EIP712Verifier is EIP712 {
     // The hash of the data type used to relay calls to the attest function. It's the value of

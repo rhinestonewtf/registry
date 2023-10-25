@@ -37,7 +37,7 @@ contract Registry is Schema, Query, AttestationDelegation, Module {
         override(AttestationResolve, Schema)
         returns (SchemaRecord storage)
     {
-        return super._getSchema(uid);
+        return super._getSchema({ schemaUID: uid });
     }
 
     function _getAttestation(
