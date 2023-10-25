@@ -132,7 +132,7 @@ interface IAttestation {
     /**
      * @notice Handles a single delegated revocation request
      *
-     * @dev The function verifies the revocation, prepares data for the _revoke() function and revokes the requestZ
+     * @dev The function verifies the revocation, prepares data for the _multiRevoke() function and revokes the requestZ
      *
      * @param request A delegated revocation request
      */

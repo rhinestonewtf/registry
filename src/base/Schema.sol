@@ -90,12 +90,12 @@ abstract contract Schema is ISchema {
     /**
      * @dev Internal function to get a schema record
      *
-     * @param uid The UID of the schema.
+     * @param schemaUID The UID of the schema.
      *
      * @return schemaRecord The schema record.
      */
-    function _getSchema(SchemaUID uid) internal view virtual returns (SchemaRecord storage) {
-        return _schemas[uid];
+    function _getSchema(SchemaUID schemaUID) internal view virtual returns (SchemaRecord storage) {
+        return _schemas[schemaUID];
     }
 
     /**

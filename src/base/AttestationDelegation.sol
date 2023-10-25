@@ -148,7 +148,9 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
 
         ModuleRecord memory moduleRecord = _getModule(request.data.subject);
 
-        _revoke(request.schemaUID, moduleRecord.resolverUID, data, request.revoker, msg.value, true);
+        _multiRevoke(
+            request.schemaUID, moduleRecord.resolverUID, data, request.revoker, msg.value, true
+        );
     }
 
     /**
@@ -200,7 +202,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             }
 
             // Ensure to deduct the ETH that was forwarded to the resolver during the processing of this batch.
-            availableValue -= _revoke(
+            availableValue -= _multiRevoke(
                 multiDelegatedRequest.schemaUID,
                 moduleRecord.resolverUID,
                 data,
