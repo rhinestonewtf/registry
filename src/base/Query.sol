@@ -13,7 +13,7 @@ import {
     ModuleRecord
 } from "./Attestation.sol";
 
-import { AccessDenied, NotFound, ZERO_TIMESTAMP, InvalidLength, uncheckedInc } from "../Common.sol";
+import { AccessDenied, NotFound, ZERO_TIMESTAMP, InvalidLength } from "../Common.sol";
 
 /**
  * @title Query
@@ -68,7 +68,7 @@ abstract contract Query is IQuery {
         uint256 timeNow = block.timestamp;
         attestedAtArray = new uint256[](attestersLength);
 
-        for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
+        for (uint256 i; i < attestersLength; ++i) {
             AttestationRecord storage attestation =
                 _getAttestation({ moduleAddress: module, attester: attesters[i] });
             if (attestation.revocationTime != ZERO_TIMESTAMP) {
@@ -110,7 +110,7 @@ abstract contract Query is IQuery {
         uint256 timeNow = block.timestamp;
         attestedAtArray = new uint256[](attestersLength);
 
-        for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
+        for (uint256 i; i < attestersLength; ++i) {
             AttestationRecord storage attestation =
                 _getAttestation({ moduleAddress: module, attester: attesters[i] });
 
@@ -159,7 +159,7 @@ abstract contract Query is IQuery {
     {
         uint256 attesterssLength = attesters.length;
         attestations = new AttestationRecord[](attesterssLength);
-        for (uint256 i; i < attesterssLength; i = uncheckedInc(i)) {
+        for (uint256 i; i < attesterssLength; ++i) {
             attestations[i] = findAttestation(module, attesters[i]);
         }
     }

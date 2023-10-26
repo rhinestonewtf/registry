@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { AccessDenied, ZERO_TIMESTAMP, NotFound, ZERO_ADDRESS, uncheckedInc } from "../Common.sol";
+import { AccessDenied, ZERO_TIMESTAMP, NotFound, ZERO_ADDRESS } from "../Common.sol";
 import { AttestationRecord, ModuleRecord } from "../DataTypes.sol";
 import { IResolver } from "./IResolver.sol";
 
@@ -102,7 +102,7 @@ abstract contract ResolverBase is IResolver {
         // possible to send too much ETH anyway.
         uint256 remainingValue = msg.value;
 
-        for (uint256 i; i < length; i = uncheckedInc(i)) {
+        for (uint256 i; i < length; ++i) {
             // Ensure that the attester/revoker doesn't try to spend more than available.
             uint256 value = values[i];
             if (value > remainingValue) {
@@ -155,7 +155,7 @@ abstract contract ResolverBase is IResolver {
         // possible to send too much ETH anyway.
         uint256 remainingValue = msg.value;
 
-        for (uint256 i; i < length; i = uncheckedInc(i)) {
+        for (uint256 i; i < length; ++i) {
             // Ensure that the attester/revoker doesn't try to spend more than available.
             uint256 value = values[i];
             if (value > remainingValue) {

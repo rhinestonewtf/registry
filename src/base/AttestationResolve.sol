@@ -15,7 +15,7 @@ import {
 } from "../interface/IAttestation.sol";
 import { EIP712Verifier } from "./EIP712Verifier.sol";
 
-import { ZERO_ADDRESS, AccessDenied, uncheckedInc } from "../Common.sol";
+import { ZERO_ADDRESS, AccessDenied } from "../Common.sol";
 import { AttestationDataRef, writeAttestationData, readAttestationData } from "../DataTypes.sol";
 
 /**
@@ -129,7 +129,7 @@ abstract contract AttestationResolve is IAttestation, EIP712Verifier {
         IResolver resolverContract = resolver.resolver;
         if (address(resolverContract) == ZERO_ADDRESS) {
             // Ensure that we don't accept payments if there is no resolver.
-            for (uint256 i; i < length; i = uncheckedInc(i)) {
+            for (uint256 i; i < length; ++i) {
                 if (values[i] != 0) revert NotPayable();
             }
 
@@ -138,7 +138,7 @@ abstract contract AttestationResolve is IAttestation, EIP712Verifier {
 
         uint256 totalUsedValue;
 
-        for (uint256 i; i < length; i = uncheckedInc(i)) {
+        for (uint256 i; i < length; ++i) {
             uint256 value = values[i];
 
             // Ensure that we don't accept payments which can't be forwarded to the resolver.

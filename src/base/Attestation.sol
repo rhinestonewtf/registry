@@ -24,7 +24,6 @@ import {
     NotFound,
     ZERO_TIMESTAMP,
     InvalidLength,
-    uncheckedInc,
     InvalidSchema,
     _time
 } from "../Common.sol";
@@ -97,7 +96,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         ModuleRecord storage moduleRecord =
             _getModule({ moduleAddress: multiRequests[0].data[0].subject });
 
-        for (uint256 i; i < length; i = uncheckedInc(i)) {
+        for (uint256 i; i < length; ++i) {
             // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there
             // is a remainder - it will be refunded back to the attester (something that we can only verify during the
             // last and final batch).
@@ -165,7 +164,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         uint256 requestsLength = multiRequests.length;
 
         // should cache length
-        for (uint256 i; i < requestsLength; i = uncheckedInc(i)) {
+        for (uint256 i; i < requestsLength; ++i) {
             // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there
             // is a remainder - it will be refunded back to the attester (something that we can only verify during the
             // last and final batch).
@@ -237,7 +236,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         uint256[] memory values = new uint256[](length);
 
         // write every attesatation provided to registry's storage
-        for (uint256 i; i < length; i = uncheckedInc(i)) {
+        for (uint256 i; i < length; ++i) {
             (attestationRecords[i], values[i]) = _writeAttestation({
                 schemaUID: schemaUID,
                 resolverUID: resolverUID,
@@ -400,7 +399,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         );
         uint256[] memory values = new uint256[](length);
 
-        for (uint256 i; i < length; i = uncheckedInc(i)) {
+        for (uint256 i; i < length; ++i) {
             RevocationRequestData memory revocationRequests = revocationRequestDatas[i];
 
             attestationRecords[i] =
