@@ -216,10 +216,10 @@ library RegistryTestLib {
 contract RegistryTestTools {
     using RegistryTestLib for RegistryInstance;
 
-    function _setupInstance(string memory name) internal returns (RegistryInstance memory) {
+    function _setupInstance(string memory name, bytes32 salt) internal returns (RegistryInstance memory) {
         RegistryInstance memory instance;
 
-        Registry registry = new Registry();
+        Registry registry = new Registry{salt: salt}();
 
         instance = RegistryInstance(registry, name);
         return instance;
