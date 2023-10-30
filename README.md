@@ -7,7 +7,7 @@
 
 This Contract is in active development. Do not use this in Prod!
 
-## Intro
+## Overview
 
 Account abstraction (or smart accounts) will deliver three key enhancements for the Ethereum ecosystem:
 improved UX, enhanced user security and greater wallet extensibility. Modular smart accounts are the next
@@ -18,7 +18,7 @@ The Registry aims to solve this concern by providing a means of verifying the le
 security of independently built smart account modules for installation and use across any integrated
 smart account. It allows entities to attest to statements about modules and smart accounts to query these at module nstallation and/or execution time. The Registry is a Singleton that is free, open and permissionless. It also serves as the reference implementation for [ERC-7484](https://eips.ethereum.org/EIPS/eip-7484).
 
-## Core Principles
+## Core Concepts
 
 ### Attestations
 
@@ -63,6 +63,10 @@ Modules are registered on the Registry either during, using `CREATE2`, `CREATE3`
 
 ![Sequence Diagram](./public/docs/all.svg)
 
+## Deployments
+
+Current address: [0x500684cBaa280aDf80d5ACf7A32Daebb23162e63](https://blockscan.com/address/0x500684cBaa280aDf80d5ACf7A32Daebb23162e63)
+
 ## Contribute
 
 For feature or change requests, feel free to open a PR or get in touch with us.
@@ -76,7 +80,7 @@ For the continious support and constructive feedback, we would like to thank:
 - Richard Meissner (Safe) @rimeissner
 - Taek @taek.eth
 - Biconomy
-- Rhinestone Registry is drawing inspiration from EAS
+- Heavily inspired by EAS
 
 ## Authors ✨
 
