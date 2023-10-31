@@ -17,18 +17,6 @@ error InvalidSignature();
 error NotFound();
 
 /**
- * @dev A helper function to work with unchecked iterators in loops.
- * @param i The current index.
- *
- * @return j The next index.
- */
-function uncheckedInc(uint256 i) pure returns (uint256 j) {
-    unchecked {
-        j = i + 1;
-    }
-}
-
-/**
  * @dev Returns the current's block timestamp. This method is overridden during tests and used to simulate the
  * current block time.
  */

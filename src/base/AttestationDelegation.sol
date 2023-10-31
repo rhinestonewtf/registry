@@ -20,7 +20,6 @@ import {
     NotFound,
     ZERO_TIMESTAMP,
     InvalidLength,
-    uncheckedInc,
     InvalidSchema,
     _time
 } from "../Common.sol";
@@ -96,7 +95,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         // Its possible that the MultiAttestationRequests is attesting different modules, that thus have different resolvers
         // gas bad
 
-        for (uint256 i; i < length; i = uncheckedInc(i)) {
+        for (uint256 i; i < length; ++i) {
             // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there
             // is a remainder - it will be refunded back to the attester (something that we can only verify during the
             // last and final batch).
@@ -116,7 +115,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             }
 
             // Verify signatures. Note that the signatures are assumed to be signed with increasing nonces.
-            for (uint256 j; j < dataLength; j = uncheckedInc(j)) {
+            for (uint256 j; j < dataLength; ++j) {
                 _verifyAttest(
                     DelegatedAttestationRequest({
                         schemaUID: multiDelegatedRequest.schemaUID,
@@ -186,7 +185,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         ModuleRecord memory moduleRecord =
             _getModule({ moduleAddress: multiDelegatedRequests[0].data[0].subject });
 
-        for (uint256 i; i < length; i = uncheckedInc(i)) {
+        for (uint256 i; i < length; ++i) {
             // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there
             // is a remainder - it will be refunded back to the attester (something that we can only verify during the
             // last and final batch).
@@ -205,7 +204,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             }
 
             // Verify EIP712 signatures. Please note that the signatures are assumed to be signed with increasing nonces.
-            for (uint256 j; j < dataLength; j = uncheckedInc(j)) {
+            for (uint256 j; j < dataLength; ++i) {
                 _verifyRevoke(
                     DelegatedRevocationRequest({
                         schemaUID: multiDelegatedRequest.schemaUID,
