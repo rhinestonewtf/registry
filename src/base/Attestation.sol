@@ -62,6 +62,19 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         ModuleRecord storage moduleRecord = _getModule({ moduleAddress: request.data.subject });
         ResolverUID resolverUID = moduleRecord.resolverUID;
 
+        // only run this function if the selected schemaUID exists
+        SchemaRecord storage schema = _getSchema({ schemaUID: request.schemaUID });
+        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
+        // validate Schema
+        ISchemaValidator validator = schema.validator;
+        // if validator is set, call the validator
+        if (address(validator) != ZERO_ADDRESS) {
+            // revert if ISchemaValidator returns false
+            if (!schema.validator.validateSchema(requestData)) {
+                revert InvalidAttestation();
+            }
+        }
+
         // write attestations to registry storge
         (AttestationRecord memory attestationRecord, uint256 value) = _writeAttestation({
             schemaUID: request.schemaUID,
@@ -131,8 +144,11 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
     function revoke(RevocationRequest calldata request) external payable nonReentrant {
         ModuleRecord memory moduleRecord = _getModule({ moduleAddress: request.data.subject });
 
+        SchemaRecord storage schema = _getSchema({ schemaUID: request.schemaUID });
+        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
+
         AttestationRecord memory attestationRecord =
-            _revoke({ schemaUID: request.schemaUID, request: request.data, revoker: msg.sender });
+            _revoke({ request: request.data, revoker: msg.sender });
 
         _resolveAttestation({
             resolverUID: moduleRecord.resolverUID,
@@ -296,11 +312,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             revert InvalidAttestation();
         }
 
-        // Ensure that attestation for a module is using the modules resolver
-        if (moduleRecord.resolverUID != resolverUID) {
-            revert InvalidAttestation();
-        }
-
         // get salt used for SSTORE2 to avoid collisions during CREATE2
         bytes32 attestationSalt = AttestationLib.attestationSalt(attester, module);
         AttestationDataRef sstore2Pointer = writeAttestationData({
@@ -327,7 +338,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
     }
 
     function _revoke(
-        SchemaUID schemaUID,
         RevocationRequestData memory request,
         address revoker
     )
@@ -340,11 +350,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         // Ensure that we aren't attempting to revoke a non-existing attestation.
         if (AttestationDataRef.unwrap(attestation.dataPointer) == ZERO_ADDRESS) {
             revert NotFound();
-        }
-
-        // Ensure that a wrong schema ID wasn't passed by accident.
-        if (attestation.schemaUID != schemaUID) {
-            revert InvalidSchema();
         }
 
         // Allow only original attesters to revoke their attestations.
@@ -402,8 +407,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         for (uint256 i; i < length; ++i) {
             RevocationRequestData memory revocationRequests = revocationRequestDatas[i];
 
-            attestationRecords[i] =
-                _revoke({ schemaUID: schemaUID, request: revocationRequests, revoker: revoker });
+            attestationRecords[i] = _revoke({ request: revocationRequests, revoker: revoker });
             values[i] = revocationRequests.value;
         }
 

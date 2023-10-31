@@ -26,6 +26,29 @@ contract MockModule {
     }
 }
 
+contract FalseSchemaValidator is ISchemaValidator {
+    function validateSchema(AttestationRequestData calldata attestation)
+        external
+        view
+        returns (bool)
+    {
+        return false;
+    }
+
+    /**
+     * @notice Validates an array of attestation requests.
+     */
+    function validateSchema(AttestationRequestData[] calldata attestations)
+        external
+        view
+        returns (bool)
+    {
+        return false;
+    }
+
+    function supportsInterface(bytes4 interfaceID) external view returns (bool) { }
+}
+
 contract BaseTest is Test, RegistryTestTools {
     using RegistryTestLib for RegistryInstance;
 
@@ -41,10 +64,14 @@ contract BaseTest is Test, RegistryTestTools {
     address defaultModule1;
     address defaultModule2;
 
+    address falseSchemaValidator;
+
     function setUp() public virtual {
         instancel1 = _setupInstance({ name: "RegistryL1", salt: 0 });
         (, auth1k) = makeAddrAndKey("auth1");
         (, auth2k) = makeAddrAndKey("auth2");
+
+        falseSchemaValidator = address(new FalseSchemaValidator());
 
         defaultSchema1 = instancel1.registerSchema("Test ABI", ISchemaValidator(address(0)));
         defaultSchema2 = instancel1.registerSchema("Test ABI2", ISchemaValidator(address(0)));

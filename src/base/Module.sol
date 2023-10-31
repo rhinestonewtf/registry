@@ -166,7 +166,7 @@ abstract contract Module is IModule, ReentrancyGuard {
      * @dev Registers a module, ensuring it's not already registered.
      *  This function ensures that the module is a contract.
      *  Also ensures that moduleAddress is not ZERO_ADDRESS
-     * 
+     *
      *
      * @param moduleAddress Address of the module.
      * @param sender Address of the sender registering the module.

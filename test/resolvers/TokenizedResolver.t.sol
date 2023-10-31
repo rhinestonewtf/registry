@@ -22,7 +22,7 @@ contract TokenizedResolverTest is BaseTest {
         );
         validator = new SimpleValidator();
 
-        token.mint(vm.addr(auth1k), 10_000);
+        token.mint(address(this), 10_000);
     }
 
     function testTokenizedResolver() public {
@@ -41,9 +41,9 @@ contract TokenizedResolverTest is BaseTest {
             value: 0
         });
 
-        vm.prank(vm.addr(auth1k));
+        vm.prank(address(this));
         token.approve(address(resolver), 1000);
-        instancel1.newAttestation(schema, auth1k, attData);
+        instancel1.newAttestation(schema, attData);
         assertEq(token.balanceOf(address(resolver)), 10);
     }
 }

@@ -13,6 +13,7 @@ import {
     DelegatedRevocationRequest
 } from "../../src/base/AttestationDelegation.sol";
 import { ISchemaValidator, IResolver } from "../../src/interface/ISchema.sol";
+import { AttestationRequest, RevocationRequest } from "../../src/DataTypes.sol";
 
 import "forge-std/console2.sol";
 
@@ -32,7 +33,6 @@ library RegistryTestLib {
     function mockAttestation(
         RegistryInstance memory instance,
         SchemaUID schemaUID,
-        uint256 attesterKey,
         address moduleAddr
     )
         public
@@ -43,21 +43,31 @@ library RegistryTestLib {
             data: abi.encode(true),
             value: 0
         });
-        newAttestation(instance, schemaUID, attesterKey, attData);
+        newAttestation(instance, schemaUID, attData);
     }
 
     function mockAttestation(
         RegistryInstance memory instance,
         SchemaUID schemaUID,
-        uint256 attesterKey,
         AttestationRequestData memory attData
     )
         public
     {
-        newAttestation(instance, schemaUID, attesterKey, attData);
+        newAttestation(instance, schemaUID, attData);
     }
 
     function newAttestation(
+        RegistryInstance memory instance,
+        SchemaUID schemaUID,
+        AttestationRequestData memory attData
+    )
+        public
+    {
+        AttestationRequest memory req = AttestationRequest({ schemaUID: schemaUID, data: attData });
+        instance.registry.attest(req);
+    }
+
+    function newDelegatedAttestation(
         RegistryInstance memory instance,
         SchemaUID schemaUID,
         uint256 attesterKey,
@@ -132,6 +142,21 @@ library RegistryTestLib {
     }
 
     function revokeAttestation(
+        RegistryInstance memory instance,
+        address module,
+        SchemaUID schemaId,
+        address attester
+    )
+        public
+    {
+        RevocationRequestData memory revoke =
+            RevocationRequestData({ subject: module, attester: attester, value: 0 });
+
+        RevocationRequest memory req = RevocationRequest({ schemaUID: schemaId, data: revoke });
+        instance.registry.revoke(req);
+    }
+
+    function delegatedRevokeAttestation(
         RegistryInstance memory instance,
         address module,
         SchemaUID schemaId,
@@ -216,7 +241,13 @@ library RegistryTestLib {
 contract RegistryTestTools {
     using RegistryTestLib for RegistryInstance;
 
-    function _setupInstance(string memory name, bytes32 salt) internal returns (RegistryInstance memory) {
+    function _setupInstance(
+        string memory name,
+        bytes32 salt
+    )
+        internal
+        returns (RegistryInstance memory)
+    {
         RegistryInstance memory instance;
 
         Registry registry = new Registry{salt: salt}();
