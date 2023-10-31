@@ -52,7 +52,7 @@ contract AttestationTest is BaseTest {
     }
 
     function testAttest() public {
-        instancel1.mockAttestation(defaultSchema1, defaultModule1);
+        instance.mockAttestation(defaultSchema1, defaultModule1);
     }
 
     function testAttest__RevertWhen__InvalidExpirationTime() public {
@@ -64,7 +64,7 @@ contract AttestationTest is BaseTest {
         });
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidExpirationTime.selector));
-        instancel1.newAttestation(defaultSchema1, attData);
+        instance.newAttestation(defaultSchema1, attData);
     }
 
     function testAttest__RevertWhen__ZeroImplementation() public {
@@ -76,7 +76,7 @@ contract AttestationTest is BaseTest {
         });
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidAttestation.selector));
-        instancel1.newAttestation(defaultSchema1, attData);
+        instance.newAttestation(defaultSchema1, attData);
     }
 
     function testAttest__RevertWhen__InvalidSchema() public {
@@ -88,11 +88,11 @@ contract AttestationTest is BaseTest {
         });
 
         vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
-        instancel1.newAttestation(SchemaUID.wrap(0), attData);
+        instance.newAttestation(SchemaUID.wrap(0), attData);
     }
 
     function testAttest__RevertWhen__ValidatorSaysInvalidAttestation() public {
-        SchemaUID schemaId = instancel1.registerSchema("", ISchemaValidator(falseSchemaValidator));
+        SchemaUID schemaId = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
         AttestationRequestData memory attData = AttestationRequestData({
             subject: address(0x69),
             expirationTime: uint48(0),
@@ -101,7 +101,7 @@ contract AttestationTest is BaseTest {
         });
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidAttestation.selector));
-        instancel1.newAttestation(schemaId, attData);
+        instance.newAttestation(schemaId, attData);
     }
 
     function testAttest__With__LargeAttestation() public {
@@ -123,11 +123,11 @@ contract AttestationTest is BaseTest {
             value: 0
         });
 
-        instancel1.newAttestation(defaultSchema1, attData);
+        instance.newAttestation(defaultSchema1, attData);
     }
 
     function testMultiAttest() public {
-        address anotherModule = instancel1.deployAndRegister(
+        address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
@@ -156,11 +156,11 @@ contract AttestationTest is BaseTest {
             MultiAttestationRequest({ schemaUID: defaultSchema1, data: attArray });
         reqs[0] = req1;
 
-        instancel1.registry.multiAttest(reqs);
+        instance.registry.multiAttest(reqs);
     }
 
     function testMultiAttest__RevertWhen__InvalidSchema() public {
-        address anotherModule = instancel1.deployAndRegister(
+        address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
@@ -190,12 +190,12 @@ contract AttestationTest is BaseTest {
         reqs[0] = req1;
 
         vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
-        instancel1.registry.multiAttest(reqs);
+        instance.registry.multiAttest(reqs);
     }
 
     function testMultiAttest__RevertWhen__ValidatorSaysInvalidAttestation() public {
-        SchemaUID schemaId = instancel1.registerSchema("", ISchemaValidator(falseSchemaValidator));
-        address anotherModule = instancel1.deployAndRegister(
+        SchemaUID schemaId = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
+        address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
@@ -225,11 +225,11 @@ contract AttestationTest is BaseTest {
         reqs[0] = req1;
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidAttestation.selector));
-        instancel1.registry.multiAttest(reqs);
+        instance.registry.multiAttest(reqs);
     }
 
     function testMultiAttest__RevertWhen__InvalidExpirationTime() public {
-        address anotherModule = instancel1.deployAndRegister(
+        address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
@@ -259,12 +259,12 @@ contract AttestationTest is BaseTest {
         reqs[0] = req1;
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidExpirationTime.selector));
-        instancel1.registry.multiAttest(reqs);
+        instance.registry.multiAttest(reqs);
     }
 
     function testMultiAttest__RevertWhen__ZeroImplementation() public {
-        SchemaUID schemaId = instancel1.registerSchema("", ISchemaValidator(falseSchemaValidator));
-        address anotherModule = instancel1.deployAndRegister(
+        SchemaUID schemaId = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
+        address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
@@ -294,31 +294,31 @@ contract AttestationTest is BaseTest {
         reqs[0] = req1;
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidAttestation.selector));
-        instancel1.registry.multiAttest(reqs);
+        instance.registry.multiAttest(reqs);
     }
 
     function testRevoke() public {
         address attester = address(this);
-        instancel1.mockAttestation(defaultSchema1, defaultModule1);
-        instancel1.revokeAttestation(defaultModule1, defaultSchema1, attester);
+        instance.mockAttestation(defaultSchema1, defaultModule1);
+        instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
 
         AttestationRecord memory attestation =
-            instancel1.registry.findAttestation(defaultModule1, attester);
+            instance.registry.findAttestation(defaultModule1, attester);
         assertTrue(attestation.revocationTime != 0);
     }
 
     function testRevoke__RevertWhen__AttestationNotFound() public {
         address attester = address(this);
         vm.expectRevert(abi.encodeWithSelector(NotFound.selector));
-        instancel1.revokeAttestation(defaultModule1, defaultSchema1, attester);
+        instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
     }
 
     function testRevoke__RevertWhen__InvalidSchema() public {
         address attester = address(this);
-        instancel1.mockAttestation(defaultSchema1, defaultModule1);
+        instance.mockAttestation(defaultSchema1, defaultModule1);
 
         vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
-        instancel1.revokeAttestation(defaultModule1, SchemaUID.wrap(0), attester);
+        instance.revokeAttestation(defaultModule1, SchemaUID.wrap(0), attester);
     }
 
     function testRevoke__RevertWhen__NotOriginalAttester() public {
@@ -326,35 +326,35 @@ contract AttestationTest is BaseTest {
         // address attester = address(this);
         // address notAttester = makeAddr("notAttester");
 
-        // instancel1.mockAttestation(defaultSchema1, defaultModule1);
+        // instance.mockAttestation(defaultSchema1, defaultModule1);
 
         // vm.startPrank(notAttester);
         // vm.expectRevert(abi.encodeWithSelector(AccessDenied.selector));
-        // instancel1.revokeAttestation(defaultModule1, defaultSchema1, attester);
+        // instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
         // vm.stopPrank();
     }
 
     function testRevoke__RevertWhen__AlreadyRevoked() public {
         address attester = address(this);
-        instancel1.mockAttestation(defaultSchema1, defaultModule1);
-        instancel1.revokeAttestation(defaultModule1, defaultSchema1, attester);
+        instance.mockAttestation(defaultSchema1, defaultModule1);
+        instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
 
         AttestationRecord memory attestation =
-            instancel1.registry.findAttestation(defaultModule1, attester);
+            instance.registry.findAttestation(defaultModule1, attester);
         assertTrue(attestation.revocationTime != 0);
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.AlreadyRevoked.selector));
-        instancel1.revokeAttestation(defaultModule1, defaultSchema1, attester);
+        instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
     }
 
     function testMultiRevoke() public {
         address attester = address(this);
-        address anotherModule = instancel1.deployAndRegister(
+        address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
-        instancel1.mockAttestation(defaultSchema1, defaultModule1);
-        instancel1.mockAttestation(defaultSchema1, anotherModule);
+        instance.mockAttestation(defaultSchema1, defaultModule1);
+        instance.mockAttestation(defaultSchema1, anotherModule);
 
         RevocationRequestData memory attData1 =
             RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
@@ -373,25 +373,25 @@ contract AttestationTest is BaseTest {
             MultiRevocationRequest({ schemaUID: defaultSchema1, data: attArray });
         reqs[0] = req1;
 
-        instancel1.registry.multiRevoke(reqs);
+        instance.registry.multiRevoke(reqs);
 
         AttestationRecord memory attestation =
-            instancel1.registry.findAttestation(defaultModule1, attester);
+            instance.registry.findAttestation(defaultModule1, attester);
         assertTrue(attestation.revocationTime != 0);
 
         AttestationRecord memory attestation2 =
-            instancel1.registry.findAttestation(anotherModule, attester);
+            instance.registry.findAttestation(anotherModule, attester);
         assertTrue(attestation2.revocationTime != 0);
     }
 
     function testMultiRevoke__RevertWhen__InvalidSchema() public {
         address attester = address(this);
-        address anotherModule = instancel1.deployAndRegister(
+        address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
-        instancel1.mockAttestation(defaultSchema1, defaultModule1);
-        instancel1.mockAttestation(defaultSchema1, anotherModule);
+        instance.mockAttestation(defaultSchema1, defaultModule1);
+        instance.mockAttestation(defaultSchema1, anotherModule);
 
         RevocationRequestData memory attData1 =
             RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
@@ -411,12 +411,12 @@ contract AttestationTest is BaseTest {
         reqs[0] = req1;
 
         vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
-        instancel1.registry.multiRevoke(reqs);
+        instance.registry.multiRevoke(reqs);
     }
 
     function testMultiRevoke__RevertWhen__AttestationNotFound() public {
         address attester = address(this);
-        address anotherModule = instancel1.deployAndRegister(
+        address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
@@ -438,18 +438,18 @@ contract AttestationTest is BaseTest {
         reqs[0] = req1;
 
         vm.expectRevert(abi.encodeWithSelector(NotFound.selector));
-        instancel1.registry.multiRevoke(reqs);
+        instance.registry.multiRevoke(reqs);
     }
 
     function testMultiRevoke__RevertWhen__NotOriginalAttester() public {
         address attester = address(this);
         address notAttester = makeAddr("notAttester");
-        address anotherModule = instancel1.deployAndRegister(
+        address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
-        instancel1.mockAttestation(defaultSchema1, defaultModule1);
-        instancel1.mockAttestation(defaultSchema1, anotherModule);
+        instance.mockAttestation(defaultSchema1, defaultModule1);
+        instance.mockAttestation(defaultSchema1, anotherModule);
 
         RevocationRequestData memory attData1 =
             RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
@@ -470,18 +470,18 @@ contract AttestationTest is BaseTest {
 
         vm.startPrank(notAttester);
         vm.expectRevert(abi.encodeWithSelector(AccessDenied.selector));
-        instancel1.registry.multiRevoke(reqs);
+        instance.registry.multiRevoke(reqs);
         vm.stopPrank();
     }
 
     function testMultiRevoke__RevertWhen__AlreadyRevoked() public {
         address attester = address(this);
-        address anotherModule = instancel1.deployAndRegister(
+        address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
-        instancel1.mockAttestation(defaultSchema1, defaultModule1);
-        instancel1.mockAttestation(defaultSchema1, anotherModule);
+        instance.mockAttestation(defaultSchema1, defaultModule1);
+        instance.mockAttestation(defaultSchema1, anotherModule);
 
         RevocationRequestData memory attData1 =
             RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
@@ -500,10 +500,10 @@ contract AttestationTest is BaseTest {
             MultiRevocationRequest({ schemaUID: defaultSchema1, data: attArray });
         reqs[0] = req1;
 
-        instancel1.registry.multiRevoke(reqs);
+        instance.registry.multiRevoke(reqs);
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.AlreadyRevoked.selector));
-        instancel1.registry.multiRevoke(reqs);
+        instance.registry.multiRevoke(reqs);
     }
 
     // function testReAttest() public {
@@ -513,16 +513,16 @@ contract AttestationTest is BaseTest {
     //         data: "123",
     //         value: 0
     //     });
-    //     instancel1.newAttestation(defaultSchema1, auth1k, attData);
-    //     instancel1.revokeAttestation(defaultModule1, defaultSchema1, auth1k);
+    //     instance.newAttestation(defaultSchema1, auth1k, attData);
+    //     instance.revokeAttestation(defaultModule1, defaultSchema1, auth1k);
     //     vm.warp(400);
 
     //     attData.data = "456";
     //     uint48 time = uint48(block.timestamp);
-    //     instancel1.newAttestation(defaultSchema1, auth1k, attData);
+    //     instance.newAttestation(defaultSchema1, auth1k, attData);
 
     //     AttestationRecord memory attestation =
-    //         instancel1.registry.findAttestation(defaultModule1, vm.addr(auth1k));
+    //         instance.registry.findAttestation(defaultModule1, vm.addr(auth1k));
 
     //     assertTrue(attestation.time == time);
     // }
@@ -551,6 +551,6 @@ contract AttestationTest is BaseTest {
     //         attester: address(attester)
     //     });
 
-    //     instancel1.registry.attest(req);
+    //     instance.registry.attest(req);
     // }
 }

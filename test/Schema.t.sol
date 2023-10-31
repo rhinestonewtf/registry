@@ -17,19 +17,19 @@ contract SchemaTest is BaseTest {
 
     function setUp() public virtual override {
         super.setUp();
-        simpleResolver = new DebugResolver(address(instancel1.registry));
+        simpleResolver = new DebugResolver(address(instance.registry));
     }
 
     function testRegisterSchema() public {
-        SchemaUID schemaId = instancel1.registerSchema("Test ABI 2", ISchemaValidator(address(0)));
+        SchemaUID schemaId = instance.registerSchema("Test ABI 2", ISchemaValidator(address(0)));
         assertTrue(SchemaUID.unwrap(schemaId) != bytes32(0), "schemaId should not be empty");
     }
 
     function testRegisterSchemaWitSameSchema() public {
-        SchemaUID schemaId = instancel1.registerSchema("same", ISchemaValidator(address(0)));
+        SchemaUID schemaId = instance.registerSchema("same", ISchemaValidator(address(0)));
 
         vm.expectRevert(abi.encodeWithSelector(ISchema.AlreadyExists.selector));
-        SchemaUID schemaId2 = instancel1.registerSchema("same", ISchemaValidator(address(0)));
+        SchemaUID schemaId2 = instance.registerSchema("same", ISchemaValidator(address(0)));
     }
 
     function testSameUIDOnL2() public {

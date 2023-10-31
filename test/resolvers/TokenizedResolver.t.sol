@@ -17,7 +17,7 @@ contract TokenizedResolverTest is BaseTest {
         super.setUp();
         token = new MockERC20("test", "test", 8);
         resolver = new TokenizedResolver(
-            address(instancel1.registry),
+            address(instance.registry),
             address(token)
         );
         validator = new SimpleValidator();
@@ -27,10 +27,10 @@ contract TokenizedResolverTest is BaseTest {
 
     function testTokenizedResolver() public {
         SchemaUID schema =
-            instancel1.registerSchema("TokenizedResolver", ISchemaValidator(address(validator)));
-        ResolverUID resolverUID = instancel1.registerResolver(IResolver(address(resolver)));
+            instance.registerSchema("TokenizedResolver", ISchemaValidator(address(validator)));
+        ResolverUID resolverUID = instance.registerResolver(IResolver(address(resolver)));
 
-        address module = instancel1.deployAndRegister(
+        address module = instance.deployAndRegister(
             resolverUID, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")
         );
 
@@ -43,7 +43,7 @@ contract TokenizedResolverTest is BaseTest {
 
         vm.prank(address(this));
         token.approve(address(resolver), 1000);
-        instancel1.newAttestation(schema, attData);
+        instance.newAttestation(schema, attData);
         assertEq(token.balanceOf(address(resolver)), 10);
     }
 }
