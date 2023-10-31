@@ -36,8 +36,8 @@ struct SchemaRecord {
 }
 
 struct ResolverRecord {
-    IResolver resolver; // Optional schema resolver.
-    address schemaOwner; // The address of the account used to register the schema.
+    IResolver resolver; // Optional resolver.
+    address resolverOwner; // The address of the account used to register the resolver.
 }
 
 /*//////////////////////////////////////////////////////////////
