@@ -205,6 +205,26 @@ abstract contract EIP712Verifier is EIP712 {
 
     /**
      * @dev Gets the revocation digest
+     * @param revData The data in the revocation request.
+     * @param schemaUid The UID of the schema.
+     * @param nonce  The nonce of the attestation request.
+     *
+     * @return digest The revocation digest.
+     */
+    function getRevocationDigest(
+        RevocationRequestData memory revData,
+        SchemaUID schemaUid,
+        uint256 nonce
+    )
+        public
+        view
+        returns (bytes32 digest)
+    {
+        digest = _revocationDigest(schemaUid, revData.subject, revData.attester, nonce);
+    }
+
+    /**
+     * @dev Gets the revocation digest
      * @param schemaUid The UID of the schema.
      * @param subject The address of the subject.
      * @param nonce  The nonce of the attestation request.

@@ -204,6 +204,14 @@ interface IRegistry {
         external
         view
         returns (bytes32 digest);
+    function getRevocationDigest(
+        RevocationRequestData memory revData,
+        bytes32 schemaUid,
+        uint256 nonce
+    )
+        external
+        view
+        returns (bytes32 digest);
     function getRevokeTypeHash() external pure returns (bytes32);
     function getSchema(bytes32 uid) external view returns (SchemaRecord memory);
     function multiAttest(MultiDelegatedAttestationRequest[] memory multiDelegatedRequests)

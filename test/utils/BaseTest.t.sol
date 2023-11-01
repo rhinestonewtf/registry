@@ -63,6 +63,8 @@ contract BaseTest is Test, RegistryTestTools {
     address defaultModule1;
     address defaultModule2;
 
+    DebugResolver debugResolver;
+
     address falseSchemaValidator;
 
     function setUp() public virtual {
@@ -74,7 +76,7 @@ contract BaseTest is Test, RegistryTestTools {
 
         defaultSchema1 = instance.registerSchema("Test ABI", ISchemaValidator(address(0)));
         defaultSchema2 = instance.registerSchema("Test ABI2", ISchemaValidator(address(0)));
-        DebugResolver debugResolver = new DebugResolver(address(instance.registry));
+        debugResolver = new DebugResolver(address(instance.registry));
         defaultResolver = instance.registerResolver(IResolver(address(debugResolver)));
 
         defaultModule1 = instance.deployAndRegister(
