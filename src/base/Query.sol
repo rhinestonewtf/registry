@@ -114,9 +114,10 @@ abstract contract Query is IQuery {
             AttestationRecord storage attestation =
                 _getAttestation({ moduleAddress: module, attester: attesters[i] });
 
-            attestedAtArray[i] = attestation.time;
-
-            if (attestation.revocationTime != ZERO_TIMESTAMP) continue;
+            if (attestation.revocationTime != ZERO_TIMESTAMP) {
+                attestedAtArray[i] = 0;
+                continue;
+            }
 
             uint256 expirationTime = attestation.expirationTime;
             uint256 attestedAt = expirationTime != ZERO_TIMESTAMP && expirationTime < timeNow
