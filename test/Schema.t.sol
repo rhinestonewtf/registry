@@ -24,6 +24,9 @@ contract SchemaTest is BaseTest {
     function testRegisterSchema() public {
         SchemaUID schemaUID = instance.registerSchema("Test ABI 2", ISchemaValidator(address(0)));
         assertTrue(SchemaUID.unwrap(schemaUID) != bytes32(0));
+
+        SchemaRecord memory schema = instance.registry.getSchema(schemaUID);
+        assertEq(schema.schema, "Test ABI 2");
     }
 
     function testRegisterSchema__RevertWhen__AlreadyExists() public {
@@ -34,21 +37,33 @@ contract SchemaTest is BaseTest {
         schemaUID = instance.registerSchema("Test ABI 2", ISchemaValidator(address(0)));
     }
 
-    function registerResolver() public {
-        ResolverUID rsolverUID = instance.registerResolver(simpleResolver);
-        assertTrue(ResolverUID.unwrap(rsolverUID) != bytes32(0));
+    function testRegisterResolver() public {
+        ResolverUID resolverUID = instance.registerResolver(simpleResolver);
+        assertTrue(ResolverUID.unwrap(resolverUID) != bytes32(0));
     }
 
-    function registerResolver__RevertWhen__InvalidResolver() public {
+    function testRegisterResolver__RevertWhen__InvalidResolver() public {
         vm.expectRevert(abi.encodeWithSelector(InvalidResolver.selector));
         instance.registerResolver(IResolver(address(0)));
     }
 
-    function registerResolver__RevertWhen__AlreadyExists() public {
-        ResolverUID rsolverUID = instance.registerResolver(simpleResolver);
-        assertTrue(ResolverUID.unwrap(rsolverUID) != bytes32(0));
+    function testRegisterResolver__RevertWhen__AlreadyExists() public {
+        ResolverUID resolverUID = instance.registerResolver(simpleResolver);
+        assertTrue(ResolverUID.unwrap(resolverUID) != bytes32(0));
 
         vm.expectRevert(abi.encodeWithSelector(ISchema.AlreadyExists.selector));
-        rsolverUID = instance.registerResolver(simpleResolver);
+        resolverUID = instance.registerResolver(simpleResolver);
+    }
+
+    function testSetResolver() public {
+        address resolverOwner = address(this);
+        ResolverUID resolverUID = instance.registerResolver(simpleResolver);
+        ResolverRecord memory resolver = instance.registry.getResolver(resolverUID);
+        assertEq(resolver.resolverOwner, resolverOwner);
+        assertEq(address(resolver.resolver), address(simpleResolver));
+
+        instance.registry.setResolver(resolverUID, IResolver(address(0x69)));
+        resolver = instance.registry.getResolver(resolverUID);
+        assertEq(address(resolver.resolver), address(0x69));
     }
 }

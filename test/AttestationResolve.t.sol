@@ -212,7 +212,7 @@ contract AttestationResolveTest is BaseTest {
             ResolverUID.wrap(0),
             ResolverRecord({
                 resolver: IResolver(address(debugResolver)),
-                schemaOwner: address(this)
+                resolverOwner: address(this)
             })
         );
 
@@ -220,7 +220,7 @@ contract AttestationResolveTest is BaseTest {
             ResolverUID.wrap(bytes32(uint256(1))),
             ResolverRecord({
                 resolver: IResolver(address(falseResolver)),
-                schemaOwner: address(this)
+                resolverOwner: address(this)
             })
         );
 
@@ -228,13 +228,13 @@ contract AttestationResolveTest is BaseTest {
             ResolverUID.wrap(bytes32(uint256(2))),
             ResolverRecord({
                 resolver: IResolver(address(payableResolver)),
-                schemaOwner: address(this)
+                resolverOwner: address(this)
             })
         );
 
         resolverInstance.addResolver(
             ResolverUID.wrap(bytes32(uint256(3))),
-            ResolverRecord({ resolver: IResolver(address(0x6969)), schemaOwner: address(this) })
+            ResolverRecord({ resolver: IResolver(address(0x6969)), resolverOwner: address(this) })
         );
     }
 
