@@ -43,7 +43,7 @@ abstract contract EIP712Verifier is EIP712 {
         returns (string memory name, string memory version)
     {
         name = "Registry";
-        version = "0.2";
+        version = "0.2.1";
     }
 
     /**

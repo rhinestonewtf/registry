@@ -1,178 +1,159 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.19;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
 
-// import "forge-std/Test.sol";
+import "forge-std/Test.sol";
 
-// import "./Attestation.t.sol";
-// import "../src/interface/IQuery.sol";
+import "./Attestation.t.sol";
+import "../src/interface/IQuery.sol";
 
-// /// @title RSRegistryTest
-// /// @author zeroknots
+/// @title RSRegistryTest
+/// @author zeroknots, kopy-kat
+contract QueryTest is AttestationTest {
+    using RegistryTestLib for RegistryInstance;
 
-// contract QueryTest is AttestationTest {
-//     using RegistryTestLib for RegistryInstance;
+    address immutable attester = address(this);
 
-//     function setUp() public virtual override {
-//         super.setUp();
-//     }
+    function setUp() public virtual override {
+        super.setUp();
+    }
 
-//     function testQueryAttestation() public {
-//         testAttest();
+    function testCheckAttestation() public {
+        testAttest();
+        instance.registry.check(defaultModule1, attester);
+    }
 
-//         AttestationRecord memory attestation1 =
-//             instance.registry.findAttestation(defaultModule1, vm.addr(auth1k));
-//     }
+    function testCheckAttestation__RevertWhen__Unlisted() public {
+        vm.expectRevert(IQuery.AttestationNotFound.selector);
+        instance.registry.check(defaultModule1, attester);
+    }
 
-//     function testCheckAttestation() public {
-//         testAttest();
-//         instance.registry.check(defaultModule1, vm.addr(auth1k));
-//     }
+    function testCheckAttestation__RevertWhen__Expired() public {
+        vm.warp(100);
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
+        vm.warp(200);
+        vm.expectRevert(IQuery.AttestationNotFound.selector);
+        instance.registry.check(defaultModule1, attester);
+    }
 
-//     function testCheckAttestation__RevertWhen__Unlisted() public {
-//         vm.expectRevert(IQuery.AttestationNotFound.selector);
-//         instance.registry.check(defaultModule1, vm.addr(auth1k));
-//     }
+    function testCheckAttestation__RevertWhen__Revoked() public {
+        testAttest();
+        instance.revokeAttestation(defaultModule1, defaultSchema1, address(this));
+        vm.expectRevert(abi.encodeWithSelector(IQuery.RevokedAttestation.selector, attester));
+        instance.registry.check(defaultModule1, attester);
+    }
 
-//     function testCheckAttestation__RevertWhen__Expired() public {
-//         vm.warp(100);
-//         AttestationRequestData memory attData = AttestationRequestData({
-//             subject: defaultModule1,
-//             expirationTime: uint48(101),
-//             data: abi.encode(true),
-//             value: 0
-//         });
-//         instance.mockAttestation(defaultSchema1, auth1k, attData);
-//         vm.warp(200);
-//         vm.expectRevert(IQuery.AttestationNotFound.selector);
-//         instance.registry.check(defaultModule1, vm.addr(auth1k));
-//     }
+    function testCheckNAttestation() public {
+        testAttest();
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth2k);
+        address[] memory attesters = new address[](2);
+        attesters[0] = attester;
+        attesters[1] = vm.addr(auth2k);
+        instance.registry.checkN(defaultModule1, attesters, 1);
+    }
 
-//     function testCheckAttestation__RevertWhen__Revoked() public {
-//         testAttest();
-//         instance.revokeAttestation(defaultModule1, defaultSchema1, address(this));
-//         vm.expectRevert(abi.encodeWithSelector(IQuery.RevokedAttestation.selector, vm.addr(auth1k)));
-//         instance.registry.check(defaultModule1, vm.addr(auth1k));
-//     }
+    function testCheckNAttestation__RevertWhen__ThresholdNotMet() public {
+        testAttest();
+        address[] memory attesters = new address[](2);
+        attesters[0] = attester;
+        attesters[1] = address(0x69);
 
-//     function testCheckNAttestation() public {
-//         testAttest();
-//         AttestationRequestData memory attData = AttestationRequestData({
-//             subject: defaultModule1,
-//             expirationTime: uint48(101),
-//             data: abi.encode(true),
-//             value: 0
-//         });
-//         instance.mockAttestation(defaultSchema1, auth2k, attData);
-//         address[] memory authorities = new address[](2);
-//         authorities[0] = vm.addr(auth1k);
-//         authorities[1] = vm.addr(auth2k);
-//         instance.registry.checkN(defaultModule1, authorities, 1);
-//     }
+        vm.expectRevert(IQuery.InsufficientAttestations.selector);
+        instance.registry.checkN(defaultModule1, attesters, 2);
+    }
 
-//     function testCheckNAttestation__RevertWhen__ThresholdNotMet() public {
-//         testAttest();
-//         address[] memory authorities = new address[](2);
-//         authorities[0] = vm.addr(auth1k);
-//         authorities[1] = vm.addr(auth2k);
+    function testCheckNAttestation__RevertWhen__Expired() public {
+        vm.warp(100);
+        testAttest();
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth2k);
+        AttestationRequestData memory attData = AttestationRequestData({
+            subject: defaultModule1,
+            expirationTime: uint48(101),
+            data: abi.encode(false),
+            value: 0
+        });
+        instance.newDelegatedAttestation(defaultSchema1, auth2k, attData);
+        vm.warp(200);
+        address[] memory attesters = new address[](2);
+        attesters[0] = attester;
+        attesters[1] = vm.addr(auth2k);
 
-//         vm.expectRevert(IQuery.InsufficientAttestations.selector);
-//         instance.registry.checkN(defaultModule1, authorities, 2);
-//     }
+        vm.expectRevert(IQuery.AttestationNotFound.selector);
+        instance.registry.checkN(defaultModule1, attesters, 1);
+    }
 
-//     function testCheckNAttestation__RevertWhen__Expired() public {
-//         vm.warp(100);
-//         testAttest();
-//         AttestationRequestData memory attData = AttestationRequestData({
-//             subject: defaultModule1,
-//             expirationTime: uint48(101),
-//             data: abi.encode(true),
-//             value: 0
-//         });
-//         instance.mockAttestation(defaultSchema1, auth2k, attData);
-//         vm.warp(200);
-//         address[] memory authorities = new address[](2);
-//         authorities[0] = vm.addr(auth1k);
-//         authorities[1] = vm.addr(auth2k);
+    function testCheckNAttestation__RevertWhen__Revoked() public {
+        testAttest();
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth2k);
+        instance.delegatedRevokeAttestation(defaultModule1, defaultSchema1, auth2k);
+        address[] memory attesters = new address[](2);
+        attesters[0] = vm.addr(auth1k);
+        attesters[1] = vm.addr(auth2k);
 
-//         vm.expectRevert(IQuery.AttestationNotFound.selector);
-//         instance.registry.checkN(defaultModule1, authorities, 1);
-//     }
+        vm.expectRevert(abi.encodeWithSelector(IQuery.RevokedAttestation.selector, vm.addr(auth2k)));
+        instance.registry.checkN(defaultModule1, attesters, 1);
+    }
 
-//     function testCheckNAttestation__RevertWhen__Revoked() public {
-//         testAttest();
-//         AttestationRequestData memory attData = AttestationRequestData({
-//             subject: defaultModule1,
-//             expirationTime: uint48(101),
-//             data: abi.encode(true),
-//             value: 0
-//         });
-//         instance.mockAttestation(defaultSchema1, auth2k, attData);
-//         instance.revokeAttestation(defaultModule1, defaultSchema1, address(this));
-//         address[] memory authorities = new address[](2);
-//         authorities[0] = vm.addr(auth1k);
-//         authorities[1] = vm.addr(auth2k);
+    function testCheckNAttestationUnsafe() public {
+        testAttest();
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth2k);
+        address[] memory attesters = new address[](2);
+        attesters[0] = vm.addr(auth1k);
+        attesters[1] = vm.addr(auth2k);
+        instance.registry.checkNUnsafe(defaultModule1, attesters, 1);
+    }
 
-//         vm.expectRevert(abi.encodeWithSelector(IQuery.RevokedAttestation.selector, vm.addr(auth2k)));
-//         instance.registry.checkN(defaultModule1, authorities, 1);
-//     }
+    function testCheckNAttestationUnsafe__RevertWhen__ThresholdNotMet() public {
+        testAttest();
+        address[] memory attesters = new address[](2);
+        attesters[0] = vm.addr(auth1k);
+        attesters[1] = vm.addr(auth2k);
 
-//     function testCheckNAttestationUnsafe() public {
-//         testAttest();
-//         AttestationRequestData memory attData = AttestationRequestData({
-//             subject: defaultModule1,
-//             expirationTime: uint48(101),
-//             data: abi.encode(true),
-//             value: 0
-//         });
-//         instance.mockAttestation(defaultSchema1, auth2k, attData);
-//         address[] memory authorities = new address[](2);
-//         authorities[0] = vm.addr(auth1k);
-//         authorities[1] = vm.addr(auth2k);
-//         instance.registry.checkNUnsafe(defaultModule1, authorities, 1);
-//     }
+        vm.expectRevert(IQuery.InsufficientAttestations.selector);
+        instance.registry.checkNUnsafe(defaultModule1, attesters, 2);
+    }
 
-//     function testCheckNAttestationUnsafe__RevertWhen__ThresholdNotMet() public {
-//         testAttest();
-//         address[] memory authorities = new address[](2);
-//         authorities[0] = vm.addr(auth1k);
-//         authorities[1] = vm.addr(auth2k);
+    function testCheckNAttestationUnsafe__Expired() public {
+        vm.warp(100);
+        testAttest();
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
+        vm.warp(200);
+        address[] memory attesters = new address[](2);
+        attesters[0] = vm.addr(auth1k);
+        attesters[1] = vm.addr(auth2k);
 
-//         vm.expectRevert(IQuery.InsufficientAttestations.selector);
-//         instance.registry.checkNUnsafe(defaultModule1, authorities, 2);
-//     }
+        instance.registry.checkNUnsafe(defaultModule1, attesters, 1);
+    }
 
-//     function testCheckNAttestationUnsafe__Expired() public {
-//         vm.warp(100);
-//         testAttest();
-//         AttestationRequestData memory attData = AttestationRequestData({
-//             subject: defaultModule1,
-//             expirationTime: uint48(101),
-//             data: abi.encode(true),
-//             value: 0
-//         });
-//         instance.mockAttestation(defaultSchema1, attData);
-//         vm.warp(200);
-//         address[] memory authorities = new address[](2);
-//         authorities[0] = vm.addr(auth1k);
-//         authorities[1] = vm.addr(auth2k);
+    function testCheckNAttestationUnsafe__Revoked() public {
+        testAttest();
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
+        instance.revokeAttestation(defaultModule1, defaultSchema1, address(this));
+        address[] memory attesters = new address[](2);
+        attesters[0] = vm.addr(auth1k);
+        attesters[1] = vm.addr(auth2k);
 
-//         instance.registry.checkNUnsafe(defaultModule1, authorities, 1);
-//     }
+        instance.registry.checkNUnsafe(defaultModule1, attesters, 1);
+    }
 
-//     function testCheckNAttestationUnsafe__Revoked() public {
-//         testAttest();
-//         AttestationRequestData memory attData = AttestationRequestData({
-//             subject: defaultModule1,
-//             expirationTime: uint48(101),
-//             data: abi.encode(true),
-//             value: 0
-//         });
-//         instance.mockAttestation(defaultSchema1, attData);
-//         instance.revokeAttestation(defaultModule1, defaultSchema1, address(this));
-//         address[] memory authorities = new address[](2);
-//         authorities[0] = vm.addr(auth1k);
-//         authorities[1] = vm.addr(auth2k);
+    function testFindAttestation() public {
+        testAttest();
+        AttestationRecord memory attestation =
+            instance.registry.findAttestation(defaultModule1, attester);
+        assertEq(attestation.attester, attester);
+    }
 
-//         instance.registry.checkNUnsafe(defaultModule1, authorities, 1);
-//     }
-// }
+    function testFindAttestations() public {
+        testAttest();
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth2k);
+
+        address[] memory attesters = new address[](2);
+        attesters[0] = attester;
+        attesters[1] = vm.addr(auth2k);
+
+        AttestationRecord[] memory attestations =
+            instance.registry.findAttestations(defaultModule1, attesters);
+
+        assertEq(attestations[0].attester, attesters[0]);
+        assertEq(attestations[1].attester, attesters[1]);
+    }
+}
