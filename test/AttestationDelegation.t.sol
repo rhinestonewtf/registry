@@ -534,28 +534,6 @@ contract AttestationDelegationTest is BaseTest {
         instance.registry.revoke(req);
     }
 
-    function testRevoke__RevertWhen__NotOriginalAttester() public {
-        // @TODO: Fix this
-        // instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth2k);
-
-        // address attester = vm.addr(auth1k);
-
-        // RevocationRequestData memory attData1 =
-        //     RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
-
-        // bytes memory sig = instance.signRevocation(defaultSchema1, auth1k, attData1);
-
-        // DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
-        //     schemaUID: defaultSchema1,
-        //     data: attData1,
-        //     revoker: attester,
-        //     signature: sig
-        // });
-
-        // vm.expectRevert(abi.encodeWithSelector(AccessDenied.selector));
-        // instance.registry.revoke(req);
-    }
-
     function testRevoke__RevertWhen__AlreadyRevoked() public {
         instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
         address attester = vm.addr(auth1k);
@@ -755,52 +733,4 @@ contract AttestationDelegationTest is BaseTest {
         vm.expectRevert(abi.encodeWithSelector(IAttestation.AlreadyRevoked.selector));
         instance.registry.multiRevoke(reqs);
     }
-
-    // function testReAttest() public {
-    //     AttestationRequestData memory attData = AttestationRequestData({
-    //         subject: defaultModule1,
-    //         expirationTime: uint48(0),
-    //         data: "123",
-    //         value: 0
-    //     });
-    //     instance.newAttestation(defaultSchema1, auth1k, attData);
-    //     instance.revokeAttestation(defaultModule1, defaultSchema1, auth1k);
-    //     vm.warp(400);
-
-    //     attData.data = "456";
-    //     uint48 time = uint48(block.timestamp);
-    //     instance.newAttestation(defaultSchema1, auth1k, attData);
-
-    //     AttestationRecord memory attestation =
-    //         instance.registry.findAttestation(defaultModule1, vm.addr(auth1k));
-
-    //     assertTrue(attestation.time == time);
-    // }
-
-    // function testAttestationNonExistingSchema() public {
-    //     // TODO
-    //     assertTrue(true);
-    // }
-
-    // function testERC1721Attestation() public {
-    //     ERC1271Attester attester = new ERC1271Attester();
-
-    //     AttestationRequestData memory attData = AttestationRequestData({
-    //         subject: defaultModule1,
-    //         expirationTime: uint48(0),
-    //         data: abi.encode(true),
-    //         value: 0
-    //     });
-
-    //     bytes memory sig = EXPECTED_SIGNATURE;
-
-    //     DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
-    //         schemaUID: defaultSchema1,
-    //         data: attData,
-    //         signature: sig,
-    //         attester: address(attester)
-    //     });
-
-    //     instance.registry.attest(req);
-    // }
 }

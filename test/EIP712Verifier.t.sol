@@ -96,10 +96,10 @@ contract EIP712VerifierTest is BaseTest {
     function testVerifyAttest() public {
         SchemaUID schemaUID = SchemaUID.wrap(0);
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: address(0),
+            subject: address(0x69),
             expirationTime: uint48(0),
             value: 0,
-            data: ""
+            data: abi.encode(true)
         });
         bytes memory signature = instance.signAttestation(schemaUID, auth1k, attData);
         DelegatedAttestationRequest memory request = DelegatedAttestationRequest({

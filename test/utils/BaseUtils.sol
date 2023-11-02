@@ -115,7 +115,7 @@ library RegistryTestLib {
         uint256 nonce = instance.registry.getNonce(getAddr(attesterPk)) + 1;
         bytes32 digest = instance.registry.getAttestationDigest({
             attData: attData,
-            schemaUid: schemaUID,
+            schemaUID: schemaUID,
             nonce: nonce
         });
 
@@ -144,7 +144,7 @@ library RegistryTestLib {
         for (uint256 i = 0; i < attData.length; i++) {
             bytes32 digest = instance.registry.getAttestationDigest({
                 attData: attData[i],
-                schemaUid: schemaUID,
+                schemaUID: schemaUID,
                 nonce: nonce + i
             });
 
@@ -184,11 +184,7 @@ library RegistryTestLib {
         RevocationRequestData memory revoke =
             RevocationRequestData({ subject: module, attester: getAddr(attesterPk), value: 0 });
 
-        bytes32 digest =
-            instance.registry.getRevocationDigest(revoke, schemaUID, getAddr(attesterPk));
-
-        (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
-        bytes memory signature = abi.encodePacked(r, s, v);
+        bytes memory signature = signRevocation(instance, schemaUID, attesterPk, revoke);
 
         DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
             schemaUID: schemaUID,
