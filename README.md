@@ -1,4 +1,4 @@
-<img align="right" width="150" height="150" top="100" src="https://docs-9d8fk274h-rhinestone.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Frhinestone.d2796f13.png&w=2048&q=75">
+<img align="right" width="150" height="150" top="100" src="./public/logo.png">
 
 # Registry [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![solidity](https://img.shields.io/badge/solidity-^0.8.22-lightgrey) [![Foundry][foundry-badge]][foundry]
 
