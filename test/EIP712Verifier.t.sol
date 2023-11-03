@@ -50,7 +50,7 @@ contract EIP712VerifierTest is BaseTest {
     }
 
     function testGetNonce() public {
-        address account = makeAddr("account");
+        address account = vm.addr(auth1k);
         uint256 nonce = verifier.getNonce(account);
         assertEq(nonce, 0);
 
@@ -101,7 +101,12 @@ contract EIP712VerifierTest is BaseTest {
             value: 0,
             data: abi.encode(true)
         });
-        bytes memory signature = instance.signAttestation(schemaUID, auth1k, attData);
+        uint256 nonce = verifier.getNonce(vm.addr(auth1k)) + 1;
+        bytes32 digest =
+            verifier.getAttestationDigest({ attData: attData, schemaUID: schemaUID, nonce: nonce });
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(auth1k, digest);
+        bytes memory signature = abi.encodePacked(r, s, v);
+
         DelegatedAttestationRequest memory request = DelegatedAttestationRequest({
             schemaUID: schemaUID,
             data: attData,
@@ -165,7 +170,12 @@ contract EIP712VerifierTest is BaseTest {
         RevocationRequestData memory revData =
             RevocationRequestData({ subject: address(0), attester: revoker, value: 0 });
 
-        bytes memory signature = instance.signRevocation(schemaUID, auth1k, revData);
+        uint256 nonce = verifier.getNonce(vm.addr(auth1k)) + 1;
+        bytes32 digest =
+            verifier.getRevocationDigest({ revData: revData, schemaUID: schemaUID, nonce: nonce });
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(auth1k, digest);
+        bytes memory signature = abi.encodePacked(r, s, v);
+
         DelegatedRevocationRequest memory request = DelegatedRevocationRequest({
             schemaUID: schemaUID,
             data: revData,

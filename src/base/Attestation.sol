@@ -62,18 +62,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         ModuleRecord storage moduleRecord = _getModule({ moduleAddress: request.data.subject });
         ResolverUID resolverUID = moduleRecord.resolverUID;
 
-        // only run this function if the selected schemaUID exists
-        SchemaRecord storage schema = _getSchema({ schemaUID: request.schemaUID });
-        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
-        // validate Schema
-        ISchemaValidator validator = schema.validator;
-        // if validator is set, call the validator
-        if (address(validator) != ZERO_ADDRESS) {
-            // revert if ISchemaValidator returns false
-            if (!schema.validator.validateSchema(requestData)) {
-                revert InvalidAttestation();
-            }
-        }
+        verifyAttestationData(request.schemaUID, requestData);
 
         // write attestations to registry storge
         (AttestationRecord memory attestationRecord, uint256 value) = _writeAttestation({
@@ -226,18 +215,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         internal
         returns (uint256 usedValue)
     {
-        // only run this function if the selected schemaUID exists
-        SchemaRecord storage schema = _getSchema({ schemaUID: schemaUID });
-        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
-        // validate Schema
-        ISchemaValidator validator = schema.validator;
-        // if validator is set, call the validator
-        if (address(validator) != ZERO_ADDRESS) {
-            // revert if ISchemaValidator returns false
-            if (!schema.validator.validateSchema(attestationRequestDatas)) {
-                revert InvalidAttestation();
-            }
-        }
+        verifyAttestationData(schemaUID, attestationRequestDatas);
 
         // caching length
         uint256 length = attestationRequestDatas.length;
@@ -270,6 +248,48 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             availableValue: availableValue,
             isLast: isLastAttestation
         });
+    }
+
+    function verifyAttestationData(
+        SchemaUID schemaUID,
+        AttestationRequestData calldata requestData
+    )
+        internal
+        view
+    {
+        // only run this function if the selected schemaUID exists
+        SchemaRecord storage schema = _getSchema({ schemaUID: schemaUID });
+        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
+        // validate Schema
+        ISchemaValidator validator = schema.validator;
+        // if validator is set, call the validator
+        if (address(validator) != ZERO_ADDRESS) {
+            // revert if ISchemaValidator returns false
+            if (!schema.validator.validateSchema(requestData)) {
+                revert InvalidAttestation();
+            }
+        }
+    }
+
+    function verifyAttestationData(
+        SchemaUID schemaUID,
+        AttestationRequestData[] calldata requestDatas
+    )
+        internal
+        view
+    {
+        // only run this function if the selected schemaUID exists
+        SchemaRecord storage schema = _getSchema({ schemaUID: schemaUID });
+        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
+        // validate Schema
+        ISchemaValidator validator = schema.validator;
+        // if validator is set, call the validator
+        if (address(validator) != ZERO_ADDRESS) {
+            // revert if ISchemaValidator returns false
+            if (!schema.validator.validateSchema(requestDatas)) {
+                revert InvalidAttestation();
+            }
+        }
     }
 
     /**

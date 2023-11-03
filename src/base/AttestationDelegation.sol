@@ -57,18 +57,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             _getModule({ moduleAddress: delegatedRequest.data.subject });
         ResolverUID resolverUID = moduleRecord.resolverUID;
 
-        // only run this function if the selected schemaUID exists
-        SchemaRecord storage schema = _getSchema({ schemaUID: delegatedRequest.schemaUID });
-        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
-        // validate Schema
-        ISchemaValidator validator = schema.validator;
-        // if validator is set, call the validator
-        if (address(validator) != ZERO_ADDRESS) {
-            // revert if ISchemaValidator returns false
-            if (!schema.validator.validateSchema(attestationRequestData)) {
-                revert InvalidAttestation();
-            }
-        }
+        verifyAttestationData(delegatedRequest.schemaUID, attestationRequestData);
 
         (AttestationRecord memory attestationRecord, uint256 value) = _writeAttestation({
             schemaUID: delegatedRequest.schemaUID,

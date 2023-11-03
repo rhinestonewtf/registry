@@ -177,7 +177,7 @@ interface IRegistry {
     function getAttestTypeHash() external pure returns (bytes32);
     function getAttestationDigest(
         AttestationRequestData memory attData,
-        bytes32 schemaUid,
+        bytes32 schemaUID,
         uint256 nonce
     )
         external
@@ -185,7 +185,7 @@ interface IRegistry {
         returns (bytes32 digest);
     function getAttestationDigest(
         AttestationRequestData memory attData,
-        bytes32 schemaUid,
+        bytes32 schemaUID,
         address attester
     )
         external
@@ -198,7 +198,7 @@ interface IRegistry {
     function getResolver(bytes32 uid) external view returns (ResolverRecord memory);
     function getRevocationDigest(
         RevocationRequestData memory revData,
-        bytes32 schemaUid,
+        bytes32 schemaUID,
         address revoker
     )
         external
@@ -206,7 +206,7 @@ interface IRegistry {
         returns (bytes32 digest);
     function getRevocationDigest(
         RevocationRequestData memory revData,
-        bytes32 schemaUid,
+        bytes32 schemaUID,
         uint256 nonce
     )
         external
