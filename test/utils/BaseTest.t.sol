@@ -26,11 +26,33 @@ contract MockModule {
     }
 }
 
+contract FalseSchemaValidator is ISchemaValidator {
+    function validateSchema(AttestationRequestData calldata attestation)
+        external
+        view
+        returns (bool)
+    {
+        return false;
+    }
+
+    /**
+     * @notice Validates an array of attestation requests.
+     */
+    function validateSchema(AttestationRequestData[] calldata attestations)
+        external
+        view
+        returns (bool)
+    {
+        return false;
+    }
+
+    function supportsInterface(bytes4 interfaceID) external view returns (bool) { }
+}
+
 contract BaseTest is Test, RegistryTestTools {
     using RegistryTestLib for RegistryInstance;
 
-    RegistryInstance instancel1;
-    RegistryInstance instancel2;
+    RegistryInstance instance;
 
     uint256 auth1k;
     uint256 auth2k;
@@ -41,20 +63,26 @@ contract BaseTest is Test, RegistryTestTools {
     address defaultModule1;
     address defaultModule2;
 
+    DebugResolver debugResolver;
+
+    address falseSchemaValidator;
+
     function setUp() public virtual {
-        instancel1 = _setupInstance({ name: "RegistryL1", salt: 0 });
+        instance = _setupInstance({ name: "RegistryL1", salt: 0 });
         (, auth1k) = makeAddrAndKey("auth1");
         (, auth2k) = makeAddrAndKey("auth2");
 
-        defaultSchema1 = instancel1.registerSchema("Test ABI", ISchemaValidator(address(0)));
-        defaultSchema2 = instancel1.registerSchema("Test ABI2", ISchemaValidator(address(0)));
-        DebugResolver debugResolver = new DebugResolver(address(instancel1.registry));
-        defaultResolver = instancel1.registerResolver(IResolver(address(debugResolver)));
+        falseSchemaValidator = address(new FalseSchemaValidator());
 
-        defaultModule1 = instancel1.deployAndRegister(
+        defaultSchema1 = instance.registerSchema("Test ABI", ISchemaValidator(address(0)));
+        defaultSchema2 = instance.registerSchema("Test ABI2", ISchemaValidator(address(0)));
+        debugResolver = new DebugResolver(address(instance.registry));
+        defaultResolver = instance.registerResolver(IResolver(address(debugResolver)));
+
+        defaultModule1 = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1234)
         );
-        defaultModule2 = instancel1.deployAndRegister(
+        defaultModule2 = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(5678)
         );
     }

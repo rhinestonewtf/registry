@@ -11,7 +11,7 @@ import {
     NotFound,
     AccessDenied
 } from "../src/base/Attestation.sol";
-
+import { InvalidSignature, InvalidLength } from "../src/Common.sol";
 import { ERC1271Attester, EXPECTED_SIGNATURE } from "./utils/ERC1271Attester.sol";
 
 import {
@@ -32,7 +32,8 @@ import {
     MultiAttestationRequest,
     MultiRevocationRequest,
     RevocationRequestData,
-    RevocationRequest
+    DelegatedRevocationRequest,
+    MultiDelegatedRevocationRequest
 } from "../src/DataTypes.sol";
 
 struct SampleAttestation {
@@ -43,9 +44,9 @@ struct SampleAttestation {
     uint256 severity;
 }
 
-/// @title AttestationTest
-/// @author zeroknots
-contract AttestationTest is BaseTest {
+/// @title AttestationDelegationTest
+/// @author kopy-kat
+contract AttestationDelegationTest is BaseTest {
     using RegistryTestLib for RegistryInstance;
 
     function setUp() public virtual override {
@@ -53,7 +54,7 @@ contract AttestationTest is BaseTest {
     }
 
     function testAttest() public {
-        instance.mockAttestation(defaultSchema1, defaultModule1);
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
     }
 
     function testAttest__RevertWhen__InvalidExpirationTime() public {
@@ -65,7 +66,7 @@ contract AttestationTest is BaseTest {
         });
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidExpirationTime.selector));
-        instance.newAttestation(defaultSchema1, attData);
+        instance.newDelegatedAttestation(defaultSchema1, auth1k, attData);
     }
 
     function testAttest__RevertWhen__ZeroImplementation() public {
@@ -77,7 +78,7 @@ contract AttestationTest is BaseTest {
         });
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidAttestation.selector));
-        instance.newAttestation(defaultSchema1, attData);
+        instance.newDelegatedAttestation(defaultSchema1, auth1k, attData);
     }
 
     function testAttest__RevertWhen__InvalidSchema() public {
@@ -89,11 +90,11 @@ contract AttestationTest is BaseTest {
         });
 
         vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
-        instance.newAttestation(SchemaUID.wrap(0), attData);
+        instance.newDelegatedAttestation(SchemaUID.wrap(0), auth1k, attData);
     }
 
     function testAttest__RevertWhen__ValidatorSaysInvalidAttestation() public {
-        SchemaUID schemaId = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
+        SchemaUID schemaUID = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
@@ -102,7 +103,27 @@ contract AttestationTest is BaseTest {
         });
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidAttestation.selector));
-        instance.newAttestation(schemaId, attData);
+        instance.newDelegatedAttestation(schemaUID, auth1k, attData);
+    }
+
+    function testAttest__RevertWhen_InvalidSignature() public {
+        SchemaUID schemaUID = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
+        AttestationRequestData memory attData = AttestationRequestData({
+            subject: defaultModule1,
+            expirationTime: uint48(0),
+            data: abi.encode(true),
+            value: 0
+        });
+
+        bytes memory signature = "";
+        DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
+            schemaUID: schemaUID,
+            data: attData,
+            signature: signature,
+            attester: vm.addr(auth1k)
+        });
+        vm.expectRevert(abi.encodeWithSelector(InvalidSignature.selector));
+        instance.registry.attest(req);
     }
 
     function testAttest__With__LargeAttestation() public {
@@ -124,7 +145,7 @@ contract AttestationTest is BaseTest {
             value: 0
         });
 
-        instance.newAttestation(defaultSchema1, attData);
+        instance.newDelegatedAttestation(defaultSchema1, auth1k, attData);
     }
 
     function testMultiAttest() public {
@@ -152,9 +173,15 @@ contract AttestationTest is BaseTest {
         attArray[0] = attData1;
         attArray[1] = attData2;
 
-        MultiAttestationRequest[] memory reqs = new MultiAttestationRequest[](1);
-        MultiAttestationRequest memory req1 =
-            MultiAttestationRequest({ schemaUID: defaultSchema1, data: attArray });
+        bytes[] memory sigs = instance.signAttestation(defaultSchema1, auth1k, attArray);
+
+        MultiDelegatedAttestationRequest[] memory reqs = new MultiDelegatedAttestationRequest[](1);
+        MultiDelegatedAttestationRequest memory req1 = MultiDelegatedAttestationRequest({
+            schemaUID: defaultSchema1,
+            data: attArray,
+            signatures: sigs,
+            attester: vm.addr(auth1k)
+        });
         reqs[0] = req1;
 
         instance.registry.multiAttest(reqs);
@@ -185,9 +212,15 @@ contract AttestationTest is BaseTest {
         attArray[0] = attData1;
         attArray[1] = attData2;
 
-        MultiAttestationRequest[] memory reqs = new MultiAttestationRequest[](1);
-        MultiAttestationRequest memory req1 =
-            MultiAttestationRequest({ schemaUID: SchemaUID.wrap(0), data: attArray });
+        bytes[] memory sigs = instance.signAttestation(SchemaUID.wrap(0), auth1k, attArray);
+
+        MultiDelegatedAttestationRequest[] memory reqs = new MultiDelegatedAttestationRequest[](1);
+        MultiDelegatedAttestationRequest memory req1 = MultiDelegatedAttestationRequest({
+            schemaUID: SchemaUID.wrap(0),
+            data: attArray,
+            signatures: sigs,
+            attester: vm.addr(auth1k)
+        });
         reqs[0] = req1;
 
         vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
@@ -195,7 +228,7 @@ contract AttestationTest is BaseTest {
     }
 
     function testMultiAttest__RevertWhen__ValidatorSaysInvalidAttestation() public {
-        SchemaUID schemaId = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
+        SchemaUID schemaUID = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
         address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
@@ -220,9 +253,15 @@ contract AttestationTest is BaseTest {
         attArray[0] = attData1;
         attArray[1] = attData2;
 
-        MultiAttestationRequest[] memory reqs = new MultiAttestationRequest[](1);
-        MultiAttestationRequest memory req1 =
-            MultiAttestationRequest({ schemaUID: schemaId, data: attArray });
+        bytes[] memory sigs = instance.signAttestation(schemaUID, auth1k, attArray);
+
+        MultiDelegatedAttestationRequest[] memory reqs = new MultiDelegatedAttestationRequest[](1);
+        MultiDelegatedAttestationRequest memory req1 = MultiDelegatedAttestationRequest({
+            schemaUID: schemaUID,
+            data: attArray,
+            signatures: sigs,
+            attester: vm.addr(auth1k)
+        });
         reqs[0] = req1;
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidAttestation.selector));
@@ -254,17 +293,142 @@ contract AttestationTest is BaseTest {
         attArray[0] = attData1;
         attArray[1] = attData2;
 
-        MultiAttestationRequest[] memory reqs = new MultiAttestationRequest[](1);
-        MultiAttestationRequest memory req1 =
-            MultiAttestationRequest({ schemaUID: defaultSchema1, data: attArray });
+        bytes[] memory sigs = instance.signAttestation(defaultSchema1, auth1k, attArray);
+
+        MultiDelegatedAttestationRequest[] memory reqs = new MultiDelegatedAttestationRequest[](1);
+        MultiDelegatedAttestationRequest memory req1 = MultiDelegatedAttestationRequest({
+            schemaUID: defaultSchema1,
+            data: attArray,
+            signatures: sigs,
+            attester: vm.addr(auth1k)
+        });
         reqs[0] = req1;
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidExpirationTime.selector));
         instance.registry.multiAttest(reqs);
     }
 
+    function testMultiAttest__RevertWhen__InvalidLength__DataLength() public {
+        address anotherModule = instance.deployAndRegister(
+            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
+        );
+
+        AttestationRequestData memory attData1 = AttestationRequestData({
+            subject: defaultModule1,
+            expirationTime: uint48(1),
+            data: abi.encode(true),
+            value: 0
+        });
+
+        AttestationRequestData memory attData2 = AttestationRequestData({
+            subject: anotherModule,
+            expirationTime: uint48(0),
+            data: abi.encode(true),
+            value: 0
+        });
+
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](
+            0
+        );
+
+        bytes[] memory sigs = new bytes[](0);
+
+        MultiDelegatedAttestationRequest[] memory reqs = new MultiDelegatedAttestationRequest[](1);
+        MultiDelegatedAttestationRequest memory req1 = MultiDelegatedAttestationRequest({
+            schemaUID: defaultSchema1,
+            data: attArray,
+            signatures: sigs,
+            attester: vm.addr(auth1k)
+        });
+        reqs[0] = req1;
+
+        vm.expectRevert();
+        instance.registry.multiAttest(reqs);
+    }
+
+    function testMultiAttest__RevertWhen__InvalidLength__SignatureLength() public {
+        address anotherModule = instance.deployAndRegister(
+            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
+        );
+
+        AttestationRequestData memory attData1 = AttestationRequestData({
+            subject: defaultModule1,
+            expirationTime: uint48(1),
+            data: abi.encode(true),
+            value: 0
+        });
+
+        AttestationRequestData memory attData2 = AttestationRequestData({
+            subject: anotherModule,
+            expirationTime: uint48(0),
+            data: abi.encode(true),
+            value: 0
+        });
+
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](
+            2
+        );
+        attArray[0] = attData1;
+        attArray[1] = attData2;
+
+        bytes[] memory sigs = new bytes[](0);
+
+        MultiDelegatedAttestationRequest[] memory reqs = new MultiDelegatedAttestationRequest[](1);
+        MultiDelegatedAttestationRequest memory req1 = MultiDelegatedAttestationRequest({
+            schemaUID: defaultSchema1,
+            data: attArray,
+            signatures: sigs,
+            attester: vm.addr(auth1k)
+        });
+        reqs[0] = req1;
+
+        vm.expectRevert(abi.encodeWithSelector(InvalidLength.selector));
+        instance.registry.multiAttest(reqs);
+    }
+
+    function testMultiAttest__RevertWhen__InvalidSignature() public {
+        address anotherModule = instance.deployAndRegister(
+            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
+        );
+
+        AttestationRequestData memory attData1 = AttestationRequestData({
+            subject: defaultModule1,
+            expirationTime: uint48(1),
+            data: abi.encode(true),
+            value: 0
+        });
+
+        AttestationRequestData memory attData2 = AttestationRequestData({
+            subject: anotherModule,
+            expirationTime: uint48(0),
+            data: abi.encode(true),
+            value: 0
+        });
+
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](
+            2
+        );
+        attArray[0] = attData1;
+        attArray[1] = attData2;
+
+        bytes[] memory sigs = new bytes[](2);
+        sigs[0] = "";
+        sigs[1] = "";
+
+        MultiDelegatedAttestationRequest[] memory reqs = new MultiDelegatedAttestationRequest[](1);
+        MultiDelegatedAttestationRequest memory req1 = MultiDelegatedAttestationRequest({
+            schemaUID: defaultSchema1,
+            data: attArray,
+            signatures: sigs,
+            attester: vm.addr(auth1k)
+        });
+        reqs[0] = req1;
+
+        vm.expectRevert(abi.encodeWithSelector(InvalidSignature.selector));
+        instance.registry.multiAttest(reqs);
+    }
+
     function testMultiAttest__RevertWhen__ZeroImplementation() public {
-        SchemaUID schemaId = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
         address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
@@ -289,9 +453,15 @@ contract AttestationTest is BaseTest {
         attArray[0] = attData1;
         attArray[1] = attData2;
 
-        MultiAttestationRequest[] memory reqs = new MultiAttestationRequest[](1);
-        MultiAttestationRequest memory req1 =
-            MultiAttestationRequest({ schemaUID: schemaId, data: attArray });
+        bytes[] memory sigs = instance.signAttestation(defaultSchema1, auth1k, attArray);
+
+        MultiDelegatedAttestationRequest[] memory reqs = new MultiDelegatedAttestationRequest[](1);
+        MultiDelegatedAttestationRequest memory req1 = MultiDelegatedAttestationRequest({
+            schemaUID: defaultSchema1,
+            data: attArray,
+            signatures: sigs,
+            attester: vm.addr(auth1k)
+        });
         reqs[0] = req1;
 
         vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidAttestation.selector));
@@ -299,68 +469,108 @@ contract AttestationTest is BaseTest {
     }
 
     function testRevoke() public {
-        address attester = address(this);
-        instance.mockAttestation(defaultSchema1, defaultModule1);
-        instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
+        instance.delegatedRevokeAttestation(defaultModule1, defaultSchema1, auth1k);
 
         AttestationRecord memory attestation =
-            instance.registry.findAttestation(defaultModule1, attester);
+            instance.registry.findAttestation(defaultModule1, vm.addr(auth1k));
         assertTrue(attestation.revocationTime != 0);
+    }
+
+    function testRevoke__RevertWhen__InvalidSignature() public {
+        address attester = vm.addr(auth1k);
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
+
+        RevocationRequestData memory attData1 =
+            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
+
+        DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
+            schemaUID: defaultSchema1,
+            data: attData1,
+            revoker: attester,
+            signature: ""
+        });
+
+        vm.expectRevert(abi.encodeWithSelector(InvalidSignature.selector));
+        instance.registry.revoke(req);
     }
 
     function testRevoke__RevertWhen__AttestationNotFound() public {
-        address attester = address(this);
+        address attester = vm.addr(auth1k);
+
+        RevocationRequestData memory attData1 =
+            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
+
+        bytes memory sig = instance.signRevocation(defaultSchema1, auth1k, attData1);
+
+        DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
+            schemaUID: defaultSchema1,
+            data: attData1,
+            revoker: attester,
+            signature: sig
+        });
+
         vm.expectRevert(abi.encodeWithSelector(NotFound.selector));
-        instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
+        instance.registry.revoke(req);
     }
 
     function testRevoke__RevertWhen__InvalidSchema() public {
-        address attester = address(this);
-        instance.mockAttestation(defaultSchema1, defaultModule1);
+        address attester = vm.addr(auth1k);
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
 
-        vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
-        instance.revokeAttestation(defaultModule1, SchemaUID.wrap(0), attester);
-    }
-
-    function testRevoke__RevertWhen__NotOriginalAttester() public {
-        address attester = address(this);
-        address notAttester = makeAddr("notAttester");
-
-        instance.mockAttestation(defaultSchema1, defaultModule1);
-
-        RevocationRequestData memory revoke =
+        RevocationRequestData memory attData1 =
             RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
 
-        RevocationRequest memory req =
-            RevocationRequest({ schemaUID: defaultSchema1, data: revoke });
+        bytes memory sig = instance.signRevocation(SchemaUID.wrap(0), auth1k, attData1);
 
-        vm.startPrank(notAttester);
-        vm.expectRevert(abi.encodeWithSelector(AccessDenied.selector));
+        DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
+            schemaUID: SchemaUID.wrap(0),
+            data: attData1,
+            revoker: attester,
+            signature: sig
+        });
+
+        vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
         instance.registry.revoke(req);
-        vm.stopPrank();
     }
 
     function testRevoke__RevertWhen__AlreadyRevoked() public {
-        address attester = address(this);
-        instance.mockAttestation(defaultSchema1, defaultModule1);
-        instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
+        address attester = vm.addr(auth1k);
 
-        AttestationRecord memory attestation =
-            instance.registry.findAttestation(defaultModule1, attester);
-        assertTrue(attestation.revocationTime != 0);
+        RevocationRequestData memory attData1 =
+            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
 
+        bytes memory sig = instance.signRevocation(defaultSchema1, auth1k, attData1);
+
+        DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
+            schemaUID: defaultSchema1,
+            data: attData1,
+            revoker: attester,
+            signature: sig
+        });
+        instance.registry.revoke(req);
+
+        bytes memory sig2 = instance.signRevocation(defaultSchema1, auth1k, attData1);
+
+        DelegatedRevocationRequest memory req2 = DelegatedRevocationRequest({
+            schemaUID: defaultSchema1,
+            data: attData1,
+            revoker: attester,
+            signature: sig2
+        });
         vm.expectRevert(abi.encodeWithSelector(IAttestation.AlreadyRevoked.selector));
-        instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
+        instance.registry.revoke(req2);
     }
 
     function testMultiRevoke() public {
-        address attester = address(this);
+        address attester = vm.addr(auth1k);
         address anotherModule = instance.deployAndRegister(
             defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
         );
 
-        instance.mockAttestation(defaultSchema1, defaultModule1);
-        instance.mockAttestation(defaultSchema1, anotherModule);
+        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
+        instance.mockDelegatedAttestation(defaultSchema1, anotherModule, auth1k);
 
         RevocationRequestData memory attData1 =
             RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
@@ -373,10 +583,22 @@ contract AttestationTest is BaseTest {
         );
         attArray[0] = attData1;
         attArray[1] = attData2;
+        bytes[] memory sigs = instance.signRevocation(defaultSchema1, auth1k, attArray);
 
-        MultiRevocationRequest[] memory reqs = new MultiRevocationRequest[](1);
-        MultiRevocationRequest memory req1 =
-            MultiRevocationRequest({ schemaUID: defaultSchema1, data: attArray });
+        // RevocationRequestData[] memory attArray = new RevocationRequestData[](
+        //     1
+        // );
+        // attArray[0] = attData1;
+
+        // bytes[] memory sigs = instance.signRevocation(defaultSchema1, auth1k, attArray);
+
+        MultiDelegatedRevocationRequest[] memory reqs = new MultiDelegatedRevocationRequest[](1);
+        MultiDelegatedRevocationRequest memory req1 = MultiDelegatedRevocationRequest({
+            schemaUID: defaultSchema1,
+            data: attArray,
+            revoker: attester,
+            signatures: sigs
+        });
         reqs[0] = req1;
 
         instance.registry.multiRevoke(reqs);

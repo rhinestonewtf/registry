@@ -18,10 +18,10 @@ contract ModuleTest is BaseTest {
     }
 
     function testDeployWithArgs() public returns (SchemaUID schemaUID, address moduleAddr) {
-        schemaUID = instancel1.registerSchema("Test ABI 123", ISchemaValidator(address(0)));
+        schemaUID = instance.registerSchema("Test ABI 123", ISchemaValidator(address(0)));
 
         bytes memory bytecode = type(MockModuleWithArgs).creationCode;
-        moduleAddr = instancel1.deployAndRegister({
+        moduleAddr = instance.deployAndRegister({
             resolverUID: defaultResolver,
             bytecode: bytecode,
             constructorArgs: abi.encode(313_131)
@@ -33,10 +33,10 @@ contract ModuleTest is BaseTest {
     }
 
     function testDeployNoArgs() public returns (SchemaUID schemaUID, address moduleAddr) {
-        schemaUID = instancel1.registerSchema("Test ABI 123", ISchemaValidator(address(0)));
+        schemaUID = instance.registerSchema("Test ABI 123", ISchemaValidator(address(0)));
 
         bytes memory bytecode = type(MockModule).creationCode;
-        moduleAddr = instancel1.deployAndRegister({
+        moduleAddr = instance.deployAndRegister({
             resolverUID: defaultResolver,
             bytecode: bytecode,
             constructorArgs: bytes("")
@@ -45,26 +45,24 @@ contract ModuleTest is BaseTest {
 
     function testNonexistingModule__ShouldRevert() public {
         // TODO
-        SchemaUID schemaUID =
-            instancel1.registerSchema("Test ABI 123", ISchemaValidator(address(0)));
+        SchemaUID schemaUID = instance.registerSchema("Test ABI 123", ISchemaValidator(address(0)));
 
         address module = makeAddr("doesntExist");
         vm.expectRevert();
-        instancel1.registry.register(defaultResolver, module, "");
+        instance.registry.register(defaultResolver, module, "");
     }
 
     function testReRegisterModule__ShouldRevert() public {
-        SchemaUID schemaUID =
-            instancel1.registerSchema("Test ABI 123", ISchemaValidator(address(0)));
+        SchemaUID schemaUID = instance.registerSchema("Test ABI 123", ISchemaValidator(address(0)));
 
         bytes memory bytecode = type(MockModule).creationCode;
-        address moduleAddr = instancel1.deployAndRegister({
+        address moduleAddr = instance.deployAndRegister({
             resolverUID: defaultResolver,
             bytecode: bytecode,
             constructorArgs: abi.encode(313_132)
         });
         vm.expectRevert(abi.encodeWithSelector(IModule.AlreadyRegistered.selector, moduleAddr));
-        instancel1.registry.register(defaultResolver, moduleAddr, "");
+        instance.registry.register(defaultResolver, moduleAddr, "");
     }
 
     function testExternalFactory() public {
@@ -75,11 +73,11 @@ contract ModuleTest is BaseTest {
         bytes memory ExternalFactoryCallData =
             abi.encodeWithSelector(ExternalFactory.deploy.selector, bytecode, "", 123);
 
-        address moduleAddr = instancel1.registry.deployViaFactory(
+        address moduleAddr = instance.registry.deployViaFactory(
             address(factory), ExternalFactoryCallData, "foobar", defaultResolver
         );
 
-        ModuleRecord memory record = instancel1.registry.getModule(moduleAddr);
+        ModuleRecord memory record = instance.registry.getModule(moduleAddr);
         assertEq(record.implementation, moduleAddr);
         assertEq(record.sender, address(this));
     }
@@ -87,8 +85,8 @@ contract ModuleTest is BaseTest {
     function testCreate3() public {
         bytes memory bytecode = type(MockModule).creationCode;
 
-        address moduleAddr = instancel1.registry.deployC3(bytecode, "", "1", "", defaultResolver);
-        ModuleRecord memory record = instancel1.registry.getModule(moduleAddr);
+        address moduleAddr = instance.registry.deployC3(bytecode, "", "1", "", defaultResolver);
+        ModuleRecord memory record = instance.registry.getModule(moduleAddr);
         assertEq(record.implementation, moduleAddr);
         assertEq(record.sender, address(this));
     }

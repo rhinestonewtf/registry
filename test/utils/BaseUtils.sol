@@ -13,6 +13,7 @@ import {
     DelegatedRevocationRequest
 } from "../../src/base/AttestationDelegation.sol";
 import { ISchemaValidator, IResolver } from "../../src/interface/ISchema.sol";
+import { AttestationRequest, RevocationRequest } from "../../src/DataTypes.sol";
 
 import "forge-std/console2.sol";
 
@@ -32,7 +33,6 @@ library RegistryTestLib {
     function mockAttestation(
         RegistryInstance memory instance,
         SchemaUID schemaUID,
-        uint256 attesterKey,
         address moduleAddr
     )
         public
@@ -43,21 +43,48 @@ library RegistryTestLib {
             data: abi.encode(true),
             value: 0
         });
-        newAttestation(instance, schemaUID, attesterKey, attData);
+        newAttestation(instance, schemaUID, attData);
     }
 
-    function mockAttestation(
+    function mockDelegatedAttestation(
         RegistryInstance memory instance,
         SchemaUID schemaUID,
-        uint256 attesterKey,
+        address moduleAddr,
+        uint256 authKey
+    )
+        public
+    {
+        AttestationRequestData memory attData = AttestationRequestData({
+            subject: moduleAddr,
+            expirationTime: uint48(0),
+            data: abi.encode(true),
+            value: 0
+        });
+        newDelegatedAttestation(instance, schemaUID, authKey, attData);
+    }
+
+    // function mockAttestation(
+    //     RegistryInstance memory instance,
+    //     SchemaUID schemaUID,
+    //     AttestationRequestData memory attData
+    // )
+    //     public
+    // {
+    //     newAttestation(instance, schemaUID, attData);
+    // }
+
+    function newAttestation(
+        RegistryInstance memory instance,
+        SchemaUID schemaUID,
         AttestationRequestData memory attData
     )
         public
     {
-        newAttestation(instance, schemaUID, attesterKey, attData);
+        AttestationRequest memory req = AttestationRequest({ schemaUID: schemaUID, data: attData });
+        instance.registry.attest(req);
     }
 
-    function newAttestation(
+    function newDelegatedAttestation(
         RegistryInstance memory instance,
         SchemaUID schemaUID,
         uint256 attesterKey,
@@ -77,7 +104,7 @@ library RegistryTestLib {
 
     function signAttestation(
         RegistryInstance memory instance,
-        SchemaUID schemaId,
+        SchemaUID schemaUID,
         uint256 attesterPk,
         AttestationRequestData memory attData
     )
@@ -88,7 +115,7 @@ library RegistryTestLib {
         uint256 nonce = instance.registry.getNonce(getAddr(attesterPk)) + 1;
         bytes32 digest = instance.registry.getAttestationDigest({
             attData: attData,
-            schemaUid: schemaId,
+            schemaUID: schemaUID,
             nonce: nonce
         });
 
@@ -102,7 +129,7 @@ library RegistryTestLib {
 
     function signAttestation(
         RegistryInstance memory instance,
-        SchemaUID schemaId,
+        SchemaUID schemaUID,
         uint256 attesterPk,
         AttestationRequestData[] memory attData
     )
@@ -117,7 +144,7 @@ library RegistryTestLib {
         for (uint256 i = 0; i < attData.length; i++) {
             bytes32 digest = instance.registry.getAttestationDigest({
                 attData: attData[i],
-                schemaUid: schemaId,
+                schemaUID: schemaUID,
                 nonce: nonce + i
             });
 
@@ -134,7 +161,22 @@ library RegistryTestLib {
     function revokeAttestation(
         RegistryInstance memory instance,
         address module,
-        SchemaUID schemaId,
+        SchemaUID schemaUID,
+        address attester
+    )
+        public
+    {
+        RevocationRequestData memory revoke =
+            RevocationRequestData({ subject: module, attester: attester, value: 0 });
+
+        RevocationRequest memory req = RevocationRequest({ schemaUID: schemaUID, data: revoke });
+        instance.registry.revoke(req);
+    }
+
+    function delegatedRevokeAttestation(
+        RegistryInstance memory instance,
+        address module,
+        SchemaUID schemaUID,
         uint256 attesterPk
     )
         public
@@ -142,19 +184,55 @@ library RegistryTestLib {
         RevocationRequestData memory revoke =
             RevocationRequestData({ subject: module, attester: getAddr(attesterPk), value: 0 });
 
-        bytes32 digest =
-            instance.registry.getRevocationDigest(revoke, schemaId, getAddr(attesterPk));
-
-        (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(attesterPk, digest);
-        bytes memory signature = abi.encodePacked(r, s, v);
+        bytes memory signature = signRevocation(instance, schemaUID, attesterPk, revoke);
 
         DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
-            schemaUID: schemaId,
+            schemaUID: schemaUID,
             data: revoke,
             signature: signature,
             revoker: getAddr(attesterPk)
         });
         instance.registry.revoke(req);
+    }
+
+    function signRevocation(
+        RegistryInstance memory instance,
+        SchemaUID schemaUID,
+        uint256 revokerPk,
+        RevocationRequestData memory attData
+    )
+        internal
+        view
+        returns (bytes memory sig)
+    {
+        bytes32 digest =
+            instance.registry.getRevocationDigest(attData, schemaUID, getAddr(revokerPk));
+
+        (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(revokerPk, digest);
+        sig = abi.encodePacked(r, s, v);
+        require(
+            SignatureCheckerLib.isValidSignatureNow(getAddr(revokerPk), digest, sig) == true,
+            "Internal Error"
+        );
+    }
+
+    function signRevocation(
+        RegistryInstance memory instance,
+        SchemaUID schemaUID,
+        uint256 revokerPk,
+        RevocationRequestData[] memory attData
+    )
+        internal
+        view
+        returns (bytes[] memory sig)
+    {
+        sig = new bytes[](attData.length);
+        uint256 nonce = instance.registry.getNonce(getAddr(revokerPk)) + 1;
+        for (uint256 i = 0; i < attData.length; ++i) {
+            bytes32 digest = instance.registry.getRevocationDigest(attData[i], schemaUID, nonce + i);
+            (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(revokerPk, digest);
+            sig[i] = abi.encodePacked(r, s, v);
+        }
     }
 
     function registerSchemaAndResolver(
@@ -164,9 +242,9 @@ library RegistryTestLib {
         IResolver resolver
     )
         internal
-        returns (SchemaUID schemaId, ResolverUID resolverId)
+        returns (SchemaUID schemaUID, ResolverUID resolverId)
     {
-        schemaId = registerSchema(instance, abiString, validator);
+        schemaUID = registerSchema(instance, abiString, validator);
         resolverId = registerResolver(instance, resolver);
     }
 
@@ -176,7 +254,7 @@ library RegistryTestLib {
         ISchemaValidator validator
     )
         internal
-        returns (SchemaUID schemaId)
+        returns (SchemaUID schemaUID)
     {
         return instance.registry.registerSchema(abiString, validator);
     }
