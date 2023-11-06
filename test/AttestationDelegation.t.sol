@@ -309,24 +309,6 @@ contract AttestationDelegationTest is BaseTest {
     }
 
     function testMultiAttest__RevertWhen__InvalidLength__DataLength() public {
-        address anotherModule = instance.deployAndRegister(
-            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
-        );
-
-        AttestationRequestData memory attData1 = AttestationRequestData({
-            subject: defaultModule1,
-            expirationTime: uint48(1),
-            data: abi.encode(true),
-            value: 0
-        });
-
-        AttestationRequestData memory attData2 = AttestationRequestData({
-            subject: anotherModule,
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
-
         AttestationRequestData[] memory attArray = new AttestationRequestData[](
             0
         );
