@@ -37,8 +37,12 @@ library RegistryTestLib {
     )
         public
     {
+        uint8[] memory moduleTypes = new uint8[](2);
+        moduleTypes[0] = 3;
+        moduleTypes[1] = 5;
         AttestationRequestData memory attData = AttestationRequestData({
             subject: moduleAddr,
+            moduleTypes: moduleTypes,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0

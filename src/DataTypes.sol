@@ -10,12 +10,15 @@ import { SSTORE2 } from "solady/src/utils/SSTORE2.sol";
                           STORAGE 
 //////////////////////////////////////////////////////////////*/
 
+type ModuleTypes is uint16;
+
 // Struct that represents an attestation.
 struct AttestationRecord {
     SchemaUID schemaUID; // The unique identifier of the schema.
     address subject; // The implementation address of the module that is being attested.
     address attester; // The attesting account.
     uint48 time; // The time when the attestation was created (Unix timestamp).
+    ModuleTypes moduleTypes;
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
     AttestationDataRef dataPointer; // SSTORE2 pointer to the attestation data.
@@ -51,6 +54,7 @@ struct AttestationRequestData {
     address subject; // The subject of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
+    uint8[] moduleTypes; // The module types of the attestation.
     bytes data; // Custom attestation data.
 }
 

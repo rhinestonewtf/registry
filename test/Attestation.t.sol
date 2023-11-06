@@ -43,6 +43,7 @@ contract AttestationTest is BaseTest {
 
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(0),
             data: data,
             value: 0
@@ -62,6 +63,7 @@ contract AttestationTest is BaseTest {
     function testReAttest() public {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(0),
             data: "123",
             value: 0
@@ -90,6 +92,7 @@ contract AttestationTest is BaseTest {
 
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
@@ -114,6 +117,7 @@ contract AttestationTest is BaseTest {
 
         AttestationRequestData memory attData1 = AttestationRequestData({
             subject: defaultModule1,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
@@ -121,6 +125,7 @@ contract AttestationTest is BaseTest {
 
         AttestationRequestData memory attData2 = AttestationRequestData({
             subject: anotherModule,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0

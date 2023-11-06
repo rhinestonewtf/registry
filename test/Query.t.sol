@@ -37,6 +37,7 @@ contract QueryTest is AttestationTest {
         vm.warp(100);
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(101),
             data: abi.encode(true),
             value: 0
@@ -58,6 +59,7 @@ contract QueryTest is AttestationTest {
         testCreateAttestation();
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(101),
             data: abi.encode(true),
             value: 0
@@ -84,6 +86,7 @@ contract QueryTest is AttestationTest {
         testCreateAttestation();
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(101),
             data: abi.encode(true),
             value: 0
@@ -102,6 +105,7 @@ contract QueryTest is AttestationTest {
         testCreateAttestation();
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(101),
             data: abi.encode(true),
             value: 0
@@ -120,6 +124,7 @@ contract QueryTest is AttestationTest {
         testCreateAttestation();
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(101),
             data: abi.encode(true),
             value: 0
@@ -146,6 +151,7 @@ contract QueryTest is AttestationTest {
         testCreateAttestation();
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(101),
             data: abi.encode(true),
             value: 0
@@ -163,6 +169,7 @@ contract QueryTest is AttestationTest {
         testCreateAttestation();
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(101),
             data: abi.encode(true),
             value: 0
@@ -174,5 +181,18 @@ contract QueryTest is AttestationTest {
         authorities[1] = vm.addr(auth2k);
 
         instancel1.registry.checkNUnsafe(defaultModule1, authorities, 1);
+    }
+
+    function testCheckAttestationCheckType() public {
+        testCreateAttestation();
+
+        for (uint8 i = 0; i < 255; i++) {
+            if (i == 3 || i == 5 || i == 15) {
+                instancel1.registry.check(defaultModule1, vm.addr(auth1k), i);
+            } else {
+                vm.expectRevert();
+                instancel1.registry.check(defaultModule1, vm.addr(auth1k), i);
+            }
+        }
     }
 }

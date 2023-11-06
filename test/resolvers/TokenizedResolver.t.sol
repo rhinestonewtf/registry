@@ -36,6 +36,7 @@ contract TokenizedResolverTest is BaseTest {
 
         AttestationRequestData memory attData = AttestationRequestData({
             subject: module,
+            moduleTypes: defaultModuleTypes,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0

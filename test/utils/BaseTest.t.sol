@@ -35,6 +35,8 @@ contract BaseTest is Test, RegistryTestTools {
     uint256 auth1k;
     uint256 auth2k;
 
+    uint8[] defaultModuleTypes;
+
     SchemaUID defaultSchema1;
     SchemaUID defaultSchema2;
     ResolverUID defaultResolver;
@@ -42,6 +44,8 @@ contract BaseTest is Test, RegistryTestTools {
     address defaultModule2;
 
     function setUp() public virtual {
+        defaultModuleTypes = new uint8[](1);
+        defaultModuleTypes[0] = 3;
         instancel1 = _setupInstance({ name: "RegistryL1", salt: 0 });
         (, auth1k) = makeAddrAndKey("auth1");
         (, auth2k) = makeAddrAndKey("auth2");

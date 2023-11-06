@@ -15,6 +15,8 @@ import {
 
 import { AccessDenied, NotFound, ZERO_TIMESTAMP, InvalidLength } from "../Common.sol";
 
+import { ModuleTypes, ModuleTypeLib } from "../lib/ModuleType.sol";
+
 /**
  * @title Query
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
@@ -22,9 +24,11 @@ import { AccessDenied, NotFound, ZERO_TIMESTAMP, InvalidLength } from "../Common
  * @dev This contract is abstract and provides utility functions to query attestations.
  */
 abstract contract Query is IQuery {
+    using ModuleTypeLib for ModuleTypes;
     /**
      * @inheritdoc IQuery
      */
+
     function check(
         address module,
         address attester
@@ -45,6 +49,31 @@ abstract contract Query is IQuery {
         if (attestation.revocationTime != ZERO_TIMESTAMP) {
             revert RevokedAttestation(attestation.attester);
         }
+    }
+
+    function check(
+        address module,
+        address attester,
+        uint8 moduleType
+    )
+        external
+        view
+        returns (uint256 attestedAt)
+    {
+        AttestationRecord storage attestation = _getAttestation(module, attester);
+
+        uint256 expirationTime = attestation.expirationTime;
+        attestedAt = expirationTime != ZERO_TIMESTAMP && expirationTime < block.timestamp
+            ? ZERO_TIMESTAMP
+            : attestation.time;
+        if (attestedAt == ZERO_TIMESTAMP) revert AttestationNotFound();
+
+        if (attestation.revocationTime != ZERO_TIMESTAMP) {
+            revert RevokedAttestation(attestation.attester);
+        }
+
+        ModuleTypes moduleTypes = attestation.moduleTypes;
+        if (!moduleTypes.checkType(moduleType)) revert();
     }
 
     /**
