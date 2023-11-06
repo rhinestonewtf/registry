@@ -16,9 +16,9 @@ struct AttestationRecord {
     address subject; // The implementation address of the module that is being attested.
     address attester; // The attesting account.
     uint48 time; // The time when the attestation was created (Unix timestamp).
-    ModuleTypesEncoded moduleTypes; // uint16 based value. Encoding works by multiplying all types that the module implements. types can only be primes
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
+    ModuleTypesEncoded moduleTypes; // uint16 based value. Encoding works by multiplying all types that the module implements. types can only be primes
     AttestationDataRef dataPointer; // SSTORE2 pointer to the attestation data.
 }
 
@@ -192,4 +192,4 @@ function writeAttestationData(
     dataPointer = AttestationDataRef.wrap(SSTORE2.writeDeterministic(attestationData, salt));
 }
 
-type ModuleTypesEncoded is uint16;
+type ModuleTypesEncoded is uint32;

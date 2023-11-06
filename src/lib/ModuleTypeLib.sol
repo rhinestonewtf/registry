@@ -34,7 +34,7 @@ library ModuleTypeLib {
         }
     }
 
-    function encType(uint8[] calldata types) internal view returns (uint16 encodedType) {
+    function encType(uint8[] calldata types) internal view returns (uint32 encodedType) {
         encodedType = 1;
         for (uint8 i = 0; i < types.length; i++) {
             if (!isPrime(types[i])) revert();
@@ -47,10 +47,11 @@ library ModuleTypeLib {
         uint256 check
     )
         internal
-        pure
+        view
         returns (bool)
     {
         if (check == 0 || check == 1) return false;
+        if (!isPrime(check)) return false;
         if (ModuleTypesEncoded.unwrap(encodedType) % check != 0) return false;
         return true;
     }
@@ -60,7 +61,7 @@ library ModuleTypeLib {
         uint256[] memory check
     )
         internal
-        pure
+        view
         returns (bool)
     {
         uint256 length = check.length;
