@@ -50,7 +50,6 @@ library ModuleTypeLib {
         view
         returns (bool)
     {
-        if (check == 0 || check == 1) return false;
         if (!isPrime(check)) return false;
         if (ModuleTypesEncoded.unwrap(encodedType) % check != 0) return false;
         return true;

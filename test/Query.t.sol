@@ -162,7 +162,7 @@ contract QueryTest is AttestationTest {
         testAttest();
 
         for (uint8 i = 0; i < 255; i++) {
-            if (i == 3 || i == 5 || i == 15) {
+            if (i == 3 || i == 5) {
                 instance.registry.check(defaultModule1, attester, i);
             } else {
                 vm.expectRevert();
