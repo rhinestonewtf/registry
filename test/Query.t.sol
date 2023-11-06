@@ -67,7 +67,7 @@ contract QueryTest is AttestationTest {
         instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth2k);
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
-            moduleTypes: defaultModuleTypes,
+            moduleTypes: defaultModuleTypesEncoded,
             expirationTime: uint48(101),
             data: abi.encode(false),
             value: 0

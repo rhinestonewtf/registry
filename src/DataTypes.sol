@@ -10,15 +10,13 @@ import { SSTORE2 } from "solady/src/utils/SSTORE2.sol";
                           STORAGE 
 //////////////////////////////////////////////////////////////*/
 
-type ModuleTypes is uint16;
-
 // Struct that represents an attestation.
 struct AttestationRecord {
     SchemaUID schemaUID; // The unique identifier of the schema.
     address subject; // The implementation address of the module that is being attested.
     address attester; // The attesting account.
     uint48 time; // The time when the attestation was created (Unix timestamp).
-    ModuleTypes moduleTypes;
+    ModuleTypesEncoded moduleTypes; // uint16 based value. Encoding works by multiplying all types that the module implements. types can only be primes
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
     AttestationDataRef dataPointer; // SSTORE2 pointer to the attestation data.
@@ -193,3 +191,5 @@ function writeAttestationData(
      */
     dataPointer = AttestationDataRef.wrap(SSTORE2.writeDeterministic(attestationData, salt));
 }
+
+type ModuleTypesEncoded is uint16;

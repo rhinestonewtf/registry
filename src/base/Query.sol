@@ -15,7 +15,7 @@ import {
 
 import { AccessDenied, NotFound, ZERO_TIMESTAMP, InvalidLength } from "../Common.sol";
 
-import { ModuleTypes, ModuleTypeLib } from "../lib/ModuleType.sol";
+import { ModuleTypesEncoded, ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 
 /**
  * @title Query
@@ -24,7 +24,7 @@ import { ModuleTypes, ModuleTypeLib } from "../lib/ModuleType.sol";
  * @dev This contract is abstract and provides utility functions to query attestations.
  */
 abstract contract Query is IQuery {
-    using ModuleTypeLib for ModuleTypes;
+    using ModuleTypeLib for ModuleTypesEncoded;
     /**
      * @inheritdoc IQuery
      */
@@ -72,7 +72,7 @@ abstract contract Query is IQuery {
             revert RevokedAttestation(attestation.attester);
         }
 
-        ModuleTypes moduleTypes = attestation.moduleTypes;
+        ModuleTypesEncoded moduleTypes = attestation.moduleTypes;
         if (!moduleTypes.checkType(moduleType)) revert();
     }
 

@@ -57,7 +57,7 @@ contract BaseTest is Test, RegistryTestTools {
     uint256 auth1k;
     uint256 auth2k;
 
-    uint8[] defaultModuleTypes;
+    uint8[] defaultModuleTypesEncoded;
 
     SchemaUID defaultSchema1;
     SchemaUID defaultSchema2;

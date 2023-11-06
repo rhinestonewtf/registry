@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { ModuleTypes } from "../DataTypes.sol";
+import { ModuleTypesEncoded } from "../DataTypes.sol";
 
 library ModuleTypeLib {
-    error InvalidType(ModuleTypes encodedType);
+    error InvalidType(ModuleTypesEncoded encodedType);
 
     function isPrime(uint256 n) public view returns (bool) {
         if (n < 2) {
@@ -42,14 +42,21 @@ library ModuleTypeLib {
         }
     }
 
-    function checkType(ModuleTypes encodedType, uint256 check) internal pure returns (bool) {
+    function checkType(
+        ModuleTypesEncoded encodedType,
+        uint256 check
+    )
+        internal
+        pure
+        returns (bool)
+    {
         if (check == 0 || check == 1) return false;
-        if (ModuleTypes.unwrap(encodedType) % check != 0) return false;
+        if (ModuleTypesEncoded.unwrap(encodedType) % check != 0) return false;
         return true;
     }
 
     function checkType(
-        ModuleTypes encodedType,
+        ModuleTypesEncoded encodedType,
         uint256[] memory check
     )
         internal

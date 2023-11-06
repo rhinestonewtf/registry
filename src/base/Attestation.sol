@@ -29,12 +29,12 @@ import {
 } from "../Common.sol";
 
 import {
-    ModuleTypes,
+    ModuleTypesEncoded,
     AttestationDataRef,
     writeAttestationData,
     readAttestationData
 } from "../DataTypes.sol";
-import { ModuleTypeLib } from "../lib/ModuleType.sol";
+import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 import { AttestationResolve } from "./AttestationResolve.sol";
 
 /**
@@ -351,7 +351,9 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             subject: module,
             attester: attester,
             time: timeNow,
-            moduleTypes: ModuleTypes.wrap(ModuleTypeLib.encType(attestationRequestData.moduleTypes)),
+            moduleTypes: ModuleTypesEncoded.wrap(
+                ModuleTypeLib.encType(attestationRequestData.moduleTypes)
+                ),
             expirationTime: attestationRequestData.expirationTime,
             revocationTime: uint48(ZERO_TIMESTAMP),
             dataPointer: sstore2Pointer

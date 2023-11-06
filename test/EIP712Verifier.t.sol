@@ -68,7 +68,7 @@ contract EIP712VerifierTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: address(0),
             expirationTime: uint48(0),
-            moduleTypes: defaultModuleTypes,
+            moduleTypes: defaultModuleTypesEncoded,
             value: 0,
             data: ""
         });
@@ -99,7 +99,7 @@ contract EIP712VerifierTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: address(0x69),
             expirationTime: uint48(0),
-            moduleTypes: defaultModuleTypes,
+            moduleTypes: defaultModuleTypesEncoded,
             value: 0,
             data: abi.encode(true)
         });
@@ -124,7 +124,7 @@ contract EIP712VerifierTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: address(0),
             expirationTime: uint48(0),
-            moduleTypes: defaultModuleTypes,
+            moduleTypes: defaultModuleTypesEncoded,
             value: 0,
             data: ""
         });
