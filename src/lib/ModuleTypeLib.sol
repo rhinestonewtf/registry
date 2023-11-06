@@ -17,6 +17,7 @@ library ModuleTypeLib {
     }
 
     // use precompile expmod to calculate modular exponentiation
+    // https://gist.github.com/lhartikk/09e3a1ef1d8701e258fc91c19bc9e02f
     function expmod(uint256 base, uint256 e, uint256 m) internal view returns (uint256 o) {
         assembly {
             // define pointer
@@ -34,12 +35,19 @@ library ModuleTypeLib {
         }
     }
 
-    function encType(uint8[] calldata types) internal view returns (uint32 encodedType) {
-        encodedType = 1;
-        for (uint8 i = 0; i < types.length; i++) {
+    function encType(uint8[] calldata types)
+        internal
+        view
+        returns (ModuleTypesEncoded encodedType)
+    {
+        uint32 typeRaw = 1;
+        uint256 length = types.length;
+        if (length == 0) revert();
+        for (uint8 i = 0; i < length; i++) {
             if (!isPrime(types[i])) revert();
-            encodedType = encodedType * types[i];
+            typeRaw = typeRaw * types[i];
         }
+        encodedType = ModuleTypesEncoded.wrap(typeRaw);
     }
 
     function checkType(

@@ -351,9 +351,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             subject: module,
             attester: attester,
             time: timeNow,
-            moduleTypes: ModuleTypesEncoded.wrap(
-                ModuleTypeLib.encType(attestationRequestData.moduleTypes)
-                ),
+            moduleTypes: ModuleTypeLib.encType(attestationRequestData.moduleTypes),
             expirationTime: attestationRequestData.expirationTime,
             revocationTime: uint48(ZERO_TIMESTAMP),
             dataPointer: sstore2Pointer
