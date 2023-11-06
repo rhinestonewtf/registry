@@ -159,14 +159,14 @@ contract QueryTest is AttestationTest {
     }
 
     function testCheckAttestationCheckType() public {
-        testCreateAttestation();
+        testAttest();
 
         for (uint8 i = 0; i < 255; i++) {
             if (i == 3 || i == 5 || i == 15) {
-                instancel1.registry.check(defaultModule1, vm.addr(auth1k), i);
+                instance.registry.check(defaultModule1, attester, i);
             } else {
                 vm.expectRevert();
-                instancel1.registry.check(defaultModule1, vm.addr(auth1k), i);
+                instance.registry.check(defaultModule1, attester, i);
             }
         }
     }
