@@ -12,7 +12,8 @@ import {
     ModuleRecord,
     ResolverUID,
     AttestationRecord,
-    RevocationRequestData
+    RevocationRequestData,
+    SchemaRecord
 } from "../DataTypes.sol";
 import {
     ZERO_ADDRESS,
@@ -23,6 +24,7 @@ import {
     InvalidSchema,
     _time
 } from "../Common.sol";
+import { ISchemaValidator } from "./Schema.sol";
 
 /**
  * @title AttestationDelegation
@@ -54,6 +56,8 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         ModuleRecord storage moduleRecord =
             _getModule({ moduleAddress: delegatedRequest.data.subject });
         ResolverUID resolverUID = moduleRecord.resolverUID;
+
+        verifyAttestationData(delegatedRequest.schemaUID, attestationRequestData);
 
         (AttestationRecord memory attestationRecord, uint256 value) = _writeAttestation({
             schemaUID: delegatedRequest.schemaUID,
@@ -110,7 +114,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             uint256 dataLength = attestationRequestDatas.length;
 
             // Ensure that no inputs are missing.
-            if (dataLength == 0 || dataLength != multiDelegatedRequest.signatures.length) {
+            if (dataLength != multiDelegatedRequest.signatures.length) {
                 revert InvalidLength();
             }
 
@@ -204,7 +208,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             }
 
             // Verify EIP712 signatures. Please note that the signatures are assumed to be signed with increasing nonces.
-            for (uint256 j; j < dataLength; ++i) {
+            for (uint256 j; j < dataLength; ++j) {
                 _verifyRevoke(
                     DelegatedRevocationRequest({
                         schemaUID: multiDelegatedRequest.schemaUID,

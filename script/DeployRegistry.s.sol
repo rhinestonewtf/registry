@@ -19,7 +19,7 @@ contract DeployRegistryScript is Script, RegistryTestTools {
         vm.startBroadcast(vm.envUint("PK"));
 
         // Deploy Registry
-        RegistryInstance memory instance = _setupInstance({ name: "RegistryL1", salt: salt });
+        RegistryInstance memory instance = _setupInstance({ name: "Registry", salt: salt });
 
         // Set up default resolver
         DebugResolver debugResolver = new DebugResolver{salt: salt}(address(instance.registry));

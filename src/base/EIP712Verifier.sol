@@ -43,7 +43,7 @@ abstract contract EIP712Verifier is EIP712 {
         returns (string memory name, string memory version)
     {
         name = "Registry";
-        version = "0.2";
+        version = "0.2.1";
     }
 
     /**
@@ -82,35 +82,35 @@ abstract contract EIP712Verifier is EIP712 {
      * @dev Gets the attestation digest
      *
      * @param attData The data in the attestation request.
-     * @param schemaUid The UID of the schema.
+     * @param schemaUID The UID of the schema.
      * @param nonce The nonce of the attestation request.
      *
      * @return digest The attestation digest.
      */
     function getAttestationDigest(
         AttestationRequestData memory attData,
-        SchemaUID schemaUid,
+        SchemaUID schemaUID,
         uint256 nonce
     )
         public
         view
         returns (bytes32 digest)
     {
-        digest = _attestationDigest(attData, schemaUid, nonce);
+        digest = _attestationDigest(attData, schemaUID, nonce);
     }
 
     /**
      * @dev Gets the attestation digest
      *
      * @param attData The data in the attestation request.
-     * @param schemaUid The UID of the schema.
+     * @param schemaUID The UID of the schema.
      * @param attester The address of the attester.
      *
      * @return digest The attestation digest.
      */
     function getAttestationDigest(
         AttestationRequestData memory attData,
-        SchemaUID schemaUid,
+        SchemaUID schemaUID,
         address attester
     )
         public
@@ -118,21 +118,21 @@ abstract contract EIP712Verifier is EIP712 {
         returns (bytes32 digest)
     {
         uint256 nonce = getNonce(attester) + 1;
-        digest = _attestationDigest(attData, schemaUid, nonce);
+        digest = _attestationDigest(attData, schemaUID, nonce);
     }
 
     /**
      * @dev Gets the attestation digest
      *
      * @param data The data in the attestation request.
-     * @param schemaUid The UID of the schema.
+     * @param schemaUID The UID of the schema.
      * @param nonce  The nonce of the attestation request.
      *
      * @return digest The attestation digest.
      */
     function _attestationDigest(
         AttestationRequestData memory data,
-        SchemaUID schemaUid,
+        SchemaUID schemaUID,
         uint256 nonce
     )
         private
@@ -144,7 +144,7 @@ abstract contract EIP712Verifier is EIP712 {
                 abi.encode(
                     ATTEST_TYPEHASH,
                     block.chainid,
-                    schemaUid,
+                    schemaUID,
                     data.subject,
                     data.expirationTime,
                     keccak256(data.data),
@@ -185,14 +185,14 @@ abstract contract EIP712Verifier is EIP712 {
     /**
      * @dev Gets the revocation digest
      * @param revData The data in the revocation request.
-     * @param schemaUid The UID of the schema.
+     * @param schemaUID The UID of the schema.
      * @param revoker  The address of the revoker.
      *
      * @return digest The revocation digest.
      */
     function getRevocationDigest(
         RevocationRequestData memory revData,
-        SchemaUID schemaUid,
+        SchemaUID schemaUID,
         address revoker
     )
         public
@@ -200,19 +200,39 @@ abstract contract EIP712Verifier is EIP712 {
         returns (bytes32 digest)
     {
         uint256 nonce = getNonce(revoker) + 1;
-        digest = _revocationDigest(schemaUid, revData.subject, revData.attester, nonce);
+        digest = _revocationDigest(schemaUID, revData.subject, revData.attester, nonce);
     }
 
     /**
      * @dev Gets the revocation digest
-     * @param schemaUid The UID of the schema.
+     * @param revData The data in the revocation request.
+     * @param schemaUID The UID of the schema.
+     * @param nonce  The nonce of the attestation request.
+     *
+     * @return digest The revocation digest.
+     */
+    function getRevocationDigest(
+        RevocationRequestData memory revData,
+        SchemaUID schemaUID,
+        uint256 nonce
+    )
+        public
+        view
+        returns (bytes32 digest)
+    {
+        digest = _revocationDigest(schemaUID, revData.subject, revData.attester, nonce);
+    }
+
+    /**
+     * @dev Gets the revocation digest
+     * @param schemaUID The UID of the schema.
      * @param subject The address of the subject.
      * @param nonce  The nonce of the attestation request.
      *
      * @return digest The revocation digest.
      */
     function _revocationDigest(
-        SchemaUID schemaUid,
+        SchemaUID schemaUID,
         address subject,
         address attester,
         uint256 nonce
@@ -223,7 +243,7 @@ abstract contract EIP712Verifier is EIP712 {
     {
         digest = _hashTypedData(
             keccak256(
-                abi.encode(REVOKE_TYPEHASH, block.chainid, schemaUid, subject, attester, nonce)
+                abi.encode(REVOKE_TYPEHASH, block.chainid, schemaUID, subject, attester, nonce)
             )
         );
     }
