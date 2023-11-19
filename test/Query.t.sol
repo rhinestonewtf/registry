@@ -22,7 +22,7 @@ contract QueryTest is AttestationTest {
         instance.registry.check(defaultModule1, attester);
     }
 
-    function testCheckAttestation__RevertWhen__Unlisted() public {
+    function testCheckAttestation__RevertWhen__AttestationNotExistent() public {
         vm.expectRevert(IQuery.AttestationNotFound.selector);
         instance.registry.check(defaultModule1, attester);
     }

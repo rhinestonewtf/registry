@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { ReentrancyGuard } from "solmate/src/utils/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "solmate/utils/ReentrancyGuard.sol";
 
-import { EIP712Verifier } from "./EIP712Verifier.sol";
 import {
     IAttestation,
     AttestationRecord,
@@ -28,7 +27,7 @@ import {
     _time
 } from "../Common.sol";
 
-import { AttestationDataRef, writeAttestationData, readAttestationData } from "../DataTypes.sol";
+import { AttestationDataRef, writeAttestationData } from "../DataTypes.sol";
 import { AttestationResolve } from "./AttestationResolve.sol";
 
 /**

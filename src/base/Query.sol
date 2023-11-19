@@ -13,7 +13,9 @@ import {
     ModuleRecord
 } from "./Attestation.sol";
 
-import { AccessDenied, NotFound, ZERO_TIMESTAMP, InvalidLength } from "../Common.sol";
+import { ZERO_TIMESTAMP } from "../Common.sol";
+
+import "forge-std/console2.sol";
 
 /**
  * @title Query
@@ -22,9 +24,17 @@ import { AccessDenied, NotFound, ZERO_TIMESTAMP, InvalidLength } from "../Common
  * @dev This contract is abstract and provides utility functions to query attestations.
  */
 abstract contract Query is IQuery {
+    // @Todo: remove
+    function mock(address module, address attester) public {
+        AttestationRecord storage attestation = _getAttestation(module, attester);
+        attestation.time = uint48(0x123);
+        attestation.expirationTime = uint48(0x567);
+        attestation.revocationTime = uint48(0x899);
+    }
     /**
      * @inheritdoc IQuery
      */
+
     function check(
         address module,
         address attester
@@ -36,13 +46,47 @@ abstract contract Query is IQuery {
     {
         AttestationRecord storage attestation = _getAttestation(module, attester);
 
-        uint256 expirationTime = attestation.expirationTime;
-        attestedAt = expirationTime != ZERO_TIMESTAMP && expirationTime < block.timestamp
-            ? ZERO_TIMESTAMP
-            : attestation.time;
-        if (attestedAt == ZERO_TIMESTAMP) revert AttestationNotFound();
+        // uint256 attestationTime = attestation.time;
+        // uint256 expirationTime = attestation.expirationTime;
+        // uint256 revocationTime = attestation.revocationTime;
 
-        if (attestation.revocationTime != ZERO_TIMESTAMP) {
+        // if (expirationTime != ZERO_TIMESTAMP) {
+        //     attestedAt = attestationTime;
+        // } else if (expirationTime > block.timestamp) {
+        //     attestedAt = attestationTime;
+        // }
+
+        // if (attestationTime == ZERO_TIMESTAMP) {
+        //     revert AttestationNotFound();
+        // }
+
+        // if (revocationTime != ZERO_TIMESTAMP) {
+        //     revert RevokedAttestation(attestation.attester);
+        // }
+
+        uint256 attestationTime;
+        uint256 expirationTime;
+        uint256 revocationTime;
+
+        bytes32 times;
+
+        assembly {
+            times := sload(add(attestation.slot, 1))
+        }
+
+        console2.logBytes32(times);
+
+        if (expirationTime != ZERO_TIMESTAMP) {
+            attestedAt = attestationTime;
+        } else if (expirationTime > block.timestamp) {
+            attestedAt = attestationTime;
+        }
+
+        if (attestationTime == ZERO_TIMESTAMP) {
+            revert AttestationNotFound();
+        }
+
+        if (revocationTime != ZERO_TIMESTAMP) {
             revert RevokedAttestation(attestation.attester);
         }
     }
