@@ -46,28 +46,12 @@ abstract contract Query is IQuery {
     {
         AttestationRecord storage attestation = _getAttestation(module, attester);
 
-        // uint256 attestationTime = attestation.time;
-        // uint256 expirationTime = attestation.expirationTime;
-        // uint256 revocationTime = attestation.revocationTime;
-
-        // if (expirationTime != ZERO_TIMESTAMP) {
-        //     attestedAt = attestationTime;
-        // } else if (expirationTime > block.timestamp) {
-        //     attestedAt = attestationTime;
-        // }
-
-        // if (attestationTime == ZERO_TIMESTAMP) {
-        //     revert AttestationNotFound();
-        // }
-
-        // if (revocationTime != ZERO_TIMESTAMP) {
-        //     revert RevokedAttestation(attestation.attester);
-        // }
-
         uint256 attestationTime;
         uint256 expirationTime;
         uint256 revocationTime;
-
+        // uint256 attestationTime = attestation.time;
+        // uint256 expirationTime = attestation.expirationTime;
+        // uint256 revocationTime = attestation.revocationTime;
         assembly {
             let mask := 0xffffffffffff
             let times := sload(attestation.slot)
