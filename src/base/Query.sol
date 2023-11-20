@@ -68,11 +68,9 @@ abstract contract Query is IQuery {
         uint256 expirationTime;
         uint256 revocationTime;
 
-        bytes32 times;
-
         assembly {
             let mask := 0xffffffffffff
-            times := sload(attestation.slot)
+            let times := sload(attestation.slot)
             attestationTime := and(mask, times)
             times := shr(48, times)
             expirationTime := and(mask, times)
