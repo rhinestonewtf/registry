@@ -69,12 +69,12 @@ The following is a table of the gas differences between the Registry and a minim
 
 To run the tests yourself, run `forge test --mc RegistryGasComparisonTest -vv`.
 
-| Attesters | Registry | Minimal7484Registry |
-| --------- | -------- | ------------------- |
-| 1         | 7983     | 7706                |
-| 2         | 15472    | 15418               |
-| 3         | 20823    | 23124               |
-| n         | 5351n    | 7706n               |
+| # of Attesters | Registry | Minimal7484Registry | Difference |
+| -------------- | -------- | ------------------- | ---------- |
+| 1              | 7983     | 7706                | +277       |
+| 2              | 15472    | 15418               | +54        |
+| 3              | 20823    | 23124               | -2301      |
+| n              | 5351n    | 7706n               | -2355n     |
 
 ## Deployments
 
