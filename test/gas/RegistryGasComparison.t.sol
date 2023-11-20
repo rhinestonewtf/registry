@@ -69,12 +69,6 @@ contract RegistryGasComparisonTest is BaseTest {
         // treat as immutable
         address rhinestoneRegistry = address(instance.registry);
 
-        // rhinestoneRegistry.call(
-        //     abi.encodeWithSignature(
-        //         "function mock(address module, address attester) public", module, firstAttester
-        //     )
-        // );
-
         uint256 gasCheck = gasleft();
         uint256 attestedAt = IERC7484(rhinestoneRegistry).check(module, firstAttester);
         gasCheck = gasCheck - gasleft() - 10;
