@@ -71,10 +71,14 @@ abstract contract Query is IQuery {
         bytes32 times;
 
         assembly {
-            times := sload(add(attestation.slot, 1))
+            let mask := 0xffffffffffff
+            times := sload(attestation.slot)
+            attestationTime := and(mask, times)
+            times := shr(48, times)
+            expirationTime := and(mask, times)
+            times := shr(48, times)
+            revocationTime := and(mask, times)
         }
-
-        console2.logBytes32(times);
 
         if (expirationTime != ZERO_TIMESTAMP) {
             attestedAt = attestationTime;

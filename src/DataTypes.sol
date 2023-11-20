@@ -11,10 +11,10 @@ import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 
 // Struct that represents an attestation.
 struct AttestationRecord {
-    SchemaUID schemaUID; // The unique identifier of the schema.
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
+    SchemaUID schemaUID; // The unique identifier of the schema.
     address subject; // The implementation address of the module that is being attested.
     address attester; // The attesting account.
     AttestationDataRef dataPointer; // SSTORE2 pointer to the attestation data.

@@ -54,7 +54,7 @@ library RegistryTestLib {
     {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: moduleAddr,
-            expirationTime: uint48(0),
+            expirationTime: uint48(0x42424242),
             data: abi.encode(true),
             value: 0
         });

@@ -42,8 +42,8 @@ contract RegistryGasComparisonTest is BaseTest {
     address thirdAttester;
 
     function setUp() public override {
+        vm.warp(0x41414141);
         super.setUp();
-        vm.warp(0x567654567);
 
         Minimal7484Registry(minimal7484Registry1).attest(defaultModule1);
         Minimal7484Registry(minimal7484Registry2).attest(defaultModule1);
