@@ -69,6 +69,8 @@ The following is a table of the gas differences between the Registry and a minim
 
 To run the tests yourself, run `forge test --mc RegistryGasComparisonTest -vv`.
 
+_Note:_ The gas calculation numbers include the gas cost for `CALL`
+
 | # of Attesters    | Registry     | Minimal7484Registry | Difference |
 | ----------------- | ------------ | ------------------- | ---------- |
 | 1                 | 7983         | 7706                | +277       |
