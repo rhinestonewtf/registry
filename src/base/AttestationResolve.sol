@@ -15,8 +15,7 @@ import {
 } from "../interface/IAttestation.sol";
 import { EIP712Verifier } from "./EIP712Verifier.sol";
 
-import { ZERO_ADDRESS, AccessDenied } from "../Common.sol";
-import { AttestationDataRef, writeAttestationData, readAttestationData } from "../DataTypes.sol";
+import { ZERO_ADDRESS } from "../Common.sol";
 
 /**
  * @title AttestationResolve

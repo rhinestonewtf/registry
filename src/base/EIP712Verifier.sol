@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { EIP712 } from "solady/src/utils/EIP712.sol";
-
-import { SignatureCheckerLib } from "solady/src/utils/SignatureCheckerLib.sol";
+import { EIP712 } from "solady/utils/EIP712.sol";
+import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 
 import { InvalidSignature } from "../Common.sol";
 import {

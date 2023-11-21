@@ -24,7 +24,6 @@ import {
     InvalidSchema,
     _time
 } from "../Common.sol";
-import { ISchemaValidator } from "./Schema.sol";
 
 /**
  * @title AttestationDelegation

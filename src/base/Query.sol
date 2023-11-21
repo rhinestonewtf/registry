@@ -13,7 +13,7 @@ import {
     ModuleRecord
 } from "./Attestation.sol";
 
-import { AccessDenied, NotFound, ZERO_TIMESTAMP, InvalidLength } from "../Common.sol";
+import { ZERO_TIMESTAMP } from "../Common.sol";
 
 /**
  * @title Query
@@ -25,6 +25,7 @@ abstract contract Query is IQuery {
     /**
      * @inheritdoc IQuery
      */
+
     function check(
         address module,
         address attester
@@ -36,13 +37,33 @@ abstract contract Query is IQuery {
     {
         AttestationRecord storage attestation = _getAttestation(module, attester);
 
-        uint256 expirationTime = attestation.expirationTime;
-        attestedAt = expirationTime != ZERO_TIMESTAMP && expirationTime < block.timestamp
-            ? ZERO_TIMESTAMP
-            : attestation.time;
-        if (attestedAt == ZERO_TIMESTAMP) revert AttestationNotFound();
+        // attestedAt = attestation.time;
+        uint256 expirationTime; // = attestation.expirationTime;
+        uint256 revocationTime; // = attestation.revocationTime;
 
-        if (attestation.revocationTime != ZERO_TIMESTAMP) {
+        // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
+        // @dev the solidity version of the assembly code is above
+        assembly {
+            let mask := 0xffffffffffff
+            let times := sload(attestation.slot)
+            attestedAt := and(mask, times)
+            times := shr(48, times)
+            expirationTime := and(mask, times)
+            times := shr(48, times)
+            revocationTime := and(mask, times)
+        }
+
+        if (attestedAt == ZERO_TIMESTAMP) {
+            revert AttestationNotFound();
+        }
+
+        if (expirationTime != ZERO_TIMESTAMP) {
+            if (block.timestamp > expirationTime) {
+                revert AttestationNotFound();
+            }
+        }
+
+        if (revocationTime != ZERO_TIMESTAMP) {
             revert RevokedAttestation(attestation.attester);
         }
     }
@@ -71,16 +92,33 @@ abstract contract Query is IQuery {
         for (uint256 i; i < attestersLength; ++i) {
             AttestationRecord storage attestation =
                 _getAttestation({ moduleAddress: module, attester: attesters[i] });
-            if (attestation.revocationTime != ZERO_TIMESTAMP) {
+
+            uint256 attestationTime; // = attestation.time;
+            uint256 expirationTime; // = attestation.expirationTime;
+            uint256 revocationTime; // = attestation.revocationTime;
+
+            // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
+            // @dev the solidity version of the assembly code is above
+            assembly {
+                let mask := 0xffffffffffff
+                let times := sload(attestation.slot)
+                attestationTime := and(mask, times)
+                times := shr(48, times)
+                expirationTime := and(mask, times)
+                times := shr(48, times)
+                revocationTime := and(mask, times)
+            }
+
+            if (revocationTime != ZERO_TIMESTAMP) {
                 revert RevokedAttestation(attestation.attester);
             }
 
-            uint256 expirationTime = attestation.expirationTime;
-            if (expirationTime != ZERO_TIMESTAMP && expirationTime < timeNow) {
-                revert AttestationNotFound();
+            if (expirationTime != ZERO_TIMESTAMP) {
+                if (timeNow > expirationTime) {
+                    revert AttestationNotFound();
+                }
             }
 
-            uint256 attestationTime = attestation.time;
             attestedAtArray[i] = attestationTime;
 
             if (attestationTime == ZERO_TIMESTAMP) continue;
@@ -114,17 +152,37 @@ abstract contract Query is IQuery {
             AttestationRecord storage attestation =
                 _getAttestation({ moduleAddress: module, attester: attesters[i] });
 
-            if (attestation.revocationTime != ZERO_TIMESTAMP) {
+            uint256 attestationTime; // = attestation.time;
+            uint256 expirationTime; // = attestation.expirationTime;
+            uint256 revocationTime; // = attestation.revocationTime;
+
+            // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
+            // @dev the solidity version of the assembly code is above
+            assembly {
+                let mask := 0xffffffffffff
+                let times := sload(attestation.slot)
+                attestationTime := and(mask, times)
+                times := shr(48, times)
+                expirationTime := and(mask, times)
+                times := shr(48, times)
+                revocationTime := and(mask, times)
+            }
+
+            if (revocationTime != ZERO_TIMESTAMP) {
                 attestedAtArray[i] = 0;
                 continue;
             }
 
-            uint256 expirationTime = attestation.expirationTime;
-            uint256 attestedAt = expirationTime != ZERO_TIMESTAMP && expirationTime < timeNow
-                ? ZERO_TIMESTAMP
-                : attestation.time;
-            attestedAtArray[i] = attestedAt;
-            if (attestedAt == ZERO_TIMESTAMP) continue;
+            attestedAtArray[i] = attestationTime;
+
+            if (expirationTime != ZERO_TIMESTAMP) {
+                if (timeNow > expirationTime) {
+                    attestedAtArray[i] = 0;
+                    continue;
+                }
+            }
+
+            if (attestationTime == ZERO_TIMESTAMP) continue;
             if (threshold != 0) --threshold;
         }
         if (threshold == 0) return attestedAtArray;

@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 
-import { SignatureCheckerLib } from "solady/src/utils/SignatureCheckerLib.sol";
+import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 
 import "../../src/Registry.sol";
 import {
@@ -14,8 +14,6 @@ import {
 } from "../../src/base/AttestationDelegation.sol";
 import { ISchemaValidator, IResolver } from "../../src/interface/ISchema.sol";
 import { AttestationRequest, RevocationRequest } from "../../src/DataTypes.sol";
-
-import "forge-std/console2.sol";
 
 address constant VM_ADDR = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D;
 bytes12 constant ADDR_MASK = 0xffffffffffffffffffffffff;
@@ -56,7 +54,7 @@ library RegistryTestLib {
     {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: moduleAddr,
-            expirationTime: uint48(0),
+            expirationTime: uint48(0x42424242),
             data: abi.encode(true),
             value: 0
         });
