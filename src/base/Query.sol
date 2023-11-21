@@ -41,7 +41,7 @@ abstract contract Query is IQuery {
         uint256 expirationTime; // = attestation.expirationTime;
         uint256 revocationTime; // = attestation.revocationTime;
 
-        // @dev this loads the three times from storage, bit shifts them and assigns them to the variables
+        // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
         // @dev the solidity version of the assembly code is above
         assembly {
             let mask := 0xffffffffffff
@@ -97,7 +97,7 @@ abstract contract Query is IQuery {
             uint256 expirationTime; // = attestation.expirationTime;
             uint256 revocationTime; // = attestation.revocationTime;
 
-            // @dev this loads the three times from storage, bit shifts them and assigns them to the variables
+            // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
             // @dev the solidity version of the assembly code is above
             assembly {
                 let mask := 0xffffffffffff
@@ -156,7 +156,7 @@ abstract contract Query is IQuery {
             uint256 expirationTime; // = attestation.expirationTime;
             uint256 revocationTime; // = attestation.revocationTime;
 
-            // @dev this loads the three times from storage, bit shifts them and assigns them to the variables
+            // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
             // @dev the solidity version of the assembly code is above
             assembly {
                 let mask := 0xffffffffffff
