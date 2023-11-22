@@ -4,14 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+[0.2.1]: https://github.com/rhinestonewtf/registry/releases/tag/v0.2.1
 [0.2.0]: https://github.com/rhinestonewtf/registry/releases/tag/v0.2.0
 [0.1.0]: https://github.com/rhinestonewtf/registry/releases/tag/v0.1.0
+
+## [0.2.1] - 22-11-2023
+
+### Changed
+
+- Refactored multiAttest code
+- Standardised naming
+- Import remappings
+
+### Added
+
+- Gas optimisations of query functions
+- Expanded test coverage
+
+### Removed
+
+- Unchecked increments in loops
+
 
 ## [0.2.0] - 25-10-2023
 
 ### Changed
 
-- Removal of Cross-chain Propagation
 - Splitting up Resolvers into Resolvers and SchemaValidators
 - Restructured files for improved readability
 
@@ -24,3 +42,4 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 ### Removed
 
 - Attestation UIDs
+- Cross-chain Propagation
