@@ -13,7 +13,7 @@ import {
     DelegatedRevocationRequest
 } from "../../src/base/AttestationDelegation.sol";
 import { ISchemaValidator, IResolver } from "../../src/interface/ISchema.sol";
-import { AttestationRequest, RevocationRequest } from "../../src/DataTypes.sol";
+import { AttestationRequest, RevocationRequest, ModuleTypes } from "../../src/DataTypes.sol";
 
 address constant VM_ADDR = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D;
 bytes12 constant ADDR_MASK = 0xffffffffffffffffffffffff;
@@ -38,6 +38,7 @@ library RegistryTestLib {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: moduleAddr,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -55,6 +56,7 @@ library RegistryTestLib {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: moduleAddr,
             expirationTime: uint48(0x42424242),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });

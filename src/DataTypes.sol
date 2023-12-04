@@ -14,6 +14,7 @@ struct AttestationRecord {
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
+    ModuleTypes moduleTypes;
     SchemaUID schemaUID; // The unique identifier of the schema.
     address subject; // The implementation address of the module that is being attested.
     address attester; // The attesting account.
@@ -49,6 +50,7 @@ struct ResolverRecord {
 struct AttestationRequestData {
     address subject; // The subject of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
+    ModuleTypes moduleTypes;
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
     bytes data; // Custom attestation data.
 }
@@ -187,4 +189,27 @@ function writeAttestationData(
      * Checking if an attestation pointer already exists, would cost more GAS in the average case.
      */
     dataPointer = AttestationDataRef.wrap(SSTORE2.writeDeterministic(attestationData, salt));
+}
+
+type ModuleTypes is uint16;
+
+type ModuleType is uint8;
+
+ModuleType constant MODULE_TYPE_EXECUTOR = ModuleType.wrap(1);
+ModuleType constant MODULE_TYPE_VALIDATOR = ModuleType.wrap(2);
+ModuleType constant MODULE_TYPE_HOOK = ModuleType.wrap(4);
+ModuleType constant MODULE_TYPE_PLACEHOLDER = ModuleType.wrap(8);
+
+library ModuleTypeLib {
+    function isType(ModuleTypes self, ModuleType moduleType) internal pure returns (bool) {
+        return (ModuleTypes.unwrap(self) & ModuleType.unwrap(moduleType)) != 0;
+    }
+
+    function encode(ModuleType[] memory moduleTypes) internal pure returns (ModuleTypes) {
+        uint16 result;
+        for (uint256 i; i < moduleTypes.length; i++) {
+            result = result + ModuleType.unwrap(moduleTypes[i]);
+        }
+        return ModuleTypes.wrap(result);
+    }
 }

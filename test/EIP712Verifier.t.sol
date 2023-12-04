@@ -13,6 +13,7 @@ import {
 } from "../src/base/EIP712Verifier.sol";
 
 import { console2 } from "forge-std/console2.sol";
+import { ModuleTypes } from "src/DataTypes.sol";
 
 struct SampleAttestation {
     address[] dependencies;
@@ -68,6 +69,7 @@ contract EIP712VerifierTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: address(0),
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             value: 0,
             data: ""
         });
@@ -98,6 +100,7 @@ contract EIP712VerifierTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: address(0x69),
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             value: 0,
             data: abi.encode(true)
         });
@@ -122,6 +125,7 @@ contract EIP712VerifierTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: address(0),
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             value: 0,
             data: ""
         });

@@ -346,7 +346,8 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             time: timeNow,
             expirationTime: attestationRequestData.expirationTime,
             revocationTime: uint48(ZERO_TIMESTAMP),
-            dataPointer: sstore2Pointer
+            dataPointer: sstore2Pointer,
+            moduleTypes: attestationRequestData.moduleTypes
         });
 
         value = attestationRequestData.value;

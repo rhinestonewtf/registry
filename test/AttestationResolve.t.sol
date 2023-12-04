@@ -25,7 +25,7 @@ import {
 } from "../src/interface/IAttestation.sol";
 import { ISchemaValidator } from "../src/interface/ISchema.sol";
 import { ResolverBase } from "../src/external/ResolverBase.sol";
-import { AttestationDataRef } from "../src/DataTypes.sol";
+import { AttestationDataRef, ModuleTypes } from "../src/DataTypes.sol";
 
 contract AttestationResolveInstance is AttestationResolve {
     function resolveAttestation(
@@ -243,6 +243,7 @@ contract AttestationResolveTest is BaseTest {
             schemaUID: defaultSchema1,
             subject: address(this),
             attester: address(this),
+            moduleTypes: ModuleTypes.wrap(3),
             time: uint48(0),
             expirationTime: uint48(0),
             revocationTime: uint48(0),
@@ -264,6 +265,7 @@ contract AttestationResolveTest is BaseTest {
             schemaUID: defaultSchema1,
             subject: address(this),
             attester: address(this),
+            moduleTypes: ModuleTypes.wrap(3),
             time: uint48(0),
             expirationTime: uint48(0),
             revocationTime: uint48(0),
@@ -291,6 +293,7 @@ contract AttestationResolveTest is BaseTest {
             schemaUID: defaultSchema1,
             subject: address(this),
             attester: address(this),
+            moduleTypes: ModuleTypes.wrap(3),
             time: uint48(0),
             expirationTime: uint48(0),
             revocationTime: uint48(0),
@@ -315,6 +318,7 @@ contract AttestationResolveTest is BaseTest {
             subject: address(this),
             attester: address(this),
             time: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             expirationTime: uint48(0),
             revocationTime: uint48(0),
             dataPointer: AttestationDataRef.wrap(address(0))
@@ -338,6 +342,7 @@ contract AttestationResolveTest is BaseTest {
             subject: address(this),
             attester: address(this),
             time: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             expirationTime: uint48(0),
             revocationTime: uint48(0),
             dataPointer: AttestationDataRef.wrap(address(0))
@@ -361,6 +366,7 @@ contract AttestationResolveTest is BaseTest {
             subject: address(this),
             attester: address(this),
             time: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             expirationTime: uint48(0),
             revocationTime: uint48(0),
             dataPointer: AttestationDataRef.wrap(address(0))
@@ -382,6 +388,7 @@ contract AttestationResolveTest is BaseTest {
             schemaUID: defaultSchema1,
             subject: address(this),
             attester: address(this),
+            moduleTypes: ModuleTypes.wrap(3),
             time: uint48(0),
             expirationTime: uint48(0),
             revocationTime: uint48(0),

@@ -32,7 +32,8 @@ import {
     MultiAttestationRequest,
     MultiRevocationRequest,
     RevocationRequestData,
-    RevocationRequest
+    RevocationRequest,
+    ModuleTypes
 } from "../src/DataTypes.sol";
 
 struct SampleAttestation {
@@ -60,6 +61,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(1),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -72,6 +74,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: address(0x69),
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -84,6 +87,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -97,6 +101,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -120,6 +125,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: data,
             value: 0
         });
@@ -135,6 +141,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData1 = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -142,6 +149,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData2 = AttestationRequestData({
             subject: anotherModule,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -168,6 +176,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData1 = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -175,6 +184,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData2 = AttestationRequestData({
             subject: anotherModule,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -203,6 +213,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData1 = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -210,6 +221,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData2 = AttestationRequestData({
             subject: anotherModule,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -237,6 +249,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData1 = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(1),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -244,6 +257,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData2 = AttestationRequestData({
             subject: anotherModule,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -272,6 +286,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData1 = AttestationRequestData({
             subject: address(0x69),
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });
@@ -279,6 +294,7 @@ contract AttestationTest is BaseTest {
         AttestationRequestData memory attData2 = AttestationRequestData({
             subject: anotherModule,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 0
         });

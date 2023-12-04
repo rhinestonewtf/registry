@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 
 import "../utils/BaseTest.t.sol";
 import "../../src/external/examples/ValueResolver.sol";
+import { ModuleTypes } from "src/DataTypes.sol";
 
 contract ValueResolverTest is BaseTest {
     using RegistryTestLib for RegistryInstance;
@@ -26,6 +27,7 @@ contract ValueResolverTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
+            moduleTypes: ModuleTypes.wrap(3),
             data: abi.encode(true),
             value: 1 ether
         });

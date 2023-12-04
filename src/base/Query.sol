@@ -15,6 +15,8 @@ import {
 
 import { ZERO_TIMESTAMP } from "../Common.sol";
 
+import { ModuleType, ModuleTypes, ModuleTypeLib } from "src/DataTypes.sol";
+
 /**
  * @title Query
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
@@ -22,6 +24,41 @@ import { ZERO_TIMESTAMP } from "../Common.sol";
  * @dev This contract is abstract and provides utility functions to query attestations.
  */
 abstract contract Query is IQuery {
+    using ModuleTypeLib for ModuleTypes;
+
+    function check(
+        address module,
+        address attester,
+        ModuleType moduleType
+    )
+        public
+        view
+        returns (uint256 attestedAt)
+    {
+        AttestationRecord storage attestation = _getAttestation(module, attester);
+
+        attestedAt = attestation.time;
+        uint256 expirationTime = attestation.expirationTime;
+        uint256 revocationTime = attestation.revocationTime;
+        if (attestation.moduleTypes.isType(moduleType) == false) {
+            revert AttestationNotFound();
+        }
+
+        if (attestedAt == ZERO_TIMESTAMP) {
+            revert AttestationNotFound();
+        }
+
+        if (expirationTime != ZERO_TIMESTAMP) {
+            if (block.timestamp > expirationTime) {
+                revert AttestationNotFound();
+            }
+        }
+
+        if (revocationTime != ZERO_TIMESTAMP) {
+            revert RevokedAttestation(attestation.attester);
+        }
+    }
+
     /**
      * @inheritdoc IQuery
      */
