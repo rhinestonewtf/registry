@@ -193,7 +193,7 @@ function writeAttestationData(
 
 type ModuleTypes is uint16;
 
-type ModuleType is uint8;
+type ModuleType is uint16;
 
 ModuleType constant MODULE_TYPE_EXECUTOR = ModuleType.wrap(1);
 ModuleType constant MODULE_TYPE_VALIDATOR = ModuleType.wrap(2);
