@@ -6,13 +6,12 @@ import "forge-std/Test.sol";
 import "./Attestation.t.sol";
 import "../src/interface/IQuery.sol";
 
-import {
-    ModuleTypesEnc,
-    ModuleType,
-    MODULE_TYPE_EXECUTOR,
-    MODULE_TYPE_VALIDATOR,
-    MODULE_TYPE_HOOK
-} from "src/DataTypes.sol";
+import { ModuleTypesEnc, ModuleType } from "src/DataTypes.sol";
+
+ModuleType constant MODULE_TYPE_VALIDATOR = ModuleType.wrap(1);
+ModuleType constant MODULE_TYPE_EXECUTOR = ModuleType.wrap(2);
+ModuleType constant MODULE_TYPE_FALLBACK = ModuleType.wrap(3);
+ModuleType constant MODULE_TYPE_HOOK = ModuleType.wrap(4);
 
 /// @title RSRegistryTest
 /// @author zeroknots, kopy-kat
