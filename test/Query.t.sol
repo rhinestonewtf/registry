@@ -7,7 +7,7 @@ import "./Attestation.t.sol";
 import "../src/interface/IQuery.sol";
 
 import {
-    ModuleTypes,
+    ModuleTypesEnc,
     ModuleType,
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_VALIDATOR,
@@ -76,7 +76,7 @@ contract QueryTest is AttestationTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(101),
-            moduleTypes: ModuleTypes.wrap(3),
+            ModuleTypesEnc: ModuleTypesEnc.wrap(6),
             data: abi.encode(false),
             value: 0
         });
@@ -168,8 +168,8 @@ contract QueryTest is AttestationTest {
 
     function testCheckAttestationWithType() public {
         testAttest();
-        instance.registry.check(defaultModule1, attester, MODULE_TYPE_EXECUTOR);
         instance.registry.check(defaultModule1, attester, MODULE_TYPE_VALIDATOR);
+        instance.registry.check(defaultModule1, attester, MODULE_TYPE_EXECUTOR);
         vm.expectRevert();
         instance.registry.check(defaultModule1, attester, MODULE_TYPE_HOOK);
     }

@@ -15,7 +15,7 @@ import {
 
 import { ZERO_TIMESTAMP } from "../Common.sol";
 
-import { ModuleType, ModuleTypes, ModuleTypeLib } from "src/DataTypes.sol";
+import { ModuleType, ModuleTypesEnc, ModuleTypeLib } from "src/DataTypes.sol";
 
 /**
  * @title Query
@@ -24,7 +24,7 @@ import { ModuleType, ModuleTypes, ModuleTypeLib } from "src/DataTypes.sol";
  * @dev This contract is abstract and provides utility functions to query attestations.
  */
 abstract contract Query is IQuery {
-    using ModuleTypeLib for ModuleTypes;
+    using ModuleTypeLib for ModuleTypesEnc;
 
     function check(
         address module,
@@ -40,7 +40,7 @@ abstract contract Query is IQuery {
         attestedAt = attestation.time;
         uint256 expirationTime = attestation.expirationTime;
         uint256 revocationTime = attestation.revocationTime;
-        if (attestation.moduleTypes.isType(moduleType) == false) {
+        if (attestation.ModuleTypesEnc.isType(moduleType) == false) {
             revert AttestationNotFound();
         }
 
