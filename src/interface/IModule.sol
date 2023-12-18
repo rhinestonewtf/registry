@@ -10,7 +10,9 @@ import { ResolverUID } from "../DataTypes.sol";
  */
 interface IModule {
     // Event triggered when a module is deployed.
-    event ModuleRegistration(address indexed implementation, bytes32 resolver);
+    event ModuleRegistration(
+        address indexed implementation, address indexed sender, bytes32 resolver
+    );
     event ModuleDeployed(address indexed implementation, bytes32 indexed salt, bytes32 resolver);
     event ModuleDeployedExternalFactory(
         address indexed implementation, address indexed factory, bytes32 resolver
