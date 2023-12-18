@@ -1,6 +1,4 @@
-hashi/=lib/hashi/packages/evm/contracts/
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
-solidity-rlp/=lib/Solidity-RLP/
-checknsignatures/=lib/checknsignatures/
-solmate/=lib/solmate
-solady/=lib/solady
+checknsignatures/=lib/checknsignatures/src/
+solmate/=lib/solmate/src/
+solady/=lib/solady/src/

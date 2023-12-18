@@ -15,7 +15,6 @@ import {
     ResolverRecord,
     ModuleRecord
 } from "./base/Query.sol";
-import { IRegistry } from "./interface/IRegistry.sol";
 
 /**
  * @author zeroknots

@@ -1,13 +1,13 @@
-<img align="right" width="150" height="150" top="100" src="https://docs-9d8fk274h-rhinestone.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Frhinestone.d2796f13.png&w=2048&q=75">
+<img align="right" width="150" height="150" top="100" src="./public/logo.png">
 
-# Registry [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![solidity](https://img.shields.io/badge/solidity-^0.8.19-lightgrey) [![Foundry][foundry-badge]][foundry]
+# Registry [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![solidity](https://img.shields.io/badge/solidity-^0.8.22-lightgrey) [![Foundry][foundry-badge]][foundry]
 
 [foundry]: https://getfoundry.sh
 [foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
 
 This Contract is in active development. Do not use this in Prod!
 
-## Intro
+## Overview
 
 Account abstraction (or smart accounts) will deliver three key enhancements for the Ethereum ecosystem:
 improved UX, enhanced user security and greater wallet extensibility. Modular smart accounts are the next
@@ -18,7 +18,7 @@ The Registry aims to solve this concern by providing a means of verifying the le
 security of independently built smart account modules for installation and use across any integrated
 smart account. It allows entities to attest to statements about modules and smart accounts to query these at module nstallation and/or execution time. The Registry is a Singleton that is free, open and permissionless. It also serves as the reference implementation for [ERC-7484](https://eips.ethereum.org/EIPS/eip-7484).
 
-## Core Principles
+## Core Concepts
 
 ### Attestations
 
@@ -95,7 +95,7 @@ For the continious support and constructive feedback, we would like to thank:
 - Richard Meissner (Safe) @rimeissner
 - Taek @taek.eth
 - Biconomy
-- Rhinestone Registry is drawing inspiration from EAS
+- Heavily inspired by EAS
 
 ## Authors ✨
 

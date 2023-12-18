@@ -55,7 +55,7 @@ abstract contract Schema is ISchema {
 
         // build a ResolverRecord from the input
         ResolverRecord memory resolver =
-            ResolverRecord({ resolver: _resolver, schemaOwner: msg.sender });
+            ResolverRecord({ resolver: _resolver, resolverOwner: msg.sender });
 
         // Computing a unique ID for the schema using its properties
         uid = resolver.getUID();
@@ -74,7 +74,7 @@ abstract contract Schema is ISchema {
     /**
      * @inheritdoc ISchema
      */
-    function setResolver(ResolverUID uid, IResolver resolver) external onlySchemaOwner(uid) {
+    function setResolver(ResolverUID uid, IResolver resolver) external onlyResolverOwner(uid) {
         ResolverRecord storage referrer = _resolvers[uid];
         referrer.resolver = resolver;
         emit NewSchemaResolver(uid, address(resolver));
@@ -106,22 +106,22 @@ abstract contract Schema is ISchema {
     }
 
     /**
-     * @dev Modifier to require that the caller is the owner of a schema
+     * @dev Modifier to require that the caller is the owner of a resolver
      *
-     * @param uid The UID of the schema.
+     * @param uid The UID of the resolver.
      */
-    modifier onlySchemaOwner(ResolverUID uid) {
-        _onlySchemaOwner(uid);
+    modifier onlyResolverOwner(ResolverUID uid) {
+        _onlyResolverOwner(uid);
         _;
     }
 
     /**
-     * @dev Verifies that the caller is the owner of a schema
+     * @dev Verifies that the caller is the owner of a resolver
      *
-     * @param uid The UID of the schema.
+     * @param uid The UID of the resolver.
      */
-    function _onlySchemaOwner(ResolverUID uid) private view {
-        if (_resolvers[uid].schemaOwner != msg.sender) {
+    function _onlyResolverOwner(ResolverUID uid) private view {
+        if (_resolvers[uid].resolverOwner != msg.sender) {
             revert AccessDenied();
         }
     }

@@ -4,7 +4,6 @@ pragma solidity ^0.8.19;
 import { IResolver } from "../external/IResolver.sol";
 import { ISchemaValidator } from "../external/ISchemaValidator.sol";
 import { SchemaUID, SchemaRecord, ResolverUID, ResolverRecord } from "../DataTypes.sol";
-import { IRegistry } from "./IRegistry.sol";
 
 /**
  * @title The global schema interface.

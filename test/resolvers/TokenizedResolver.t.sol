@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "solmate/src/test/utils/mocks/MockERC20.sol";
+import "solmate/test/utils/mocks/MockERC20.sol";
 import "../utils/BaseTest.t.sol";
 import "../../src/external/examples/TokenizedResolver.sol";
 import "../../src/external/examples/SimpleValidator.sol";
@@ -17,20 +17,20 @@ contract TokenizedResolverTest is BaseTest {
         super.setUp();
         token = new MockERC20("test", "test", 8);
         resolver = new TokenizedResolver(
-            address(instancel1.registry),
+            address(instance.registry),
             address(token)
         );
         validator = new SimpleValidator();
 
-        token.mint(vm.addr(auth1k), 10_000);
+        token.mint(address(this), 10_000);
     }
 
     function testTokenizedResolver() public {
         SchemaUID schema =
-            instancel1.registerSchema("TokenizedResolver", ISchemaValidator(address(validator)));
-        ResolverUID resolverUID = instancel1.registerResolver(IResolver(address(resolver)));
+            instance.registerSchema("TokenizedResolver", ISchemaValidator(address(validator)));
+        ResolverUID resolverUID = instance.registerResolver(IResolver(address(resolver)));
 
-        address module = instancel1.deployAndRegister(
+        address module = instance.deployAndRegister(
             resolverUID, type(MockModuleWithArgs).creationCode, abi.encode("asdfasdf")
         );
 
@@ -41,9 +41,9 @@ contract TokenizedResolverTest is BaseTest {
             value: 0
         });
 
-        vm.prank(vm.addr(auth1k));
+        vm.prank(address(this));
         token.approve(address(resolver), 1000);
-        instancel1.newAttestation(schema, auth1k, attData);
+        instance.newAttestation(schema, attData);
         assertEq(token.balanceOf(address(resolver)), 10);
     }
 }

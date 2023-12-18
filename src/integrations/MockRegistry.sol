@@ -3,7 +3,6 @@ pragma solidity ^0.8.19;
 
 import { IQuery } from "../interface/IQuery.sol";
 import { AttestationRecord } from "../DataTypes.sol";
-import { uncheckedInc } from "../Common.sol";
 
 /**
  * @title MockRegistry
@@ -35,7 +34,7 @@ contract MockRegistry is IQuery {
     {
         uint256 attestersLength = attesters.length;
         uint256[] memory attestedAtArray = new uint256[](attestersLength);
-        for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
+        for (uint256 i; i < attestersLength; ++i) {
             attestedAtArray[i] = uint256(1234);
         }
         return attestedAtArray;
@@ -53,7 +52,7 @@ contract MockRegistry is IQuery {
     {
         uint256 attestersLength = attesters.length;
         uint256[] memory attestedAtArray = new uint256[](attestersLength);
-        for (uint256 i; i < attestersLength; i = uncheckedInc(i)) {
+        for (uint256 i; i < attestersLength; ++i) {
             attestedAtArray[i] = uint256(1234);
         }
         return attestedAtArray;

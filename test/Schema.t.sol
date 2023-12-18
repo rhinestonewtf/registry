@@ -5,11 +5,12 @@ import "forge-std/Test.sol";
 import "../src/external/IResolver.sol";
 import "../src/interface/ISchema.sol";
 import { DebugResolver } from "../src/external/examples/DebugResolver.sol";
+import { InvalidResolver } from "../src/Common.sol";
 
 import "./utils/BaseTest.t.sol";
 
 /// @title SchemaTest
-/// @author zeroknots
+/// @author zeroknots, kopy-kat
 contract SchemaTest is BaseTest {
     using RegistryTestLib for RegistryInstance;
 
@@ -17,28 +18,52 @@ contract SchemaTest is BaseTest {
 
     function setUp() public virtual override {
         super.setUp();
-        simpleResolver = new DebugResolver(address(instancel1.registry));
+        simpleResolver = new DebugResolver(address(instance.registry));
     }
 
     function testRegisterSchema() public {
-        SchemaUID schemaId = instancel1.registerSchema("Test ABI 2", ISchemaValidator(address(0)));
-        assertTrue(SchemaUID.unwrap(schemaId) != bytes32(0), "schemaId should not be empty");
+        SchemaUID schemaUID = instance.registerSchema("Test ABI 2", ISchemaValidator(address(0)));
+        assertTrue(SchemaUID.unwrap(schemaUID) != bytes32(0));
+
+        SchemaRecord memory schema = instance.registry.getSchema(schemaUID);
+        assertEq(schema.schema, "Test ABI 2");
     }
 
-    function testRegisterSchemaWitSameSchema() public {
-        SchemaUID schemaId = instancel1.registerSchema("same", ISchemaValidator(address(0)));
+    function testRegisterSchema__RevertWhen__AlreadyExists() public {
+        SchemaUID schemaUID = instance.registerSchema("Test ABI 2", ISchemaValidator(address(0)));
+        assertTrue(SchemaUID.unwrap(schemaUID) != bytes32(0));
 
         vm.expectRevert(abi.encodeWithSelector(ISchema.AlreadyExists.selector));
-        SchemaUID schemaId2 = instancel1.registerSchema("same", ISchemaValidator(address(0)));
+        schemaUID = instance.registerSchema("Test ABI 2", ISchemaValidator(address(0)));
     }
 
-    function testSameUIDOnL2() public {
-        // TODO
-        assertTrue(true);
+    function testRegisterResolver() public {
+        ResolverUID resolverUID = instance.registerResolver(simpleResolver);
+        assertTrue(ResolverUID.unwrap(resolverUID) != bytes32(0));
     }
 
-    function testUpdateResolver() public {
-        // TODO
-        assertTrue(true);
+    function testRegisterResolver__RevertWhen__InvalidResolver() public {
+        vm.expectRevert(abi.encodeWithSelector(InvalidResolver.selector));
+        instance.registerResolver(IResolver(address(0)));
+    }
+
+    function testRegisterResolver__RevertWhen__AlreadyExists() public {
+        ResolverUID resolverUID = instance.registerResolver(simpleResolver);
+        assertTrue(ResolverUID.unwrap(resolverUID) != bytes32(0));
+
+        vm.expectRevert(abi.encodeWithSelector(ISchema.AlreadyExists.selector));
+        resolverUID = instance.registerResolver(simpleResolver);
+    }
+
+    function testSetResolver() public {
+        address resolverOwner = address(this);
+        ResolverUID resolverUID = instance.registerResolver(simpleResolver);
+        ResolverRecord memory resolver = instance.registry.getResolver(resolverUID);
+        assertEq(resolver.resolverOwner, resolverOwner);
+        assertEq(address(resolver.resolver), address(simpleResolver));
+
+        instance.registry.setResolver(resolverUID, IResolver(address(0x69)));
+        resolver = instance.registry.getResolver(resolverUID);
+        assertEq(address(resolver.resolver), address(0x69));
     }
 }

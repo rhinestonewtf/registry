@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { ReentrancyGuard } from "solmate/src/utils/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "solmate/utils/ReentrancyGuard.sol";
 
-import { EIP712Verifier } from "./EIP712Verifier.sol";
 import {
     IAttestation,
     AttestationRecord,
@@ -24,12 +23,11 @@ import {
     NotFound,
     ZERO_TIMESTAMP,
     InvalidLength,
-    uncheckedInc,
     InvalidSchema,
     _time
 } from "../Common.sol";
 
-import { AttestationDataRef, writeAttestationData, readAttestationData } from "../DataTypes.sol";
+import { AttestationDataRef, writeAttestationData } from "../DataTypes.sol";
 import { AttestationResolve } from "./AttestationResolve.sol";
 
 /**
@@ -62,6 +60,8 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
 
         ModuleRecord storage moduleRecord = _getModule({ moduleAddress: request.data.subject });
         ResolverUID resolverUID = moduleRecord.resolverUID;
+
+        verifyAttestationData(request.schemaUID, requestData);
 
         // write attestations to registry storge
         (AttestationRecord memory attestationRecord, uint256 value) = _writeAttestation({
@@ -97,7 +97,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         ModuleRecord storage moduleRecord =
             _getModule({ moduleAddress: multiRequests[0].data[0].subject });
 
-        for (uint256 i; i < length; i = uncheckedInc(i)) {
+        for (uint256 i; i < length; ++i) {
             // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there
             // is a remainder - it will be refunded back to the attester (something that we can only verify during the
             // last and final batch).
@@ -132,8 +132,11 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
     function revoke(RevocationRequest calldata request) external payable nonReentrant {
         ModuleRecord memory moduleRecord = _getModule({ moduleAddress: request.data.subject });
 
+        SchemaRecord storage schema = _getSchema({ schemaUID: request.schemaUID });
+        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
+
         AttestationRecord memory attestationRecord =
-            _revoke({ schemaUID: request.schemaUID, request: request.data, revoker: msg.sender });
+            _revoke({ request: request.data, revoker: msg.sender });
 
         _resolveAttestation({
             resolverUID: moduleRecord.resolverUID,
@@ -165,7 +168,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         uint256 requestsLength = multiRequests.length;
 
         // should cache length
-        for (uint256 i; i < requestsLength; i = uncheckedInc(i)) {
+        for (uint256 i; i < requestsLength; ++i) {
             // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there
             // is a remainder - it will be refunded back to the attester (something that we can only verify during the
             // last and final batch).
@@ -211,18 +214,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         internal
         returns (uint256 usedValue)
     {
-        // only run this function if the selected schemaUID exists
-        SchemaRecord storage schema = _getSchema({ schemaUID: schemaUID });
-        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
-        // validate Schema
-        ISchemaValidator validator = schema.validator;
-        // if validator is set, call the validator
-        if (address(validator) != ZERO_ADDRESS) {
-            // revert if ISchemaValidator returns false
-            if (!schema.validator.validateSchema(attestationRequestDatas)) {
-                revert InvalidAttestation();
-            }
-        }
+        verifyAttestationData(schemaUID, attestationRequestDatas);
 
         // caching length
         uint256 length = attestationRequestDatas.length;
@@ -237,7 +229,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         uint256[] memory values = new uint256[](length);
 
         // write every attesatation provided to registry's storage
-        for (uint256 i; i < length; i = uncheckedInc(i)) {
+        for (uint256 i; i < length; ++i) {
             (attestationRecords[i], values[i]) = _writeAttestation({
                 schemaUID: schemaUID,
                 resolverUID: resolverUID,
@@ -255,6 +247,48 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             availableValue: availableValue,
             isLast: isLastAttestation
         });
+    }
+
+    function verifyAttestationData(
+        SchemaUID schemaUID,
+        AttestationRequestData calldata requestData
+    )
+        internal
+        view
+    {
+        // only run this function if the selected schemaUID exists
+        SchemaRecord storage schema = _getSchema({ schemaUID: schemaUID });
+        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
+        // validate Schema
+        ISchemaValidator validator = schema.validator;
+        // if validator is set, call the validator
+        if (address(validator) != ZERO_ADDRESS) {
+            // revert if ISchemaValidator returns false
+            if (!schema.validator.validateSchema(requestData)) {
+                revert InvalidAttestation();
+            }
+        }
+    }
+
+    function verifyAttestationData(
+        SchemaUID schemaUID,
+        AttestationRequestData[] calldata requestDatas
+    )
+        internal
+        view
+    {
+        // only run this function if the selected schemaUID exists
+        SchemaRecord storage schema = _getSchema({ schemaUID: schemaUID });
+        if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
+        // validate Schema
+        ISchemaValidator validator = schema.validator;
+        // if validator is set, call the validator
+        if (address(validator) != ZERO_ADDRESS) {
+            // revert if ISchemaValidator returns false
+            if (!schema.validator.validateSchema(requestDatas)) {
+                revert InvalidAttestation();
+            }
+        }
     }
 
     /**
@@ -297,11 +331,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             revert InvalidAttestation();
         }
 
-        // Ensure that attestation for a module is using the modules resolver
-        if (moduleRecord.resolverUID != resolverUID) {
-            revert InvalidAttestation();
-        }
-
         // get salt used for SSTORE2 to avoid collisions during CREATE2
         bytes32 attestationSalt = AttestationLib.attestationSalt(attester, module);
         AttestationDataRef sstore2Pointer = writeAttestationData({
@@ -328,7 +357,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
     }
 
     function _revoke(
-        SchemaUID schemaUID,
         RevocationRequestData memory request,
         address revoker
     )
@@ -341,11 +369,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         // Ensure that we aren't attempting to revoke a non-existing attestation.
         if (AttestationDataRef.unwrap(attestation.dataPointer) == ZERO_ADDRESS) {
             revert NotFound();
-        }
-
-        // Ensure that a wrong schema ID wasn't passed by accident.
-        if (attestation.schemaUID != schemaUID) {
-            revert InvalidSchema();
         }
 
         // Allow only original attesters to revoke their attestations.
@@ -400,11 +423,10 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         );
         uint256[] memory values = new uint256[](length);
 
-        for (uint256 i; i < length; i = uncheckedInc(i)) {
+        for (uint256 i; i < length; ++i) {
             RevocationRequestData memory revocationRequests = revocationRequestDatas[i];
 
-            attestationRecords[i] =
-                _revoke({ schemaUID: schemaUID, request: revocationRequests, revoker: revoker });
+            attestationRecords[i] = _revoke({ request: revocationRequests, revoker: revoker });
             values[i] = revocationRequests.value;
         }
 

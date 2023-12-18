@@ -33,11 +33,11 @@ contract SimpleRegistryIntegrationTest is BaseTest {
     function setUp() public override {
         super.setUp();
 
-        harness = new TestHarness(address(instancel1.registry), vm.addr(auth1k));
+        harness = new TestHarness(address(instance.registry), address(this));
     }
 
     function testGasRegistryCheck() public {
-        instancel1.mockAttestation(defaultSchema1, auth1k, defaultModule1);
+        instance.mockAttestation(defaultSchema1, defaultModule1);
         harness.query(defaultModule1);
     }
 }

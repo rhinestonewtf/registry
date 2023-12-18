@@ -19,7 +19,6 @@ import {
     MultiDelegatedRevocationRequest,
     MultiRevocationRequest
 } from "../DataTypes.sol";
-import { IRegistry } from "./IRegistry.sol";
 
 /**
  * @dev The global attestation interface.
