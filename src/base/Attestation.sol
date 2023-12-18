@@ -331,11 +331,12 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             revert InvalidAttestation();
         }
 
-        // get salt used for SSTORE2 to avoid collisions during CREATE2
-        bytes32 attestationSalt = AttestationLib.attestationSalt(attester, module);
+        // salt = 0 so that attestation data can be reused
+        bytes32 attestationSalt = bytes32(0);
         AttestationDataRef sstore2Pointer = writeAttestationData({
             attestationData: attestationRequestData.data,
-            salt: attestationSalt
+            salt: attestationSalt,
+            thisAddress: address(this)
         });
 
         // write attestationdata with SSTORE2 to EVM, and prepare return value

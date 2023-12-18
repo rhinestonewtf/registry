@@ -178,7 +178,8 @@ function readAttestationData(AttestationDataRef dataPointer) view returns (bytes
 
 function writeAttestationData(
     bytes memory attestationData,
-    bytes32 salt
+    bytes32 salt,
+    address thisAddress
 )
     returns (AttestationDataRef dataPointer)
 {
@@ -186,5 +187,14 @@ function writeAttestationData(
      * @dev We are using CREATE2 to deterministically generate the address of the attestation data.
      * Checking if an attestation pointer already exists, would cost more GAS in the average case.
      */
-    dataPointer = AttestationDataRef.wrap(SSTORE2.writeDeterministic(attestationData, salt));
+    address predicted = SSTORE2.predictDeterministicAddress(attestationData, salt, thisAddress);
+    uint256 size;
+    assembly {
+        size := extcodesize(predicted)
+    }
+    if (size == 0) {
+        dataPointer = AttestationDataRef.wrap(SSTORE2.writeDeterministic(attestationData, salt));
+    } else {
+        dataPointer = AttestationDataRef.wrap(predicted);
+    }
 }
