@@ -68,7 +68,6 @@ abstract contract Module is IModule, ReentrancyGuard {
             resolverUID: resolverUID,
             metadata: metadata
         });
-        emit ModuleDeployed(moduleAddr, salt, ResolverUID.unwrap(resolverUID));
     }
 
     /**
@@ -99,7 +98,6 @@ abstract contract Module is IModule, ReentrancyGuard {
             resolverUID: resolverUID,
             metadata: metadata
         });
-        emit ModuleDeployed(moduleAddr, senderSalt, ResolverUID.unwrap(resolverUID));
     }
 
     /**
@@ -132,7 +130,6 @@ abstract contract Module is IModule, ReentrancyGuard {
             resolverUID: resolverUID,
             metadata: metadata
         });
-        emit ModuleDeployedExternalFactory(moduleAddr, factory, ResolverUID.unwrap(resolverUID));
     }
 
     /**
@@ -156,14 +153,12 @@ abstract contract Module is IModule, ReentrancyGuard {
             resolverUID: resolverUID,
             metadata: metadata
         });
-        emit ModuleRegistration(moduleAddress, ResolverUID.unwrap(resolverUID));
     }
 
     /**
      * @dev Registers a module, ensuring it's not already registered.
      *  This function ensures that the module is a contract.
-     *  Also ensures that moduleAddress is not ZERO_ADDRESS
-     *
+     *  Also ensures that moduleAddress is not ZERO_ADDRESS.
      *
      * @param moduleAddress Address of the module.
      * @param sender Address of the sender registering the module.
@@ -195,12 +190,17 @@ abstract contract Module is IModule, ReentrancyGuard {
             metadata: metadata
         });
 
+        // Resolve module registration using resolver
         _resolveRegistration({
             resolverContract: resolver.resolver,
             moduleRegistration: moduleRegistration
         });
 
+        // Store module record in _modules mapping
         _modules[moduleAddress] = moduleRegistration;
+
+        // Emit ModuleRegistration event
+        emit ModuleRegistration(moduleAddress, sender, ResolverUID.unwrap(resolverUID));
     }
 
     /**
