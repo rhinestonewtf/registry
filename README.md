@@ -63,6 +63,25 @@ Modules are registered on the Registry either during, using `CREATE2`, `CREATE3`
 
 ![Sequence Diagram](./public/docs/all.svg)
 
+## Gas comparison
+
+The following is a table of the gas differences between the Registry and a minimal [ERC-7484](https://eips.ethereum.org/EIPS/eip-7484) registry that only has one attester. As you can see, the gas difference is negligible for 1 or 2 attesters, but the Registry scales much better than using multiple single attester registries.
+
+To run the tests yourself, run `forge test --mc RegistryGasComparisonTest -vv`.
+
+_Note:_ The gas calculation numbers include the gas cost for `CALL`
+
+| # of Attesters    | Registry     | Minimal7484Registry | Difference |
+| ----------------- | ------------ | ------------------- | ---------- |
+| 1                 | 7983         | 7706                | +277       |
+| 2                 | 15472        | 15418               | +54        |
+| 3                 | 20823        | 23124               | -2301      |
+| n (approximation) | 5299n + 4901 | 7709n               |            |
+
+## Deployments
+
+Current address: [0xE6b4923Ca38A5310b96784e732a52BF4999ee6Ab](https://blockscan.com/address/0xE6b4923Ca38A5310b96784e732a52BF4999ee6Ab)
+
 ## Contribute
 
 For feature or change requests, feel free to open a PR or get in touch with us.
