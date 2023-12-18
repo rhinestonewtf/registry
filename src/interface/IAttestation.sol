@@ -25,7 +25,6 @@ import {
  */
 interface IAttestation {
     error AlreadyRevoked();
-    error AlreadyRevokedOffchain();
     error AlreadyTimestamped();
     error InsufficientValue();
     error InvalidAttestation();
@@ -73,14 +72,6 @@ interface IAttestation {
      */
     event Timestamped(bytes32 indexed data, uint64 indexed timestamp);
 
-    /**
-     * @dev Emitted when a data has been revoked.
-     *
-     * @param revoker The address of the revoker.
-     * @param data The data.
-     * @param timestamp The timestamp.
-     */
-    event RevokedOffchain(address indexed revoker, bytes32 indexed data, uint64 indexed timestamp);
     /**
      * @notice Creates an attestation for a specified schema.
      *

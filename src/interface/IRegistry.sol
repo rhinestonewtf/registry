@@ -16,7 +16,6 @@ interface IRegistry {
     event ModuleRegistration(address indexed implementation, bytes32 resolver);
     event NewSchemaResolver(bytes32 indexed uid, address resolver);
     event Revoked(address indexed subject, address indexed attester, bytes32 indexed schema);
-    event RevokedOffchain(address indexed revoker, bytes32 indexed data, uint64 indexed timestamp);
     event SchemaRegistered(bytes32 indexed uid, address registerer);
     event SchemaResolverRegistered(bytes32 indexed uid, address registerer);
     event Timestamped(bytes32 indexed data, uint64 indexed timestamp);
