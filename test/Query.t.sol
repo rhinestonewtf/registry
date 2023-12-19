@@ -6,6 +6,13 @@ import "forge-std/Test.sol";
 import "./Attestation.t.sol";
 import "../src/interface/IQuery.sol";
 
+import { ModuleTypesEnc, ModuleType } from "src/DataTypes.sol";
+
+ModuleType constant MODULE_TYPE_VALIDATOR = ModuleType.wrap(1);
+ModuleType constant MODULE_TYPE_EXECUTOR = ModuleType.wrap(2);
+ModuleType constant MODULE_TYPE_FALLBACK = ModuleType.wrap(3);
+ModuleType constant MODULE_TYPE_HOOK = ModuleType.wrap(4);
+
 /// @title RSRegistryTest
 /// @author zeroknots, kopy-kat
 contract QueryTest is AttestationTest {
@@ -68,6 +75,7 @@ contract QueryTest is AttestationTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: defaultModule1,
             expirationTime: uint48(101),
+            ModuleTypesEnc: ModuleTypesEnc.wrap(6),
             data: abi.encode(false),
             value: 0
         });
@@ -155,5 +163,13 @@ contract QueryTest is AttestationTest {
 
         assertEq(attestations[0].attester, attesters[0]);
         assertEq(attestations[1].attester, attesters[1]);
+    }
+
+    function testCheckAttestationWithType() public {
+        testAttest();
+        instance.registry.check(defaultModule1, attester, MODULE_TYPE_VALIDATOR);
+        instance.registry.check(defaultModule1, attester, MODULE_TYPE_EXECUTOR);
+        vm.expectRevert();
+        instance.registry.check(defaultModule1, attester, MODULE_TYPE_HOOK);
     }
 }

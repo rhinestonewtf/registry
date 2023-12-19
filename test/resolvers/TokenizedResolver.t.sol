@@ -5,6 +5,7 @@ import "solmate/test/utils/mocks/MockERC20.sol";
 import "../utils/BaseTest.t.sol";
 import "../../src/external/examples/TokenizedResolver.sol";
 import "../../src/external/examples/SimpleValidator.sol";
+import { ModuleTypesEnc } from "src/DataTypes.sol";
 
 contract TokenizedResolverTest is BaseTest {
     using RegistryTestLib for RegistryInstance;
@@ -37,6 +38,7 @@ contract TokenizedResolverTest is BaseTest {
         AttestationRequestData memory attData = AttestationRequestData({
             subject: module,
             expirationTime: uint48(0),
+            ModuleTypesEnc: ModuleTypesEnc.wrap(6),
             data: abi.encode(true),
             value: 0
         });

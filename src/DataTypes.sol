@@ -14,6 +14,7 @@ struct AttestationRecord {
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
+    ModuleTypesEnc ModuleTypesEnc;
     SchemaUID schemaUID; // The unique identifier of the schema.
     address subject; // The implementation address of the module that is being attested.
     address attester; // The attesting account.
@@ -49,6 +50,7 @@ struct ResolverRecord {
 struct AttestationRequestData {
     address subject; // The subject of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
+    ModuleTypesEnc ModuleTypesEnc;
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
     bytes data; // Custom attestation data.
 }
@@ -187,4 +189,35 @@ function writeAttestationData(
      * Checking if an attestation pointer already exists, would cost more GAS in the average case.
      */
     dataPointer = AttestationDataRef.wrap(SSTORE2.writeDeterministic(attestationData, salt));
+}
+
+//--------------------- Module Types -----------------------------|
+type ModuleTypesEnc is uint16;
+
+type ModuleType is uint16;
+
+library ModuleTypeLib {
+    function isType(ModuleTypesEnc self, ModuleType moduleType) internal pure returns (bool) {
+        return (ModuleTypesEnc.unwrap(self) & 2 ** ModuleType.unwrap(moduleType)) != 0;
+    }
+
+    function bitEncode(ModuleType[] memory moduleTypes) internal pure returns (ModuleTypesEnc) {
+        uint16 result;
+        for (uint256 i; i < moduleTypes.length; i++) {
+            result = result + uint16(2 ** ModuleType.unwrap(moduleTypes[i]));
+        }
+        return ModuleTypesEnc.wrap(result);
+    }
+
+    function bitEncodeCalldata(ModuleType[] calldata moduleTypes)
+        internal
+        pure
+        returns (ModuleTypesEnc)
+    {
+        uint16 result;
+        for (uint256 i; i < moduleTypes.length; i++) {
+            result = result + uint16(2 ** ModuleType.unwrap(moduleTypes[i]));
+        }
+        return ModuleTypesEnc.wrap(result);
+    }
 }
