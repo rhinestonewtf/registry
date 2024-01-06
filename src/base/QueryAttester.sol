@@ -35,6 +35,9 @@ abstract contract Query is IQuery {
         uint256 attestersLength = attesters.length;
 
         Attesters storage _att = _attesters[msg.sender];
+        if (threshold > attestersLength) {
+            threshold = uint8(attestersLength);
+        }
         _att.attesterCount = uint8(attestersLength);
         _att.threshold = threshold;
 
