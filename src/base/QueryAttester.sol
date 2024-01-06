@@ -78,6 +78,18 @@ abstract contract Query is IQuery {
         }
     }
 
+    function checkForAccount(address account, address module) external view {
+        Attesters memory _att = _attesters[account];
+        if (_att.attesterCount == 0 || _att.threshold == 0) {
+            revert();
+        } else if (_att.attesterCount == 1) {
+            check(module, _att.attester);
+        } else if (_att.attesterCount > 1) {
+            address[] memory attesters = _getAttesters(_att.attester, _att.attesterCount);
+            checkN(module, attesters, _att.threshold);
+        }
+    }
+
     /**
      * @inheritdoc IQuery
      */
