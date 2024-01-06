@@ -22,6 +22,19 @@ contract QueryTest is AttestationTest {
         instance.registry.check(defaultModule1, attester);
     }
 
+    function testCheckAttestationInternal() public {
+        testAttest();
+
+        address[] memory attesters = new address[](1);
+        attesters[0] = attester;
+        instance.registry.setAttester(1, attesters);
+        uint256 gass = gasleft();
+        instance.registry.check(defaultModule1);
+        gass = gass - gasleft();
+
+        console2.log("gas used", gass);
+    }
+
     function testCheckAttestation__RevertWhen__AttestationNotExistent() public {
         vm.expectRevert(IQuery.AttestationNotFound.selector);
         instance.registry.check(defaultModule1, attester);

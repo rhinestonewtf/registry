@@ -14,7 +14,7 @@ import {
     ResolverUID,
     ResolverRecord,
     ModuleRecord
-} from "./base/Query.sol";
+} from "./base/QueryAttester.sol";
 
 /**
  * @author zeroknots
