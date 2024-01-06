@@ -78,7 +78,7 @@ abstract contract Query is IQuery {
         }
     }
 
-    function checkForAccount(address account, address module) external view {
+    function checkOnBehalf(address account, address module) external view {
         Attesters memory _att = _attesters[account];
         if (_att.attesterCount == 0 || _att.threshold == 0) {
             revert();
