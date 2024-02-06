@@ -35,11 +35,13 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         payable
         nonReentrant
     {
-        _verifyAttest(delegatedRequest);
+        _verifyAttestCalldata(delegatedRequest);
 
+        // Get attestationRequestData calldata pointer
         AttestationRequestData calldata attestationRequestData = delegatedRequest.data;
+        // @audit could this be address(0), what happens if there is no module Record
         ModuleRecord storage moduleRecord =
-            _getModule({ moduleAddress: delegatedRequest.data.subject });
+            _getModule({ moduleAddress: attestationRequestData.subject });
         ResolverUID resolverUID = moduleRecord.resolverUID;
 
         verifyAttestationData(delegatedRequest.schemaUID, attestationRequestData);

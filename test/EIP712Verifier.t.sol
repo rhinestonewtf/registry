@@ -23,11 +23,11 @@ struct SampleAttestation {
 }
 
 contract EIP712VerifierInstance is EIP712Verifier {
-    function verifyAttest(DelegatedAttestationRequest memory request) public {
+    function verifyAttest(DelegatedAttestationRequest calldata request) public {
         _verifyAttest(request);
     }
 
-    function verifyRevoke(DelegatedRevocationRequest memory request) public {
+    function verifyRevoke(DelegatedRevocationRequest calldata request) public {
         _verifyRevoke(request);
     }
 

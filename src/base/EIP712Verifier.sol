@@ -154,10 +154,21 @@ abstract contract EIP712Verifier is EIP712 {
      * @param request The arguments of the delegated attestation request.
      */
     function _verifyAttest(DelegatedAttestationRequest memory request) internal {
-        AttestationRequestData memory data = request.data;
-
         uint256 nonce = _newNonce(request.attester);
-        bytes32 digest = _attestationDigest(data, request.schemaUID, nonce);
+        bytes32 digest = _attestationDigest(request.data, request.schemaUID, nonce);
+        bool valid =
+            SignatureCheckerLib.isValidSignatureNow(request.attester, digest, request.signature);
+        if (!valid) revert InvalidSignature();
+    }
+
+    /**
+     * @dev Verifies delegated attestation request.
+     *
+     * @param request The arguments of the delegated attestation request.
+     */
+    function _verifyAttestCalldata(DelegatedAttestationRequest calldata request) internal {
+        uint256 nonce = _newNonce(request.attester);
+        bytes32 digest = _attestationDigest(request.data, request.schemaUID, nonce);
         bool valid =
             SignatureCheckerLib.isValidSignatureNow(request.attester, digest, request.signature);
         if (!valid) revert InvalidSignature();

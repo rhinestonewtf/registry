@@ -52,13 +52,13 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
     /**
      * @inheritdoc IAttestation
      */
+    // @audit is ReentrancyGuard necessary?
     function attest(AttestationRequest calldata request) external payable nonReentrant {
         AttestationRequestData calldata requestData = request.data;
 
         ModuleRecord storage moduleRecord = _getModule({ moduleAddress: request.data.subject });
-        ResolverUID resolverUID = moduleRecord.resolverUID;
 
-        verifyAttestationData(request.schemaUID, requestData);
+        verifyAttestationData({ schemaUID: request.schemaUID, requestData: requestData });
 
         // write attestations to registry storge
         (AttestationRecord memory attestationRecord, uint256 value) = _writeAttestation({
@@ -69,7 +69,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
 
         // trigger the resolver procedure
         _resolveAttestation({
-            resolverUID: resolverUID,
+            resolverUID: moduleRecord.resolverUID,
             attestationRecord: attestationRecord,
             value: value,
             isRevocation: false,
@@ -257,7 +257,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         // if validator is set, call the validator
         if (address(validator) != ZERO_ADDRESS) {
             // revert if ISchemaValidator returns false
-            if (!schema.validator.validateSchema(requestData)) {
+            if (!validator.validateSchema(requestData)) {
                 revert InvalidAttestation();
             }
         }

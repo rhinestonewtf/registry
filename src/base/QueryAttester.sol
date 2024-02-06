@@ -22,7 +22,7 @@ abstract contract Query is IQuery {
 
     mapping(address account => Attesters attesters) internal _attesters;
 
-    function setAttester(uint8 threshold, address[] calldata attesters) external {
+    function setAttester(uint8 threshold, address[] calldata attesters) external payable {
         uint256 attestersLength = attesters.length;
 
         Attesters storage _att = _attesters[msg.sender];
