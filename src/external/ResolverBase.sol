@@ -84,7 +84,6 @@ abstract contract ResolverBase is IResolver {
     /**
      * @inheritdoc IResolver
      */
-
     function multiAttest(
         AttestationRecord[] calldata attestations,
         uint256[] calldata values

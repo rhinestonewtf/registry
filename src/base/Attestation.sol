@@ -221,9 +221,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         // caching current time as it will be used in the for loop
 
         // for loop will run and save the return values in these two arrays
-        AttestationRecord[] memory attestationRecords = new AttestationRecord[](
-            length
-        );
+        AttestationRecord[] memory attestationRecords = new AttestationRecord[](length);
 
         // msg.values used for resolver
         uint256[] memory values = new uint256[](length);
@@ -418,9 +416,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
 
         // caching length
         uint256 length = revocationRequestDatas.length;
-        AttestationRecord[] memory attestationRecords = new AttestationRecord[](
-            length
-        );
+        AttestationRecord[] memory attestationRecords = new AttestationRecord[](length);
         uint256[] memory values = new uint256[](length);
 
         for (uint256 i; i < length; ++i) {

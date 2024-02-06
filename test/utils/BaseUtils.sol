@@ -301,7 +301,7 @@ contract RegistryTestTools {
     {
         RegistryInstance memory instance;
 
-        Registry registry = new Registry{salt: salt}();
+        Registry registry = new Registry{ salt: salt }();
 
         instance = RegistryInstance(registry, name);
         return instance;

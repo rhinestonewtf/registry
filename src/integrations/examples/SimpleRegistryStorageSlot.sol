@@ -49,7 +49,6 @@ abstract contract RegistryIntegrationStorageSlot {
      * @param _contract The address of the contract to be checked in the registry
      * @return listedAt The timestamp at which the contract was listed (0 if never listed)
      */
-
     function _checkRegistry(address _contract) internal view returns (uint256 listedAt) {
         RegistryIntegrationStorage.Storage storage s = RegistryIntegrationStorage.store();
         return s.registry.check(_contract, s.trustedAttester);

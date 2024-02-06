@@ -35,7 +35,6 @@ abstract contract RegistryIntegration {
      * @param _contract The address of the contract to be checked in the registry
      * @return listedAt The timestamp at which the contract was listed (0 if never listed)
      */
-
     function _checkRegistry(address _contract) internal view returns (uint256 listedAt) {
         return registry.check(_contract, trustedAttester);
     }

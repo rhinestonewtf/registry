@@ -16,10 +16,7 @@ contract TokenizedResolverTest is BaseTest {
     function setUp() public override {
         super.setUp();
         token = new MockERC20("test", "test", 8);
-        resolver = new TokenizedResolver(
-            address(instance.registry),
-            address(token)
-        );
+        resolver = new TokenizedResolver(address(instance.registry), address(token));
         validator = new SimpleValidator();
 
         token.mint(address(this), 10_000);

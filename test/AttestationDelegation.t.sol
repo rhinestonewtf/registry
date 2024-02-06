@@ -167,9 +167,7 @@ contract AttestationDelegationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -206,9 +204,7 @@ contract AttestationDelegationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -247,9 +243,7 @@ contract AttestationDelegationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -287,9 +281,7 @@ contract AttestationDelegationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -309,9 +301,7 @@ contract AttestationDelegationTest is BaseTest {
     }
 
     function testMultiAttest__RevertWhen__InvalidLength__DataLength() public {
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            0
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](0);
 
         bytes[] memory sigs = new bytes[](0);
 
@@ -347,9 +337,7 @@ contract AttestationDelegationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -387,9 +375,7 @@ contract AttestationDelegationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -429,9 +415,7 @@ contract AttestationDelegationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -560,9 +544,7 @@ contract AttestationDelegationTest is BaseTest {
         RevocationRequestData memory attData2 =
             RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
 
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
+        RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
         bytes[] memory sigs = instance.signRevocation(defaultSchema1, auth1k, attArray);
@@ -609,9 +591,7 @@ contract AttestationDelegationTest is BaseTest {
         RevocationRequestData memory attData2 =
             RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
 
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
+        RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -636,9 +616,7 @@ contract AttestationDelegationTest is BaseTest {
         RevocationRequestData memory attData2 =
             RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
 
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
+        RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -667,9 +645,7 @@ contract AttestationDelegationTest is BaseTest {
         RevocationRequestData memory attData2 =
             RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
 
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
+        RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -699,9 +675,7 @@ contract AttestationDelegationTest is BaseTest {
         RevocationRequestData memory attData2 =
             RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
 
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
+        RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 

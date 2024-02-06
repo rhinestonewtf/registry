@@ -253,7 +253,6 @@ abstract contract Module is IModule, ReentrancyGuard {
      *
      * @return moduleRecord The module record associated with the given address.
      */
-
     function getModule(address moduleAddress) public view returns (ModuleRecord memory) {
         return _getModule(moduleAddress);
     }

@@ -37,7 +37,6 @@ abstract contract RegistryIntegration {
      * @param _contract The address of the contract to be checked in the registry
      * @return validCheck the registry returned a boolean if the attestations with selected threshold was valid
      */
-
     function _checkRegistry(address _contract) internal view returns (bool validCheck) {
         registry.checkN(_contract, trustedAttesters, threshold);
         return true;

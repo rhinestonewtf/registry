@@ -57,7 +57,6 @@ interface ISchema {
      *
      * @return uid The unique ID (ResolverUID) associated with the registered resolver.
      */
-
     function registerResolver(IResolver _resolver) external returns (ResolverUID);
 
     /**

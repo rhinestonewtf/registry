@@ -26,10 +26,10 @@ abstract contract Query is IQuery {
         uint8 attesterCount;
         uint8 threshold;
         address attester;
+        mapping(address attester => address linkedAttester) linkedAttesters;
     }
 
     mapping(address account => Attesters) _attesters;
-    mapping(address account => mapping(address attester => address linkedAttester)) _linkedAttesters;
 
     function setAttester(uint8 threshold, address[] calldata attesters) external {
         uint256 attestersLength = attesters.length;
@@ -45,11 +45,12 @@ abstract contract Query is IQuery {
 
         attestersLength--;
         for (uint256 i; i < attestersLength; i++) {
-            _linkedAttesters[msg.sender][attesters[i]] = attesters[i + 1];
+            _att.linkedAttesters[attesters[i]] = attesters[i + 1];
         }
     }
 
     function _getAttesters(
+        Attesters storage attesterStorage,
         address linkedAttester,
         uint256 length
     )
@@ -57,43 +58,62 @@ abstract contract Query is IQuery {
         view
         returns (address[] memory attesters)
     {
+        // this function is used by check(), length is always > 0. Trying to be as gas efficient as possible.
         attesters = new address[](length);
-        attesters[0] = linkedAttester;
+        attesters[0] = linkedAttester; // the first attester
 
         for (uint256 i = 1; i < length; i++) {
-            linkedAttester = _linkedAttesters[msg.sender][linkedAttester];
+            // loop over the linked list, add entries to array,
+            // use read out attester value as the next value to query the linked list
+            linkedAttester = attesterStorage.linkedAttesters[linkedAttester];
             attesters[i] = linkedAttester;
         }
     }
 
     function check(address module) external view {
-        Attesters memory _att = _attesters[msg.sender];
-        if (_att.attesterCount == 0 || _att.threshold == 0) {
+        Attesters storage _att = _attesters[msg.sender];
+        uint256 threshold = _att.threshold;
+        uint256 attesterCount = _att.attesterCount;
+        address attester0 = _att.attester;
+
+        // if there is no attester or threshold, the user never configured any attesters. This is a revert.
+        if (attesterCount == 0 || threshold == 0) {
             revert();
-        } else if (_att.attesterCount == 1) {
-            check(module, _att.attester);
-        } else if (_att.attesterCount > 1) {
-            address[] memory attesters = _getAttesters(_att.attester, _att.attesterCount);
-            checkN(module, attesters, _att.threshold);
+        } else if (attesterCount == 1) {
+            check({ module: module, attester: attester0 });
+        } else if (attesterCount > 1) {
+            address[] memory attesters = _getAttesters({
+                attesterStorage: _att,
+                linkedAttester: attester0,
+                length: attesterCount
+            });
+            checkN({ module: module, attesters: attesters, threshold: threshold });
         }
     }
 
     function checkOnBehalf(address account, address module) external view {
-        Attesters memory _att = _attesters[account];
-        if (_att.attesterCount == 0 || _att.threshold == 0) {
+        Attesters storage _att = _attesters[account];
+        uint256 threshold = _att.threshold;
+        uint256 attesterCount = _att.attesterCount;
+        address attester0 = _att.attester;
+        // if there is no attester or threshold, the user never configured any attesters. This is a revert.
+        if (attesterCount == 0 || threshold == 0) {
             revert();
         } else if (_att.attesterCount == 1) {
-            check(module, _att.attester);
+            check({ module: module, attester: attester0 });
         } else if (_att.attesterCount > 1) {
-            address[] memory attesters = _getAttesters(_att.attester, _att.attesterCount);
-            checkN(module, attesters, _att.threshold);
+            address[] memory attesters = _getAttesters({
+                attesterStorage: _att,
+                linkedAttester: attester0,
+                length: attesterCount
+            });
+            checkN({ module: module, attesters: attesters, threshold: threshold });
         }
     }
 
     /**
      * @inheritdoc IQuery
      */
-
     function check(
         address module,
         address attester
@@ -301,7 +321,6 @@ abstract contract Query is IQuery {
      *
      * @return Attestation record associated with the given module and attester.
      */
-
     function _getAttestation(
         address moduleAddress,
         address attester

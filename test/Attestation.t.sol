@@ -146,9 +146,7 @@ contract AttestationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -179,9 +177,7 @@ contract AttestationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -214,9 +210,7 @@ contract AttestationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -248,9 +242,7 @@ contract AttestationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -283,9 +275,7 @@ contract AttestationTest is BaseTest {
             value: 0
         });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
+        AttestationRequestData[] memory attArray = new AttestationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -368,9 +358,7 @@ contract AttestationTest is BaseTest {
         RevocationRequestData memory attData2 =
             RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
 
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
+        RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -405,9 +393,7 @@ contract AttestationTest is BaseTest {
         RevocationRequestData memory attData2 =
             RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
 
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
+        RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -432,9 +418,7 @@ contract AttestationTest is BaseTest {
         RevocationRequestData memory attData2 =
             RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
 
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
+        RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -463,9 +447,7 @@ contract AttestationTest is BaseTest {
         RevocationRequestData memory attData2 =
             RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
 
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
+        RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 
@@ -495,9 +477,7 @@ contract AttestationTest is BaseTest {
         RevocationRequestData memory attData2 =
             RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
 
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
+        RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
         attArray[1] = attData2;
 

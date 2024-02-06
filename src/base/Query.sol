@@ -25,7 +25,6 @@ abstract contract Query is IQuery {
     /**
      * @inheritdoc IQuery
      */
-
     function check(
         address module,
         address attester
@@ -233,7 +232,6 @@ abstract contract Query is IQuery {
      *
      * @return Attestation record associated with the given module and attester.
      */
-
     function _getAttestation(
         address moduleAddress,
         address attester
