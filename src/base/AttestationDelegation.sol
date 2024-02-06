@@ -76,7 +76,10 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         nonReentrant
     {
         // check if schema exists and is valid. This will revert if validtor returns false
-        _requireSchemaCheck({ schemaUID: multiSignedRequests.schemaUID, requestDatas: multiSignedRequests.data });
+        _requireSchemaCheck({
+            schemaUID: multiSignedRequests.schemaUID,
+            requestDatas: multiSignedRequests.data
+        });
         uint256 length = multiSignedRequests.length;
 
         // We are keeping track of the total available ETH amount that can be sent to resolvers and will keep deducting

@@ -165,3 +165,7 @@
 - `D9` - Watch out for tokens that use too many or too few decimals. Ensure the max and min supported values are documented.
 - `D10` - Be careful of relying on the raw token balance of a contract to determine earnings. Contracts which provide a way to recover assets sent directly to them can mess up share price functions that rely on the raw Ether or token balances of an address.
 - `D11` - If your contract is a target for token approvals, do not make arbitrary calls from user input.
+
+# TODO:
+
+nonce iteration in signature should not be looped sstore

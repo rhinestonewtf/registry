@@ -23,7 +23,6 @@ struct AttestationRecord {
 // Struct that represents Module artefact.
 struct ModuleRecord {
     ResolverUID resolverUID; // The unique identifier of the resolver.
-    address implementation; // The deployed contract address
     address sender; // The address of the sender who deployed the contract
     bytes metadata; // Additional data related to the contract deployment
 }
@@ -49,44 +48,7 @@ struct ResolverRecord {
 struct AttestationRequestData {
     address moduleAddr; // The moduleAddr of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
-    uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
     bytes data; // Custom attestation data.
-}
-
-/**
- * @dev A struct representing the full arguments of the attestation request.
- */
-struct AttestationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    AttestationRequestData data; // The arguments of the attestation request.
-}
-
-/**
- * @dev A struct representing the full arguments of the full signed attestation request.
- */
-struct SignedAttestationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    AttestationRequestData data; // The arguments of the attestation request.
-    address attester; // The attesting account.
-    bytes signature; // The signature data.
-}
-
-/**
- * @dev A struct representing the full arguments of the multi attestation request.
- */
-struct MultiAttestationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    AttestationRequestData[] data; // The arguments of the attestation request.
-}
-
-/**
- * @dev A struct representing the full arguments of the signed multi attestation request.
- */
-struct MultiSignedAttestationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    AttestationRequestData[] data; // The arguments of the attestation requests.
-    bytes[] signatures; // The signatures data. signatures are assumed to be signed with increasing nonces.
-    address attester; // The attesting account.
 }
 
 /*//////////////////////////////////////////////////////////////
@@ -98,44 +60,6 @@ struct MultiSignedAttestationRequest {
  */
 struct RevocationRequestData {
     address moduleAddr; // The module address.
-    address attester; // The attesting account.
-    uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
-}
-
-/**
- * @dev A struct representing the full arguments of the revocation request.
- */
-struct RevocationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    RevocationRequestData data; // The arguments of the revocation request.
-}
-
-/**
- * @dev A struct representing the arguments of the full signed revocation request.
- */
-struct SignedRevocationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    RevocationRequestData data; // The arguments of the revocation request.
-    address revoker; // The revoking account.
-    bytes signature; // The signature data.
-}
-
-/**
- * @dev A struct representing the full arguments of the multi revocation request.
- */
-struct MultiRevocationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    RevocationRequestData[] data; // The arguments of the revocation request.
-}
-
-/**
- * @dev A struct representing the full arguments of the signed multi revocation request.
- */
-struct MultiSignedRevocationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    RevocationRequestData[] data; // The arguments of the revocation requests.
-    address revoker; // The revoking account.
-    bytes[] signatures; // The signatures data. signatures are assumed to be signed with increasing nonces.
 }
 
 /*//////////////////////////////////////////////////////////////
@@ -158,6 +82,8 @@ function schemaNotEq(SchemaUID uid1, SchemaUID uid) pure returns (bool) {
 
 //--------------------- ResolverUID -----------------------------|
 type ResolverUID is bytes32;
+
+ResolverUID constant RESOLVER_UID_ZERO = ResolverUID.wrap(bytes32(0));
 
 using { resolverEq as == } for ResolverUID global;
 using { resolverNotEq as != } for ResolverUID global;

@@ -184,6 +184,7 @@ abstract contract EIP712Verifier is EIP712 {
      * @return nonce The new nonce.
      */
     function _newNonce(address account) private returns (uint256 nonce) {
+        // TODO: gas bad. this will be iterated in a for loop
         unchecked {
             nonce = ++_nonces[account];
         }
