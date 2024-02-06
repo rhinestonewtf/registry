@@ -63,7 +63,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         // write attestations to registry storge
         (AttestationRecord memory attestationRecord, uint256 value) = _writeAttestation({
             schemaUID: request.schemaUID,
-            resolverUID: resolverUID,
             attestationRequestData: requestData,
             attester: msg.sender
         });
@@ -227,7 +226,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         for (uint256 i; i < length; ++i) {
             (attestationRecords[i], values[i]) = _writeAttestation({
                 schemaUID: schemaUID,
-                resolverUID: resolverUID,
                 attestationRequestData: attestationRequestDatas[i],
                 attester: attester
             });
@@ -293,7 +291,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
      * is writted to the EVM with SSTORE2 to allow for large attestations without spending a lot of gas
      *
      * @param schemaUID The unique identifier of the schema being attested to.
-     * @param resolverUID The unique identifier of the resolver for the module.
      * @param attestationRequestData The data for the attestation request.
      * @param attester The address of the entity making the attestation.
      *
@@ -302,7 +299,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
      */
     function _writeAttestation(
         SchemaUID schemaUID,
-        ResolverUID resolverUID, // TODO: why isnt this used
         AttestationRequestData calldata attestationRequestData,
         address attester
     )

@@ -46,7 +46,6 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
 
         (AttestationRecord memory attestationRecord, uint256 value) = _writeAttestation({
             schemaUID: delegatedRequest.schemaUID,
-            resolverUID: resolverUID,
             attestationRequestData: attestationRequestData,
             attester: delegatedRequest.attester
         });
