@@ -15,7 +15,7 @@ struct AttestationRecord {
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
     SchemaUID schemaUID; // The unique identifier of the schema.
-    address subject; // The implementation address of the module that is being attested.
+    address moduleAddr; // The implementation address of the module that is being attested.
     address attester; // The attesting account.
     AttestationDataRef dataPointer; // SSTORE2 pointer to the attestation data.
 }
@@ -47,7 +47,7 @@ struct ResolverRecord {
  * @dev A struct representing the arguments of the attestation request.
  */
 struct AttestationRequestData {
-    address subject; // The subject of the attestation.
+    address moduleAddr; // The moduleAddr of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
     bytes data; // Custom attestation data.
@@ -62,9 +62,9 @@ struct AttestationRequest {
 }
 
 /**
- * @dev A struct representing the full arguments of the full delegated attestation request.
+ * @dev A struct representing the full arguments of the full signed attestation request.
  */
-struct DelegatedAttestationRequest {
+struct SignedAttestationRequest {
     SchemaUID schemaUID; // The unique identifier of the schema.
     AttestationRequestData data; // The arguments of the attestation request.
     address attester; // The attesting account.
@@ -80,9 +80,9 @@ struct MultiAttestationRequest {
 }
 
 /**
- * @dev A struct representing the full arguments of the delegated multi attestation request.
+ * @dev A struct representing the full arguments of the signed multi attestation request.
  */
-struct MultiDelegatedAttestationRequest {
+struct MultiSignedAttestationRequest {
     SchemaUID schemaUID; // The unique identifier of the schema.
     AttestationRequestData[] data; // The arguments of the attestation requests.
     bytes[] signatures; // The signatures data. signatures are assumed to be signed with increasing nonces.
@@ -97,7 +97,7 @@ struct MultiDelegatedAttestationRequest {
  * @dev A struct representing the arguments of the revocation request.
  */
 struct RevocationRequestData {
-    address subject; // The module address.
+    address moduleAddr; // The module address.
     address attester; // The attesting account.
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
 }
@@ -111,9 +111,9 @@ struct RevocationRequest {
 }
 
 /**
- * @dev A struct representing the arguments of the full delegated revocation request.
+ * @dev A struct representing the arguments of the full signed revocation request.
  */
-struct DelegatedRevocationRequest {
+struct SignedRevocationRequest {
     SchemaUID schemaUID; // The unique identifier of the schema.
     RevocationRequestData data; // The arguments of the revocation request.
     address revoker; // The revoking account.
@@ -129,9 +129,9 @@ struct MultiRevocationRequest {
 }
 
 /**
- * @dev A struct representing the full arguments of the delegated multi revocation request.
+ * @dev A struct representing the full arguments of the signed multi revocation request.
  */
-struct MultiDelegatedRevocationRequest {
+struct MultiSignedRevocationRequest {
     SchemaUID schemaUID; // The unique identifier of the schema.
     RevocationRequestData[] data; // The arguments of the revocation requests.
     address revoker; // The revoking account.

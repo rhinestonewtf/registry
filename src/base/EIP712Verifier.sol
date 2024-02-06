@@ -8,9 +8,9 @@ import { InvalidSignature } from "../Common.sol";
 import {
     AttestationRequestData,
     SchemaUID,
-    DelegatedAttestationRequest,
+    SignedAttestationRequest,
     RevocationRequestData,
-    DelegatedRevocationRequest
+    SignedRevocationRequest
 } from "../DataTypes.sol";
 
 /**
@@ -139,7 +139,7 @@ abstract contract EIP712Verifier is EIP712 {
                     ATTEST_TYPEHASH,
                     block.chainid,
                     schemaUID,
-                    data.subject,
+                    data.moduleAddr,
                     data.expirationTime,
                     keccak256(data.data),
                     nonce
@@ -149,11 +149,11 @@ abstract contract EIP712Verifier is EIP712 {
     }
 
     /**
-     * @dev Verifies delegated attestation request.
+     * @dev Verifies signed attestation request.
      *
-     * @param request The arguments of the delegated attestation request.
+     * @param request The arguments of the signed attestation request.
      */
-    function _verifyAttest(DelegatedAttestationRequest memory request) internal {
+    function _requireValidAttestSignature(SignedAttestationRequest memory request) internal {
         uint256 nonce = _newNonce(request.attester);
         bytes32 digest = _attestationDigest(request.data, request.schemaUID, nonce);
         bool valid =
@@ -162,11 +162,13 @@ abstract contract EIP712Verifier is EIP712 {
     }
 
     /**
-     * @dev Verifies delegated attestation request.
+     * @dev Verifies signed attestation request.
      *
-     * @param request The arguments of the delegated attestation request.
+     * @param request The arguments of the signed attestation request.
      */
-    function _verifyAttestCalldata(DelegatedAttestationRequest calldata request) internal {
+    function _requireValidAttestSignatureCalldata(SignedAttestationRequest calldata request)
+        internal
+    {
         uint256 nonce = _newNonce(request.attester);
         bytes32 digest = _attestationDigest(request.data, request.schemaUID, nonce);
         bool valid =
@@ -205,7 +207,7 @@ abstract contract EIP712Verifier is EIP712 {
         returns (bytes32 digest)
     {
         uint256 nonce = getNonce(revoker) + 1;
-        digest = _revocationDigest(schemaUID, revData.subject, revData.attester, nonce);
+        digest = _revocationDigest(schemaUID, revData.moduleAddr, revData.attester, nonce);
     }
 
     /**
@@ -225,20 +227,20 @@ abstract contract EIP712Verifier is EIP712 {
         view
         returns (bytes32 digest)
     {
-        digest = _revocationDigest(schemaUID, revData.subject, revData.attester, nonce);
+        digest = _revocationDigest(schemaUID, revData.moduleAddr, revData.attester, nonce);
     }
 
     /**
      * @dev Gets the revocation digest
      * @param schemaUID The UID of the schema.
-     * @param subject The address of the subject.
+     * @param moduleAddr The address of the moduleAddr.
      * @param nonce  The nonce of the attestation request.
      *
      * @return digest The revocation digest.
      */
     function _revocationDigest(
         SchemaUID schemaUID,
-        address subject,
+        address moduleAddr,
         address attester,
         uint256 nonce
     )
@@ -248,21 +250,21 @@ abstract contract EIP712Verifier is EIP712 {
     {
         digest = _hashTypedData(
             keccak256(
-                abi.encode(REVOKE_TYPEHASH, block.chainid, schemaUID, subject, attester, nonce)
+                abi.encode(REVOKE_TYPEHASH, block.chainid, schemaUID, moduleAddr, attester, nonce)
             )
         );
     }
 
     /**
-     * @dev Verifies delegated revocation request.
+     * @dev Verifies signed revocation request.
      *
-     * @param request The arguments of the delegated revocation request.
+     * @param request The arguments of the signed revocation request.
      */
-    function _verifyRevoke(DelegatedRevocationRequest memory request) internal {
+    function _verifyRevoke(SignedRevocationRequest memory request) internal {
         RevocationRequestData memory data = request.data;
 
         uint256 nonce = _newNonce(request.revoker);
-        bytes32 digest = _revocationDigest(request.schemaUID, data.subject, data.attester, nonce);
+        bytes32 digest = _revocationDigest(request.schemaUID, data.moduleAddr, data.attester, nonce);
         bool valid =
             SignatureCheckerLib.isValidSignatureNow(request.revoker, digest, request.signature);
         if (!valid) revert InvalidSignature();

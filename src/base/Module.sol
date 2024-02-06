@@ -56,7 +56,7 @@ abstract contract Module is IModule, ReentrancyGuard {
 
         (moduleAddr,,) = code.deploy(deployParams, salt, msg.value);
 
-        _register({
+        _storeModuleRecord({
             moduleAddress: moduleAddr,
             sender: msg.sender,
             resolver: resolver,
@@ -86,7 +86,7 @@ abstract contract Module is IModule, ReentrancyGuard {
         bytes32 senderSalt = keccak256(abi.encodePacked(salt, msg.sender));
         moduleAddr = CREATE3.deploy(senderSalt, creationCode, msg.value);
 
-        _register({
+        _storeModuleRecord({
             moduleAddress: moduleAddr,
             sender: msg.sender,
             resolver: resolver,
@@ -118,7 +118,7 @@ abstract contract Module is IModule, ReentrancyGuard {
         if (moduleAddr == ZERO_ADDRESS) revert InvalidDeployment();
         if (_isContract(moduleAddr) != true) revert InvalidDeployment();
 
-        _register({
+        _storeModuleRecord({
             moduleAddress: moduleAddr,
             sender: msg.sender,
             resolver: resolver,
@@ -141,7 +141,7 @@ abstract contract Module is IModule, ReentrancyGuard {
         ResolverRecord memory resolver = getResolver(resolverUID);
         if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver();
 
-        _register({
+        _storeModuleRecord({
             moduleAddress: moduleAddress,
             sender: ZERO_ADDRESS, // setting sender to address(0) since anyone can invoke this function
             resolver: resolver,
@@ -161,7 +161,7 @@ abstract contract Module is IModule, ReentrancyGuard {
      * @param resolverUID Unique ID of the resolver.
      * @param metadata Data associated with the module.
      */
-    function _register(
+    function _storeModuleRecord(
         address moduleAddress,
         address sender,
         ResolverRecord memory resolver,

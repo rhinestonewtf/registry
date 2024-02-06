@@ -13,7 +13,7 @@ import { IResolver } from "../external/IResolver.sol";
 
 /**
  * @title AttestationResolve
- * @dev This contract provides functions to resolve non-delegated attestations and revocations.
+ * @dev This contract provides functions to resolve non-signed attestations and revocations.
  * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
  */
 abstract contract AttestationResolve is IAttestation, EIP712Verifier {
@@ -31,7 +31,7 @@ abstract contract AttestationResolve is IAttestation, EIP712Verifier {
      *
      * @return Returns the total sent ETH amount.
      */
-    function _resolveAttestation(
+    function _requireExternalResolveAttestation(
         ResolverUID resolverUID,
         AttestationRecord memory attestationRecord,
         uint256 value,
@@ -97,7 +97,7 @@ abstract contract AttestationResolve is IAttestation, EIP712Verifier {
      * @return Returns the total sent ETH amount.
      */
     // solhint-disable-next-line code-complexity
-    function _resolveAttestations(
+    function _requireExternalResolveAttestations(
         ResolverUID resolverUID,
         AttestationRecord[] memory attestationRecords,
         uint256[] memory values,
@@ -110,7 +110,7 @@ abstract contract AttestationResolve is IAttestation, EIP712Verifier {
     {
         uint256 length = attestationRecords.length;
         if (length == 1) {
-            return _resolveAttestation({
+            return _requireExternalResolveAttestation({
                 resolverUID: resolverUID,
                 attestationRecord: attestationRecords[0],
                 value: values[0],

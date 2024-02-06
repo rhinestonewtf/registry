@@ -24,14 +24,14 @@ contract ValueResolverTest is BaseTest {
         );
 
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: module,
+            moduleAddr: module,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 1 ether
         });
 
         bytes memory signature = RegistryTestLib.signAttestation(instance, schema, auth1k, attData);
-        DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
+        SignedAttestationRequest memory req = SignedAttestationRequest({
             schemaUID: schema,
             data: attData,
             signature: signature,

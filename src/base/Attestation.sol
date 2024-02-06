@@ -56,9 +56,10 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
     function attest(AttestationRequest calldata request) external payable nonReentrant {
         AttestationRequestData calldata requestData = request.data;
 
-        ModuleRecord storage moduleRecord = _getModule({ moduleAddress: request.data.subject });
+        ModuleRecord storage moduleRecord = _getModule({ moduleAddress: request.data.moduleAddr });
 
-        verifyAttestationData({ schemaUID: request.schemaUID, requestData: requestData });
+        // check if schema exists and is valid. This will revert if validtor returns false
+        _requireSchemaCheck({ schemaUID: request.schemaUID, requestData: requestData });
 
         // write attestations to registry storge
         (AttestationRecord memory attestationRecord, uint256 value) = _writeAttestation({
@@ -68,7 +69,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         });
 
         // trigger the resolver procedure
-        _resolveAttestation({
+        _requireExternalResolveAttestation({
             resolverUID: moduleRecord.resolverUID,
             attestationRecord: attestationRecord,
             value: value,
@@ -91,7 +92,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
 
         // Batched Revocations can only be done for a single resolver. See IAttestation.sol
         ModuleRecord storage moduleRecord =
-            _getModule({ moduleAddress: multiRequests[0].data[0].subject });
+            _getModule({ moduleAddress: multiRequests[0].data[0].moduleAddr });
 
         for (uint256 i; i < length; ++i) {
             // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there
@@ -126,7 +127,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
      * @inheritdoc IAttestation
      */
     function revoke(RevocationRequest calldata request) external payable nonReentrant {
-        ModuleRecord memory moduleRecord = _getModule({ moduleAddress: request.data.subject });
+        ModuleRecord memory moduleRecord = _getModule({ moduleAddress: request.data.moduleAddr });
 
         SchemaRecord storage schema = _getSchema({ schemaUID: request.schemaUID });
         if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
@@ -134,7 +135,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         AttestationRecord memory attestationRecord =
             _revoke({ request: request.data, revoker: msg.sender });
 
-        _resolveAttestation({
+        _requireExternalResolveAttestation({
             resolverUID: moduleRecord.resolverUID,
             attestationRecord: attestationRecord,
             value: 0,
@@ -160,7 +161,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
 
         // Batched Revocations can only be done for a single resolver. See IAttestation.sol
         ModuleRecord memory moduleRecord =
-            _getModule({ moduleAddress: multiRequests[0].data[0].subject });
+            _getModule({ moduleAddress: multiRequests[0].data[0].moduleAddr });
         uint256 requestsLength = multiRequests.length;
 
         // should cache length
@@ -210,7 +211,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         internal
         returns (uint256 usedValue)
     {
-        verifyAttestationData(schemaUID, attestationRequestDatas);
+        _requireSchemaCheck(schemaUID, attestationRequestDatas);
 
         // caching length
         uint256 length = attestationRequestDatas.length;
@@ -232,7 +233,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         }
 
         // trigger the resolver procedure
-        usedValue = _resolveAttestations({
+        usedValue = _requireExternalResolveAttestations({
             resolverUID: resolverUID,
             attestationRecords: attestationRecords,
             values: values,
@@ -242,7 +243,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         });
     }
 
-    function verifyAttestationData(
+    function _requireSchemaCheck(
         SchemaUID schemaUID,
         AttestationRequestData calldata requestData
     )
@@ -255,15 +256,13 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         // validate Schema
         ISchemaValidator validator = schema.validator;
         // if validator is set, call the validator
-        if (address(validator) != ZERO_ADDRESS) {
+        if (address(validator) != ZERO_ADDRESS && validator.validateSchema(requestData) == false) {
             // revert if ISchemaValidator returns false
-            if (!validator.validateSchema(requestData)) {
-                revert InvalidAttestation();
-            }
+            revert InvalidAttestation();
         }
     }
 
-    function verifyAttestationData(
+    function _requireSchemaCheck(
         SchemaUID schemaUID,
         AttestationRequestData[] calldata requestDatas
     )
@@ -276,11 +275,8 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         // validate Schema
         ISchemaValidator validator = schema.validator;
         // if validator is set, call the validator
-        if (address(validator) != ZERO_ADDRESS) {
-            // revert if ISchemaValidator returns false
-            if (!schema.validator.validateSchema(requestDatas)) {
-                revert InvalidAttestation();
-            }
+        if (address(validator) != ZERO_ADDRESS && validator.validateSchema(requestDatas) == false) {
+            revert InvalidAttestation();
         }
     }
 
@@ -314,7 +310,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             revert InvalidExpirationTime();
         }
         // caching module address.
-        address module = attestationRequestData.subject;
+        address module = attestationRequestData.moduleAddr;
         ModuleRecord storage moduleRecord = _getModule({ moduleAddress: module });
 
         // Ensure that attestation is for module that was registered.
@@ -332,7 +328,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         // write attestationdata with SSTORE2 to EVM, and prepare return value
         attestationRecord = AttestationRecord({
             schemaUID: schemaUID,
-            subject: module,
+            moduleAddr: module,
             attester: attester,
             time: timeNow,
             expirationTime: attestationRequestData.expirationTime,
@@ -355,7 +351,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         returns (AttestationRecord memory)
     {
         AttestationRecord storage attestation =
-            _moduleToAttesterToAttestations[request.subject][request.attester];
+            _moduleToAttesterToAttestations[request.moduleAddr][request.attester];
 
         // Ensure that we aren't attempting to revoke a non-existing attestation.
         if (AttestationDataRef.unwrap(attestation.dataPointer) == ZERO_ADDRESS) {
@@ -374,7 +370,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
 
         attestation.revocationTime = _time();
         emit Revoked({
-            subject: attestation.subject,
+            moduleAddr: attestation.moduleAddr,
             revoker: revoker,
             schema: attestation.schemaUID
         });
@@ -419,7 +415,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
             values[i] = revocationRequests.value;
         }
 
-        return _resolveAttestations({
+        return _requireExternalResolveAttestations({
             resolverUID: resolverUID,
             attestationRecords: attestationRecords,
             values: values,

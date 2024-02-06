@@ -13,7 +13,7 @@ data is `abi.encode()` according to a defined schema. The data is not stored in 
 
 ```solidity
 struct AttestationRequestData {
-    address subject; // The subject of the attestation.
+    address moduleAddr; // The moduleAddr of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
     bytes data; // Custom attestation data.
@@ -27,7 +27,7 @@ AttestationRecord stored in the registry contract storage
 ```solidity
 struct AttestationRecord {
     SchemaUID schemaUID; // The unique identifier of the schema.
-    address subject; // The recipient of the attestation i.e. module
+    address moduleAddr; // The recipient of the attestation i.e. module
     address attester; // The attester/sender of the attestation.
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
@@ -60,7 +60,7 @@ Attestations can not be edited. Should attestation data change, the old attestat
 
 ## Delegated Attestations
 
-All Attestations leveraged within the Registry are designated as "delegated".
+All Attestations leveraged within the Registry are designated as "signed".
 Such Attestations empower an entity to sign an attestation while enabling another entity to
 bear the transaction cost. With these attestations, the actual Attester and the one relaying the
 Attestation can be separate entities, thus accommodating a variety of use cases.
@@ -71,9 +71,9 @@ This becomes particularly beneficial when:
 
 ```solidity
 /**
- * @dev A struct representing the full arguments of the full delegated attestation request.
+ * @dev A struct representing the full arguments of the full signed attestation request.
  */
-struct DelegatedAttestationRequest {
+struct SignedAttestationRequest {
     SchemaUID schemaUID; // The unique identifier of the schema.
     AttestationRequestData data; // The arguments of the attestation request.
     bytes signature; // The signature data.
@@ -83,5 +83,5 @@ struct DelegatedAttestationRequest {
 
 ### ERC1271 Support
 
-The Registry attestation process supports the ERC1271 standard, which allows smart contracts to implement a standard interface for contract ownership. This is particularly useful for smart account modules that are owned by a smart contract. The Registry supports the ERC1271 standard for delegated attestations.
-Should the attester in the `DelegatedAttestationRequest` be a contract, a ERC1271 validation call is made.
+The Registry attestation process supports the ERC1271 standard, which allows smart contracts to implement a standard interface for contract ownership. This is particularly useful for smart account modules that are owned by a smart contract. The Registry supports the ERC1271 standard for signed attestations.
+Should the attester in the `SignedAttestationRequest` be a contract, a ERC1271 validation call is made.

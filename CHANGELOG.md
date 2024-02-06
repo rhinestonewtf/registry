@@ -35,7 +35,7 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ### Added
 
-- Non-delegated attestations can now be made without a signature
+- Non-signed attestations can now be made without a signature
 - Full ERC1271 support
 - SSTORE2 to store attestation data
 

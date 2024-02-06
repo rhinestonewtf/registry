@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 interface IRegistry {
     event Attested(
-        address indexed subject,
+        address indexed moduleAddr,
         address indexed attester,
         bytes32 schema,
         address indexed dataPointer
@@ -15,7 +15,7 @@ interface IRegistry {
     );
     event ModuleRegistration(address indexed implementation, bytes32 resolver);
     event NewSchemaResolver(bytes32 indexed uid, address resolver);
-    event Revoked(address indexed subject, address indexed attester, bytes32 indexed schema);
+    event Revoked(address indexed moduleAddr, address indexed attester, bytes32 indexed schema);
     event RevokedOffchain(address indexed revoker, bytes32 indexed data, uint64 indexed timestamp);
     event SchemaRegistered(bytes32 indexed uid, address registerer);
     event SchemaResolverRegistered(bytes32 indexed uid, address registerer);
@@ -23,7 +23,7 @@ interface IRegistry {
 
     struct AttestationRecord {
         bytes32 schemaUID;
-        address subject;
+        address moduleAddr;
         address attester;
         uint48 time;
         uint48 expirationTime;
@@ -37,20 +37,20 @@ interface IRegistry {
     }
 
     struct AttestationRequestData {
-        address subject;
+        address moduleAddr;
         uint48 expirationTime;
         uint256 value;
         bytes data;
     }
 
-    struct DelegatedAttestationRequest {
+    struct SignedAttestationRequest {
         bytes32 schemaUID;
         AttestationRequestData data;
         bytes signature;
         address attester;
     }
 
-    struct DelegatedRevocationRequest {
+    struct SignedRevocationRequest {
         bytes32 schemaUID;
         RevocationRequestData data;
         bytes signature;
@@ -69,14 +69,14 @@ interface IRegistry {
         AttestationRequestData[] data;
     }
 
-    struct MultiDelegatedAttestationRequest {
+    struct MultiSignedAttestationRequest {
         bytes32 schemaUID;
         AttestationRequestData[] data;
         bytes[] signatures;
         address attester;
     }
 
-    struct MultiDelegatedRevocationRequest {
+    struct MultiSignedRevocationRequest {
         bytes32 schemaUID;
         RevocationRequestData[] data;
         bytes[] signatures;
@@ -99,7 +99,7 @@ interface IRegistry {
     }
 
     struct RevocationRequestData {
-        address subject;
+        address moduleAddr;
         address attester;
         uint256 value;
     }
@@ -110,7 +110,7 @@ interface IRegistry {
         string schema;
     }
 
-    function attest(DelegatedAttestationRequest memory delegatedRequest) external payable;
+    function attest(SignedAttestationRequest memory signedRequest) external payable;
     function attest(AttestationRequest memory request) external payable;
     function check(
         address module,
@@ -214,12 +214,12 @@ interface IRegistry {
         returns (bytes32 digest);
     function getRevokeTypeHash() external pure returns (bytes32);
     function getSchema(bytes32 uid) external view returns (SchemaRecord memory);
-    function multiAttest(MultiDelegatedAttestationRequest[] memory multiDelegatedRequests)
+    function multiAttest(MultiSignedAttestationRequest[] memory multiSignedRequests)
         external
         payable;
     function multiAttest(MultiAttestationRequest[] memory multiRequests) external payable;
     function multiRevoke(MultiRevocationRequest[] memory multiRequests) external payable;
-    function multiRevoke(MultiDelegatedRevocationRequest[] memory multiDelegatedRequests)
+    function multiRevoke(MultiSignedRevocationRequest[] memory multiSignedRequests)
         external
         payable;
     function register(bytes32 resolverUID, address moduleAddress, bytes memory data) external;

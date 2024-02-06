@@ -6,11 +6,11 @@ import {
     AttestationDataRef,
     AttestationRequest,
     MultiAttestationRequest,
-    DelegatedAttestationRequest,
-    MultiDelegatedAttestationRequest,
+    SignedAttestationRequest,
+    MultiSignedAttestationRequest,
     RevocationRequest,
-    DelegatedRevocationRequest,
-    MultiDelegatedRevocationRequest,
+    SignedRevocationRequest,
+    MultiSignedRevocationRequest,
     MultiRevocationRequest
 } from "../DataTypes.sol";
 
@@ -39,12 +39,12 @@ interface IAttestation {
     /**
      * @dev Emitted when an attestation has been made.
      *
-     * @param subject The subject of the attestation.
+     * @param moduleAddr The moduleAddr of the attestation.
      * @param attester The attesting account.
      * @param schema The UID of the schema.
      */
     event Attested(
-        address indexed subject,
+        address indexed moduleAddr,
         address indexed attester,
         SchemaUID schema,
         AttestationDataRef indexed dataPointer
@@ -53,11 +53,11 @@ interface IAttestation {
     /**
      * @dev Emitted when an attestation has been revoked.
      *
-     * @param subject The subject of the attestation.
+     * @param moduleAddr The moduleAddr of the attestation.
      * @param  revoker The attesting account.
      * @param schema The UID of the schema.
      */
-    event Revoked(address indexed subject, address indexed revoker, SchemaUID indexed schema);
+    event Revoked(address indexed moduleAddr, address indexed revoker, SchemaUID indexed schema);
 
     /**
      * @dev Emitted when a data has been timestamped.
@@ -94,26 +94,26 @@ interface IAttestation {
     function multiAttest(MultiAttestationRequest[] calldata multiRequests) external payable;
 
     /**
-     * @notice Handles a single delegated attestation request
+     * @notice Handles a single signed attestation request
      *
      * @dev The function verifies the attestation,
      *       wraps the data in an array and forwards it to the _multiAttest() function
      *
-     * @param delegatedRequest A delegated attestation request
+     * @param signedRequest A signed attestation request
      */
-    function attest(DelegatedAttestationRequest calldata delegatedRequest) external payable;
+    function attest(SignedAttestationRequest calldata signedRequest) external payable;
 
     /**
-     * @notice Function to handle multiple delegated attestation requests
+     * @notice Function to handle multiple signed attestation requests
      *
      * @dev It iterates over the attestation requests and processes them. It collects the returned UIDs into a list.
      * @dev Although the registry supports batched attestations, the function only allows
      *      batched Attestations for a single resolver.
      *      If you want to attest to multiple resolvers, you need to call the function multiple times.
      *
-     * @param multiDelegatedRequests An array of multiple delegated attestation requests
+     * @param multiSignedRequests An array of multiple signed attestation requests
      */
-    function multiAttest(MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests)
+    function multiAttest(MultiSignedAttestationRequest[] calldata multiSignedRequests)
         external
         payable;
 
@@ -124,25 +124,25 @@ interface IAttestation {
      */
     function revoke(RevocationRequest calldata request) external payable;
     /**
-     * @notice Handles a single delegated revocation request
+     * @notice Handles a single signed revocation request
      *
      * @dev The function verifies the revocation, prepares data for the _multiRevoke() function and revokes the requestZ
      *
-     * @param request A delegated revocation request
+     * @param request A signed revocation request
      */
-    function revoke(DelegatedRevocationRequest calldata request) external payable;
+    function revoke(SignedRevocationRequest calldata request) external payable;
 
     /**
-     * @notice Handles multiple delegated revocation requests
+     * @notice Handles multiple signed revocation requests
      *
-     * @dev The function iterates over the multiDelegatedRequests array, verifies each revocation and revokes the request
+     * @dev The function iterates over the multiSignedRequests array, verifies each revocation and revokes the request
      * @dev Although the registry supports batched revocations, the function only allows
      *      batched Attestations for a single resolver.
      *      If you want to attest to multiple resolvers, you need to call the function multiple times.
      *
-     * @param multiDelegatedRequests An array of multiple delegated revocation requests
+     * @param multiSignedRequests An array of multiple signed revocation requests
      */
-    function multiRevoke(MultiDelegatedRevocationRequest[] calldata multiDelegatedRequests)
+    function multiRevoke(MultiSignedRevocationRequest[] calldata multiSignedRequests)
         external
         payable;
 

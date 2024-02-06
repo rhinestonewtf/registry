@@ -58,9 +58,9 @@ contract RegistryGasComparisonTest is BaseTest {
         (address _thirdAttester, uint256 thirdKey) = makeAddrAndKey("thirdAttester");
         thirdAttester = _thirdAttester;
 
-        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, firstKey);
-        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, secondKey);
-        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, thirdKey);
+        instance.mockSignedAttestation(defaultSchema1, defaultModule1, firstKey);
+        instance.mockSignedAttestation(defaultSchema1, defaultModule1, secondKey);
+        instance.mockSignedAttestation(defaultSchema1, defaultModule1, thirdKey);
     }
 
     function testGasCheck() public {

@@ -19,7 +19,7 @@ import {
 
 import {
     AttestationRecord,
-    MultiDelegatedAttestationRequest,
+    MultiSignedAttestationRequest,
     MultiAttestationRequest,
     MultiRevocationRequest,
     RevocationRequestData,
@@ -49,7 +49,7 @@ contract AttestationTest is BaseTest {
 
     function testAttest__RevertWhen__InvalidExpirationTime() public {
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: defaultModule1,
+            moduleAddr: defaultModule1,
             expirationTime: uint48(1),
             data: abi.encode(true),
             value: 0
@@ -61,7 +61,7 @@ contract AttestationTest is BaseTest {
 
     function testAttest__RevertWhen__ZeroImplementation() public {
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: address(0x69),
+            moduleAddr: address(0x69),
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
@@ -73,7 +73,7 @@ contract AttestationTest is BaseTest {
 
     function testAttest__RevertWhen__InvalidSchema() public {
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: defaultModule1,
+            moduleAddr: defaultModule1,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
@@ -86,7 +86,7 @@ contract AttestationTest is BaseTest {
     function testAttest__RevertWhen__ValidatorSaysInvalidAttestation() public {
         SchemaUID schemaId = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: defaultModule1,
+            moduleAddr: defaultModule1,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
@@ -109,7 +109,7 @@ contract AttestationTest is BaseTest {
         console2.log(data.length);
 
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: defaultModule1,
+            moduleAddr: defaultModule1,
             expirationTime: uint48(0),
             data: data,
             value: 0
@@ -124,14 +124,14 @@ contract AttestationTest is BaseTest {
         );
 
         AttestationRequestData memory attData1 = AttestationRequestData({
-            subject: defaultModule1,
+            moduleAddr: defaultModule1,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
         });
 
         AttestationRequestData memory attData2 = AttestationRequestData({
-            subject: anotherModule,
+            moduleAddr: anotherModule,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
@@ -155,14 +155,14 @@ contract AttestationTest is BaseTest {
         );
 
         AttestationRequestData memory attData1 = AttestationRequestData({
-            subject: defaultModule1,
+            moduleAddr: defaultModule1,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
         });
 
         AttestationRequestData memory attData2 = AttestationRequestData({
-            subject: anotherModule,
+            moduleAddr: anotherModule,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
@@ -188,14 +188,14 @@ contract AttestationTest is BaseTest {
         );
 
         AttestationRequestData memory attData1 = AttestationRequestData({
-            subject: defaultModule1,
+            moduleAddr: defaultModule1,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
         });
 
         AttestationRequestData memory attData2 = AttestationRequestData({
-            subject: anotherModule,
+            moduleAddr: anotherModule,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
@@ -220,14 +220,14 @@ contract AttestationTest is BaseTest {
         );
 
         AttestationRequestData memory attData1 = AttestationRequestData({
-            subject: defaultModule1,
+            moduleAddr: defaultModule1,
             expirationTime: uint48(1),
             data: abi.encode(true),
             value: 0
         });
 
         AttestationRequestData memory attData2 = AttestationRequestData({
-            subject: anotherModule,
+            moduleAddr: anotherModule,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
@@ -253,14 +253,14 @@ contract AttestationTest is BaseTest {
         );
 
         AttestationRequestData memory attData1 = AttestationRequestData({
-            subject: address(0x69),
+            moduleAddr: address(0x69),
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
         });
 
         AttestationRequestData memory attData2 = AttestationRequestData({
-            subject: anotherModule,
+            moduleAddr: anotherModule,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
@@ -310,7 +310,7 @@ contract AttestationTest is BaseTest {
         instance.mockAttestation(defaultSchema1, defaultModule1);
 
         RevocationRequestData memory revoke =
-            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
+            RevocationRequestData({ moduleAddr: defaultModule1, attester: attester, value: 0 });
 
         RevocationRequest memory req =
             RevocationRequest({ schemaUID: defaultSchema1, data: revoke });
@@ -344,10 +344,10 @@ contract AttestationTest is BaseTest {
         instance.mockAttestation(defaultSchema1, anotherModule);
 
         RevocationRequestData memory attData1 =
-            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
+            RevocationRequestData({ moduleAddr: defaultModule1, attester: attester, value: 0 });
 
         RevocationRequestData memory attData2 =
-            RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
+            RevocationRequestData({ moduleAddr: anotherModule, attester: attester, value: 0 });
 
         RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
@@ -379,10 +379,10 @@ contract AttestationTest is BaseTest {
         instance.mockAttestation(defaultSchema1, anotherModule);
 
         RevocationRequestData memory attData1 =
-            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
+            RevocationRequestData({ moduleAddr: defaultModule1, attester: attester, value: 0 });
 
         RevocationRequestData memory attData2 =
-            RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
+            RevocationRequestData({ moduleAddr: anotherModule, attester: attester, value: 0 });
 
         RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
@@ -404,10 +404,10 @@ contract AttestationTest is BaseTest {
         );
 
         RevocationRequestData memory attData1 =
-            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
+            RevocationRequestData({ moduleAddr: defaultModule1, attester: attester, value: 0 });
 
         RevocationRequestData memory attData2 =
-            RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
+            RevocationRequestData({ moduleAddr: anotherModule, attester: attester, value: 0 });
 
         RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
@@ -433,10 +433,10 @@ contract AttestationTest is BaseTest {
         instance.mockAttestation(defaultSchema1, anotherModule);
 
         RevocationRequestData memory attData1 =
-            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
+            RevocationRequestData({ moduleAddr: defaultModule1, attester: attester, value: 0 });
 
         RevocationRequestData memory attData2 =
-            RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
+            RevocationRequestData({ moduleAddr: anotherModule, attester: attester, value: 0 });
 
         RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;
@@ -463,10 +463,10 @@ contract AttestationTest is BaseTest {
         instance.mockAttestation(defaultSchema1, anotherModule);
 
         RevocationRequestData memory attData1 =
-            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
+            RevocationRequestData({ moduleAddr: defaultModule1, attester: attester, value: 0 });
 
         RevocationRequestData memory attData2 =
-            RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
+            RevocationRequestData({ moduleAddr: anotherModule, attester: attester, value: 0 });
 
         RevocationRequestData[] memory attArray = new RevocationRequestData[](2);
         attArray[0] = attData1;

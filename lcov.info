@@ -217,8 +217,8 @@ DA:523,8
 DA:524,8
 DA:526,8
 DA:529,8
-FN:544,RSAttestation._resolveAttestation
-FNDA:46,RSAttestation._resolveAttestation
+FN:544,RSAttestation._requireExternalResolveAttestation
+FNDA:46,RSAttestation._requireExternalResolveAttestation
 DA:555,46
 DA:556,46
 BRDA:556,23,0,-
@@ -253,8 +253,8 @@ BRDA:588,30,0,-
 BRDA:588,30,1,-
 DA:589,0
 DA:592,0
-FN:607,RSAttestation._resolveAttestations
-FNDA:49,RSAttestation._resolveAttestations
+FN:607,RSAttestation._requireExternalResolveAttestations
+FNDA:49,RSAttestation._requireExternalResolveAttestations
 DA:618,49
 DA:619,49
 BRDA:619,31,0,-
@@ -379,8 +379,8 @@ BRDA:70,1,1,2
 DA:73,2
 DA:74,2
 DA:76,2
-FN:79,RSModule._register
-FNDA:12,RSModule._register
+FN:79,RSModule._storeModuleRecord
+FNDA:12,RSModule._storeModuleRecord
 DA:90,12
 BRDA:90,2,0,-
 BRDA:90,2,1,12
@@ -443,8 +443,8 @@ DA:113,0
 DA:114,0
 DA:115,0
 DA:116,0
-FN:120,RSQuery._verifyAttestation
-FNDA:0,RSQuery._verifyAttestation
+FN:120,RSQuery._requireValidAttestSignatureation
+FNDA:0,RSQuery._requireValidAttestSignatureation
 DA:121,0
 DA:122,0
 DA:123,0
@@ -532,8 +532,8 @@ DA:116,0
 FN:119,EIP712Verifier._attestationDigest
 FNDA:113,EIP712Verifier._attestationDigest
 DA:128,113
-FN:149,EIP712Verifier._verifyAttest
-FNDA:58,EIP712Verifier._verifyAttest
+FN:149,EIP712Verifier._requireValidAttestSignature
+FNDA:58,EIP712Verifier._requireValidAttestSignature
 DA:150,58
 DA:151,58
 DA:153,58

@@ -42,7 +42,7 @@ contract QueryTest is AttestationTest {
 
     function testCheckAttestation__RevertWhen__Expired() public {
         vm.warp(100);
-        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
+        instance.mockSignedAttestation(defaultSchema1, defaultModule1, auth1k);
         vm.warp(200);
         vm.expectRevert(IQuery.AttestationNotFound.selector);
         instance.registry.check(defaultModule1, attester);
@@ -57,7 +57,7 @@ contract QueryTest is AttestationTest {
 
     function testCheckNAttestation() public {
         testAttest();
-        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth2k);
+        instance.mockSignedAttestation(defaultSchema1, defaultModule1, auth2k);
         address[] memory attesters = new address[](2);
         attesters[0] = attester;
         attesters[1] = vm.addr(auth2k);
@@ -77,14 +77,14 @@ contract QueryTest is AttestationTest {
     function testCheckNAttestation__RevertWhen__Expired() public {
         vm.warp(100);
         testAttest();
-        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth2k);
+        instance.mockSignedAttestation(defaultSchema1, defaultModule1, auth2k);
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: defaultModule1,
+            moduleAddr: defaultModule1,
             expirationTime: uint48(101),
             data: abi.encode(false),
             value: 0
         });
-        instance.newDelegatedAttestation(defaultSchema1, auth2k, attData);
+        instance.newSignedAttestation(defaultSchema1, auth2k, attData);
         vm.warp(200);
         address[] memory attesters = new address[](2);
         attesters[0] = attester;
@@ -96,8 +96,8 @@ contract QueryTest is AttestationTest {
 
     function testCheckNAttestation__RevertWhen__Revoked() public {
         testAttest();
-        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth2k);
-        instance.delegatedRevokeAttestation(defaultModule1, defaultSchema1, auth2k);
+        instance.mockSignedAttestation(defaultSchema1, defaultModule1, auth2k);
+        instance.signedRevokeAttestation(defaultModule1, defaultSchema1, auth2k);
         address[] memory attesters = new address[](2);
         attesters[0] = vm.addr(auth1k);
         attesters[1] = vm.addr(auth2k);
@@ -108,7 +108,7 @@ contract QueryTest is AttestationTest {
 
     function testCheckNAttestationUnsafe() public {
         testAttest();
-        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth2k);
+        instance.mockSignedAttestation(defaultSchema1, defaultModule1, auth2k);
         address[] memory attesters = new address[](2);
         attesters[0] = vm.addr(auth1k);
         attesters[1] = vm.addr(auth2k);
@@ -128,7 +128,7 @@ contract QueryTest is AttestationTest {
     function testCheckNAttestationUnsafe__Expired() public {
         vm.warp(100);
         testAttest();
-        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
+        instance.mockSignedAttestation(defaultSchema1, defaultModule1, auth1k);
         vm.warp(200);
         address[] memory attesters = new address[](2);
         attesters[0] = vm.addr(auth1k);
@@ -139,7 +139,7 @@ contract QueryTest is AttestationTest {
 
     function testCheckNAttestationUnsafe__Revoked() public {
         testAttest();
-        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth1k);
+        instance.mockSignedAttestation(defaultSchema1, defaultModule1, auth1k);
         instance.revokeAttestation(defaultModule1, defaultSchema1, address(this));
         address[] memory attesters = new address[](2);
         attesters[0] = vm.addr(auth1k);
@@ -157,7 +157,7 @@ contract QueryTest is AttestationTest {
 
     function testFindAttestations() public {
         testAttest();
-        instance.mockDelegatedAttestation(defaultSchema1, defaultModule1, auth2k);
+        instance.mockSignedAttestation(defaultSchema1, defaultModule1, auth2k);
 
         address[] memory attesters = new address[](2);
         attesters[0] = attester;

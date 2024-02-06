@@ -6,11 +6,11 @@ import { AttestationResolve, ResolverUID, SchemaUID } from "../src/base/Attestat
 import {
     AttestationRequest,
     MultiAttestationRequest,
-    DelegatedAttestationRequest,
-    MultiDelegatedAttestationRequest,
+    SignedAttestationRequest,
+    MultiSignedAttestationRequest,
     RevocationRequest,
-    DelegatedRevocationRequest,
-    MultiDelegatedRevocationRequest,
+    SignedRevocationRequest,
+    MultiSignedRevocationRequest,
     MultiRevocationRequest,
     IAttestation
 } from "../src/interface/IAttestation.sol";
@@ -21,10 +21,10 @@ import {
     AttestationRecord,
     AttestationDataRef,
     MultiAttestationRequest,
-    MultiDelegatedAttestationRequest,
+    MultiSignedAttestationRequest,
     MultiRevocationRequest,
-    DelegatedRevocationRequest,
-    MultiDelegatedRevocationRequest,
+    SignedRevocationRequest,
+    MultiSignedRevocationRequest,
     SchemaRecord,
     ResolverRecord,
     ModuleRecord
@@ -42,7 +42,7 @@ contract AttestationResolveInstance is AttestationResolve {
         public
         returns (uint256)
     {
-        return _resolveAttestation(
+        return _requireExternalResolveAttestation(
             resolverUID, attestationRecord, value, isRevocation, availableValue, isLastAttestation
         );
     }
@@ -58,7 +58,7 @@ contract AttestationResolveInstance is AttestationResolve {
         public
         returns (uint256)
     {
-        return _resolveAttestations(
+        return _requireExternalResolveAttestations(
             resolverUID, attestationRecords, values, isRevocation, availableValue, isLast
         );
     }
@@ -102,14 +102,14 @@ contract AttestationResolveInstance is AttestationResolve {
     // Required by IAttestation
     function attest(AttestationRequest calldata request) external payable { }
     function multiAttest(MultiAttestationRequest[] calldata multiRequests) external payable { }
-    function attest(DelegatedAttestationRequest calldata delegatedRequest) external payable { }
-    function multiAttest(MultiDelegatedAttestationRequest[] calldata multiDelegatedRequests)
+    function attest(SignedAttestationRequest calldata signedRequest) external payable { }
+    function multiAttest(MultiSignedAttestationRequest[] calldata multiSignedRequests)
         external
         payable
     { }
     function revoke(RevocationRequest calldata request) external payable { }
-    function revoke(DelegatedRevocationRequest calldata request) external payable { }
-    function multiRevoke(MultiDelegatedRevocationRequest[] calldata multiDelegatedRequests)
+    function revoke(SignedRevocationRequest calldata request) external payable { }
+    function multiRevoke(MultiSignedRevocationRequest[] calldata multiSignedRequests)
         external
         payable
     { }
@@ -244,7 +244,7 @@ contract AttestationResolveTest is BaseTest {
     function testResolveAttestation() public {
         AttestationRecord memory attestationRecord = AttestationRecord({
             schemaUID: defaultSchema1,
-            subject: address(this),
+            moduleAddr: address(this),
             attester: address(this),
             time: uint48(0),
             expirationTime: uint48(0),
@@ -265,7 +265,7 @@ contract AttestationResolveTest is BaseTest {
     function testResolveAttestation__WithValue() public {
         AttestationRecord memory attestationRecord = AttestationRecord({
             schemaUID: defaultSchema1,
-            subject: address(this),
+            moduleAddr: address(this),
             attester: address(this),
             time: uint48(0),
             expirationTime: uint48(0),
@@ -292,7 +292,7 @@ contract AttestationResolveTest is BaseTest {
     function testResolveAttestation__RevertWhen__ZeroResolverAndValue() public {
         AttestationRecord memory attestationRecord = AttestationRecord({
             schemaUID: defaultSchema1,
-            subject: address(this),
+            moduleAddr: address(this),
             attester: address(this),
             time: uint48(0),
             expirationTime: uint48(0),
@@ -315,7 +315,7 @@ contract AttestationResolveTest is BaseTest {
     function testResolveAttestation__RevertWhen__ResolverNotPayableAndValue() public {
         AttestationRecord memory attestationRecord = AttestationRecord({
             schemaUID: defaultSchema1,
-            subject: address(this),
+            moduleAddr: address(this),
             attester: address(this),
             time: uint48(0),
             expirationTime: uint48(0),
@@ -338,7 +338,7 @@ contract AttestationResolveTest is BaseTest {
     function testResolveAttestation__RevertWhen__InsufficientValue() public {
         AttestationRecord memory attestationRecord = AttestationRecord({
             schemaUID: defaultSchema1,
-            subject: address(this),
+            moduleAddr: address(this),
             attester: address(this),
             time: uint48(0),
             expirationTime: uint48(0),
@@ -361,7 +361,7 @@ contract AttestationResolveTest is BaseTest {
     function testResolveAttestation__RevertWhen__InvalidRevocation() public {
         AttestationRecord memory attestationRecord = AttestationRecord({
             schemaUID: defaultSchema1,
-            subject: address(this),
+            moduleAddr: address(this),
             attester: address(this),
             time: uint48(0),
             expirationTime: uint48(0),
@@ -383,7 +383,7 @@ contract AttestationResolveTest is BaseTest {
     function testResolveAttestation__RevertWhen__InvalidAttestation() public {
         AttestationRecord memory attestationRecord = AttestationRecord({
             schemaUID: defaultSchema1,
-            subject: address(this),
+            moduleAddr: address(this),
             attester: address(this),
             time: uint48(0),
             expirationTime: uint48(0),

@@ -9,8 +9,8 @@ import "../../src/Registry.sol";
 import {
     AttestationRequestData,
     RevocationRequestData,
-    DelegatedAttestationRequest,
-    DelegatedRevocationRequest
+    SignedAttestationRequest,
+    SignedRevocationRequest
 } from "../../src/base/AttestationDelegation.sol";
 import { ISchemaValidator, IResolver } from "../../src/interface/ISchema.sol";
 import { AttestationRequest, RevocationRequest } from "../../src/DataTypes.sol";
@@ -36,7 +36,7 @@ library RegistryTestLib {
         public
     {
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: moduleAddr,
+            moduleAddr: moduleAddr,
             expirationTime: uint48(0),
             data: abi.encode(true),
             value: 0
@@ -44,7 +44,7 @@ library RegistryTestLib {
         newAttestation(instance, schemaUID, attData);
     }
 
-    function mockDelegatedAttestation(
+    function mockSignedAttestation(
         RegistryInstance memory instance,
         SchemaUID schemaUID,
         address moduleAddr,
@@ -53,12 +53,12 @@ library RegistryTestLib {
         public
     {
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: moduleAddr,
+            moduleAddr: moduleAddr,
             expirationTime: uint48(0x42424242),
             data: abi.encode(true),
             value: 0
         });
-        newDelegatedAttestation(instance, schemaUID, authKey, attData);
+        newSignedAttestation(instance, schemaUID, authKey, attData);
     }
 
     // function mockAttestation(
@@ -82,7 +82,7 @@ library RegistryTestLib {
         instance.registry.attest(req);
     }
 
-    function newDelegatedAttestation(
+    function newSignedAttestation(
         RegistryInstance memory instance,
         SchemaUID schemaUID,
         uint256 attesterKey,
@@ -91,7 +91,7 @@ library RegistryTestLib {
         public
     {
         bytes memory signature = signAttestation(instance, schemaUID, attesterKey, attData);
-        DelegatedAttestationRequest memory req = DelegatedAttestationRequest({
+        SignedAttestationRequest memory req = SignedAttestationRequest({
             schemaUID: schemaUID,
             data: attData,
             signature: signature,
@@ -165,13 +165,13 @@ library RegistryTestLib {
         public
     {
         RevocationRequestData memory revoke =
-            RevocationRequestData({ subject: module, attester: attester, value: 0 });
+            RevocationRequestData({ moduleAddr: module, attester: attester, value: 0 });
 
         RevocationRequest memory req = RevocationRequest({ schemaUID: schemaUID, data: revoke });
         instance.registry.revoke(req);
     }
 
-    function delegatedRevokeAttestation(
+    function signedRevokeAttestation(
         RegistryInstance memory instance,
         address module,
         SchemaUID schemaUID,
@@ -180,11 +180,11 @@ library RegistryTestLib {
         public
     {
         RevocationRequestData memory revoke =
-            RevocationRequestData({ subject: module, attester: getAddr(attesterPk), value: 0 });
+            RevocationRequestData({ moduleAddr: module, attester: getAddr(attesterPk), value: 0 });
 
         bytes memory signature = signRevocation(instance, schemaUID, attesterPk, revoke);
 
-        DelegatedRevocationRequest memory req = DelegatedRevocationRequest({
+        SignedRevocationRequest memory req = SignedRevocationRequest({
             schemaUID: schemaUID,
             data: revoke,
             signature: signature,

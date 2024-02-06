@@ -4,8 +4,8 @@ pragma solidity ^0.8.19;
 import { BaseTest, RegistryTestLib, RegistryInstance } from "./utils/BaseTest.t.sol";
 import {
     EIP712Verifier,
-    DelegatedAttestationRequest,
-    DelegatedRevocationRequest,
+    SignedAttestationRequest,
+    SignedRevocationRequest,
     SchemaUID,
     AttestationRequestData,
     RevocationRequestData,
@@ -23,11 +23,11 @@ struct SampleAttestation {
 }
 
 contract EIP712VerifierInstance is EIP712Verifier {
-    function verifyAttest(DelegatedAttestationRequest calldata request) public {
-        _verifyAttest(request);
+    function verifyAttest(SignedAttestationRequest calldata request) public {
+        _requireValidAttestSignature(request);
     }
 
-    function verifyRevoke(DelegatedRevocationRequest calldata request) public {
+    function verifyRevoke(SignedRevocationRequest calldata request) public {
         _verifyRevoke(request);
     }
 
@@ -66,7 +66,7 @@ contract EIP712VerifierTest is BaseTest {
         uint256 nonce = verifier.getNonce(account) + 1;
 
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: address(0),
+            moduleAddr: address(0),
             expirationTime: uint48(0),
             value: 0,
             data: ""
@@ -82,7 +82,7 @@ contract EIP712VerifierTest is BaseTest {
                     verifier.getAttestTypeHash(),
                     block.chainid,
                     schemaUID,
-                    attData.subject,
+                    attData.moduleAddr,
                     attData.expirationTime,
                     keccak256(attData.data),
                     nonce
@@ -96,7 +96,7 @@ contract EIP712VerifierTest is BaseTest {
     function testVerifyAttest() public {
         SchemaUID schemaUID = SchemaUID.wrap(0);
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: address(0x69),
+            moduleAddr: address(0x69),
             expirationTime: uint48(0),
             value: 0,
             data: abi.encode(true)
@@ -107,7 +107,7 @@ contract EIP712VerifierTest is BaseTest {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(auth1k, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
 
-        DelegatedAttestationRequest memory request = DelegatedAttestationRequest({
+        SignedAttestationRequest memory request = SignedAttestationRequest({
             schemaUID: schemaUID,
             data: attData,
             attester: vm.addr(auth1k),
@@ -120,12 +120,12 @@ contract EIP712VerifierTest is BaseTest {
     function testVerifyAttest__RevertWhen__InvalidSignature() public {
         address attester = makeAddr("attester");
         AttestationRequestData memory attData = AttestationRequestData({
-            subject: address(0),
+            moduleAddr: address(0),
             expirationTime: uint48(0),
             value: 0,
             data: ""
         });
-        DelegatedAttestationRequest memory request = DelegatedAttestationRequest({
+        SignedAttestationRequest memory request = SignedAttestationRequest({
             schemaUID: SchemaUID.wrap(0),
             data: attData,
             attester: attester,
@@ -142,7 +142,7 @@ contract EIP712VerifierTest is BaseTest {
         uint256 nonce = verifier.getNonce(account) + 1;
 
         RevocationRequestData memory revData =
-            RevocationRequestData({ subject: address(0), attester: account, value: 0 });
+            RevocationRequestData({ moduleAddr: address(0), attester: account, value: 0 });
 
         bytes32 digest1 = verifier.getRevocationDigest(revData, schemaUID, account);
         bytes32 digest2 = verifier.getRevocationDigest(revData, schemaUID, nonce);
@@ -154,7 +154,7 @@ contract EIP712VerifierTest is BaseTest {
                     verifier.getRevokeTypeHash(),
                     block.chainid,
                     schemaUID,
-                    revData.subject,
+                    revData.moduleAddr,
                     account,
                     nonce
                 )
@@ -168,7 +168,7 @@ contract EIP712VerifierTest is BaseTest {
         address revoker = vm.addr(auth1k);
         SchemaUID schemaUID = SchemaUID.wrap(0);
         RevocationRequestData memory revData =
-            RevocationRequestData({ subject: address(0), attester: revoker, value: 0 });
+            RevocationRequestData({ moduleAddr: address(0), attester: revoker, value: 0 });
 
         uint256 nonce = verifier.getNonce(vm.addr(auth1k)) + 1;
         bytes32 digest =
@@ -176,7 +176,7 @@ contract EIP712VerifierTest is BaseTest {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(auth1k, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
 
-        DelegatedRevocationRequest memory request = DelegatedRevocationRequest({
+        SignedRevocationRequest memory request = SignedRevocationRequest({
             schemaUID: schemaUID,
             data: revData,
             revoker: revoker,
