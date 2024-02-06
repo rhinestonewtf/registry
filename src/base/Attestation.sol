@@ -43,11 +43,6 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
     mapping(address module => mapping(address attester => AttestationRecord attestation)) internal
         _moduleToAttesterToAttestations;
 
-    /**
-     * @notice Constructs a new Attestation contract instance.
-     */
-    constructor() { }
-
     /*//////////////////////////////////////////////////////////////
                               ATTEST
     //////////////////////////////////////////////////////////////*/

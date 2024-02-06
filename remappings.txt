@@ -1,4 +1,3 @@
-@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
-checknsignatures/=lib/checknsignatures/src/
-solmate/=lib/solmate/src/
-solady/=lib/solady/src/
+@openzeppelin/=node_modules/@openzeppelin/
+solmate/=node_modules/solmate/src/
+solady/=node_modules/solady/src/
