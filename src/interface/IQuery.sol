@@ -11,6 +11,7 @@ import { IERC7484 } from "./IERC7484.sol";
  * @author zeroknots
  */
 interface IQuery is IERC7484 {
+    error NoAttesterSet();
     error RevokedAttestation(address attester);
     error AttestationNotFound();
     error InsufficientAttestations();

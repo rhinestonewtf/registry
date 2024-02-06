@@ -28,12 +28,7 @@ abstract contract EIP712Verifier is EIP712 {
         keccak256("RevocationRequestData(address,address,uint256)");
 
     // Replay protection nonces.
-    mapping(address => uint256) private _nonces;
-
-    /**
-     * @dev Creates a new EIP712Verifier instance.
-     */
-    constructor() { }
+    mapping(address account => uint256 nonce) private _nonces;
 
     function _domainNameAndVersion()
         internal

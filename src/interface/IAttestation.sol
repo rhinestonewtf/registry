@@ -5,16 +5,10 @@ import {
     SchemaUID,
     AttestationDataRef,
     AttestationRequest,
-    AttestationRecord,
-    SchemaRecord,
     MultiAttestationRequest,
-    ResolverRecord,
-    ModuleRecord,
-    IResolver,
     DelegatedAttestationRequest,
     MultiDelegatedAttestationRequest,
     RevocationRequest,
-    ResolverUID,
     DelegatedRevocationRequest,
     MultiDelegatedRevocationRequest,
     MultiRevocationRequest
@@ -102,7 +96,8 @@ interface IAttestation {
     /**
      * @notice Handles a single delegated attestation request
      *
-     * @dev The function verifies the attestation, wraps the data in an array and forwards it to the _multiAttest() function
+     * @dev The function verifies the attestation,
+     *       wraps the data in an array and forwards it to the _multiAttest() function
      *
      * @param delegatedRequest A delegated attestation request
      */
@@ -167,7 +162,8 @@ interface IAttestation {
 library AttestationLib {
     /**
      * @dev Generates a unique salt for an attestation using the provided attester and module addresses.
-     * The salt is generated using a keccak256 hash of the module address, attester address, current timestamp, and chain ID.
+     * The salt is generated using a keccak256 hash of the module address,
+     *     attester address, current timestamp, and chain ID.
      *   This salt will be used for SSTORE2
      *
      * @param attester Address of the entity making the attestation.

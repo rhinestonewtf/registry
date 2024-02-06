@@ -4,8 +4,6 @@ pragma solidity ^0.8.19;
 import { Test } from "forge-std/Test.sol";
 import {
     Attestation,
-    MultiDelegatedAttestationRequest,
-    AttestationRecord,
     IAttestation,
     InvalidSchema,
     NotFound,
@@ -23,13 +21,14 @@ import {
     DelegatedAttestationRequest,
     MockModuleWithArgs,
     ResolverUID,
-    IResolver,
     SchemaUID,
     ISchemaValidator
 } from "./utils/BaseTest.t.sol";
 
 import {
+    AttestationRecord,
     MultiAttestationRequest,
+    MultiDelegatedAttestationRequest,
     MultiRevocationRequest,
     RevocationRequestData,
     DelegatedRevocationRequest,

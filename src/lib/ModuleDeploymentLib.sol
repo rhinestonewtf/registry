@@ -15,6 +15,7 @@ library ModuleDeploymentLib {
      * @return hash The hash of the contract code.
      */
     function codeHash(address contractAddr) internal view returns (bytes32 hash) {
+        // solhint-disable-next-line no-inline-assembly
         assembly {
             if iszero(extcodesize(contractAddr)) { revert(0, 0) }
             hash := extcodehash(contractAddr)
@@ -26,7 +27,8 @@ library ModuleDeploymentLib {
      * @dev This method uses the CREATE2 opcode to deploy a new contract with a deterministic address.
      *
      * @param createCode The creationCode for the contract.
-     * @param params The parameters for creating the contract. If the contract has a constructor, this MUST be provided. Function will fail if params are abi.encodePacked in createCode.
+     * @param params The parameters for creating the contract. If the contract has a constructor,
+     *               this MUST be provided. Function will fail if params are abi.encodePacked in createCode.
      * @param salt The salt for creating the contract.
      *
      * @return moduleAddress The address of the deployed contract.
@@ -47,6 +49,9 @@ library ModuleDeploymentLib {
         // if params were abi.encodePacked in createCode, this will revert
         initCodeHash = keccak256(initCode);
 
+        // TODO: can we use a lib for this?
+
+        // solhint-disable-next-line no-inline-assembly
         assembly {
             moduleAddress := create2(value, add(initCode, 0x20), mload(initCode), salt)
             // If the contract was not created successfully, the transaction is reverted.
@@ -61,9 +66,11 @@ library ModuleDeploymentLib {
      * @dev This function uses the formula specified in EIP-1014 (https://eips.ethereum.org/EIPS/eip-1014).
      *
      * @param _code The contract code that would be deployed.
-     * @param _salt A salt used for the address calculation. This must be the same salt that would be passed to the CREATE2 opcode.
+     * @param _salt A salt used for the address calculation.
+     *                 This must be the same salt that would be passed to the CREATE2 opcode.
      *
-     * @return The address that the contract would be deployed at if the CREATE2 opcode was called with the specified _code and _salt.
+     * @return The address that the contract would be deployed
+     *            at if the CREATE2 opcode was called with the specified _code and _salt.
      */
     function calcAddress(bytes memory _code, bytes32 _salt) internal view returns (address) {
         bytes32 hash =

@@ -2,18 +2,9 @@
 pragma solidity ^0.8.19;
 
 import { IQuery } from "../interface/IQuery.sol";
-import {
-    AttestationRecord,
-    SchemaUID,
-    SchemaRecord,
-    AttestationResolve,
-    Attestation,
-    ResolverUID,
-    ResolverRecord,
-    ModuleRecord
-} from "./Attestation.sol";
 
 import { ZERO_TIMESTAMP } from "../Common.sol";
+import { AttestationRecord } from "../DataTypes.sol";
 
 /**
  * @title Query
@@ -42,6 +33,7 @@ abstract contract Query is IQuery {
 
         // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
         // @dev the solidity version of the assembly code is above
+        // solhint-disable-next-line no-inline-assembly
         assembly {
             let mask := 0xffffffffffff
             let times := sload(attestation.slot)
@@ -98,6 +90,7 @@ abstract contract Query is IQuery {
 
             // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
             // @dev the solidity version of the assembly code is above
+            // solhint-disable-next-line no-inline-assembly
             assembly {
                 let mask := 0xffffffffffff
                 let times := sload(attestation.slot)
@@ -157,6 +150,7 @@ abstract contract Query is IQuery {
 
             // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
             // @dev the solidity version of the assembly code is above
+            // solhint-disable-next-line no-inline-assembly
             assembly {
                 let mask := 0xffffffffffff
                 let times := sload(attestation.slot)

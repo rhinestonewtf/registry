@@ -5,29 +5,31 @@ import { ReentrancyGuard } from "solmate/utils/ReentrancyGuard.sol";
 
 import {
     IAttestation,
-    AttestationRecord,
     AttestationRequest,
     MultiAttestationRequest,
     RevocationRequest,
     MultiRevocationRequest,
-    AttestationLib,
-    ResolverRecord,
-    MultiDelegatedAttestationRequest
+    AttestationLib
 } from "../interface/IAttestation.sol";
 import { SchemaUID, ResolverUID, SchemaRecord, ISchemaValidator } from "./Schema.sol";
-import { ModuleRecord, AttestationRequestData, RevocationRequestData } from "./Module.sol";
+import { ModuleRecord } from "./Module.sol";
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
 import {
     ZERO_ADDRESS,
     AccessDenied,
     NotFound,
     ZERO_TIMESTAMP,
-    InvalidLength,
     InvalidSchema,
     _time
 } from "../Common.sol";
 
-import { AttestationDataRef, writeAttestationData } from "../DataTypes.sol";
+import {
+    AttestationDataRef,
+    AttestationRecord,
+    AttestationRequestData,
+    RevocationRequestData,
+    writeAttestationData
+} from "../DataTypes.sol";
 import { AttestationResolve } from "./AttestationResolve.sol";
 
 /**
@@ -300,7 +302,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
      */
     function _writeAttestation(
         SchemaUID schemaUID,
-        ResolverUID resolverUID,
+        ResolverUID resolverUID, // TODO: why isnt this used
         AttestationRequestData calldata attestationRequestData,
         address attester
     )
@@ -315,7 +317,7 @@ abstract contract Attestation is IAttestation, AttestationResolve, ReentrancyGua
         ) {
             revert InvalidExpirationTime();
         }
-        // caching module address. gas bad
+        // caching module address.
         address module = attestationRequestData.subject;
         ModuleRecord storage moduleRecord = _getModule({ moduleAddress: module });
 

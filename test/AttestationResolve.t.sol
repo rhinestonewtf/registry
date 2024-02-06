@@ -2,16 +2,7 @@
 pragma solidity ^0.8.19;
 
 import { BaseTest } from "./utils/BaseTest.t.sol";
-import {
-    AttestationResolve,
-    ResolverUID,
-    AttestationRecord,
-    SchemaUID,
-    SchemaRecord,
-    ResolverRecord,
-    ModuleRecord,
-    IResolver
-} from "../src/base/AttestationResolve.sol";
+import { AttestationResolve, ResolverUID, SchemaUID } from "../src/base/AttestationResolve.sol";
 import {
     AttestationRequest,
     MultiAttestationRequest,
@@ -24,8 +15,20 @@ import {
     IAttestation
 } from "../src/interface/IAttestation.sol";
 import { ISchemaValidator } from "../src/interface/ISchema.sol";
+import { IResolver } from "../src/external/IResolver.sol";
 import { ResolverBase } from "../src/external/ResolverBase.sol";
-import { AttestationDataRef } from "../src/DataTypes.sol";
+import {
+    AttestationRecord,
+    AttestationDataRef,
+    MultiAttestationRequest,
+    MultiDelegatedAttestationRequest,
+    MultiRevocationRequest,
+    DelegatedRevocationRequest,
+    MultiDelegatedRevocationRequest,
+    SchemaRecord,
+    ResolverRecord,
+    ModuleRecord
+} from "../src/DataTypes.sol";
 
 contract AttestationResolveInstance is AttestationResolve {
     function resolveAttestation(

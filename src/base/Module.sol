@@ -7,17 +7,10 @@ import { CREATE3 } from "solady/utils/CREATE3.sol";
 import { IModule } from "../interface/IModule.sol";
 
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
-import { Schema } from "./Schema.sol";
 import { IResolver } from "../external/IResolver.sol";
 
 import { InvalidResolver, _isContract, ZERO_ADDRESS } from "../Common.sol";
-import {
-    ResolverRecord,
-    ModuleRecord,
-    ResolverUID,
-    AttestationRequestData,
-    RevocationRequestData
-} from "../DataTypes.sol";
+import { ResolverRecord, ModuleRecord, ResolverUID } from "../DataTypes.sol";
 
 /**
  * @title Module
@@ -27,10 +20,12 @@ import {
  *
  * @dev The primary responsibility of the Module is to deploy and manage modules. A module is a smart contract
  * that has been deployed through the Module. The details of each module, such as its address, code hash, schema ID,
- * sender address, deploy parameters hash, and additional metadata are stored in a struct and mapped to the module's address in
+ * sender address, deploy parameters hash, and additional metadata are stored in
+ *        a struct and mapped to the module's address in
  * the `_modules` mapping for easy access and management.
  *
- * @dev In conclusion, the Module is a central part of a system to manage, deploy, and interact with a set of smart contracts
+ * @dev In conclusion, the Module is a central part of a system to manage,
+ *    deploy, and interact with a set of smart contracts
  * in a structured and controlled manner.
  *
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
@@ -39,7 +34,7 @@ abstract contract Module is IModule, ReentrancyGuard {
     using ModuleDeploymentLib for bytes;
     using ModuleDeploymentLib for address;
 
-    mapping(address moduleAddress => ModuleRecord) private _modules;
+    mapping(address moduleAddress => ModuleRecord modueRecord) private _modules;
 
     /**
      * @inheritdoc IModule

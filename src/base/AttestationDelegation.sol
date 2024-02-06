@@ -12,18 +12,9 @@ import {
     ModuleRecord,
     ResolverUID,
     AttestationRecord,
-    RevocationRequestData,
-    SchemaRecord
+    RevocationRequestData
 } from "../DataTypes.sol";
-import {
-    ZERO_ADDRESS,
-    AccessDenied,
-    NotFound,
-    ZERO_TIMESTAMP,
-    InvalidLength,
-    InvalidSchema,
-    _time
-} from "../Common.sol";
+import { InvalidLength } from "../Common.sol";
 
 /**
  * @title AttestationDelegation
@@ -32,11 +23,6 @@ import {
  * @author rhinestone | zeroknots.eth, Konrad Kopp(@kopy-kat)
  */
 abstract contract AttestationDelegation is IAttestation, Attestation {
-    /**
-     * @dev Initializes the contract with a name and version for the attestation.
-     */
-    constructor() { }
-
     /*//////////////////////////////////////////////////////////////
                             ATTEST
     //////////////////////////////////////////////////////////////*/
@@ -94,9 +80,10 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         // Batched Revocations can only be done for a single resolver. See IAttestation.sol
         ModuleRecord memory moduleRecord =
             _getModule({ moduleAddress: multiDelegatedRequests[0].data[0].subject });
+        // TODO:
         // I think it would be much better to move this into the for loop so we can iterate over the requests.
-        // Its possible that the MultiAttestationRequests is attesting different modules, that thus have different resolvers
-        // gas bad
+        // Its possible that the MultiAttestationRequests is attesting different modules,
+        // that thus have different resolvers gas bad
 
         for (uint256 i; i < length; ++i) {
             // The last batch is handled slightly differently: if the total available ETH wasn't spent in full and there

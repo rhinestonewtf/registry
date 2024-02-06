@@ -2,18 +2,9 @@
 pragma solidity ^0.8.19;
 
 import { IQuery } from "../interface/IQuery.sol";
-import {
-    AttestationRecord,
-    SchemaUID,
-    SchemaRecord,
-    AttestationResolve,
-    Attestation,
-    ResolverUID,
-    ResolverRecord,
-    ModuleRecord
-} from "./Attestation.sol";
 
 import { ZERO_TIMESTAMP } from "../Common.sol";
+import { AttestationRecord } from "../DataTypes.sol";
 
 /**
  * @title Query
@@ -29,7 +20,7 @@ abstract contract Query is IQuery {
         mapping(address attester => address linkedAttester) linkedAttesters;
     }
 
-    mapping(address account => Attesters) _attesters;
+    mapping(address account => Attesters attesters) internal _attesters;
 
     function setAttester(uint8 threshold, address[] calldata attesters) external {
         uint256 attestersLength = attesters.length;
@@ -78,7 +69,7 @@ abstract contract Query is IQuery {
 
         // if there is no attester or threshold, the user never configured any attesters. This is a revert.
         if (attesterCount == 0 || threshold == 0) {
-            revert();
+            revert NoAttesterSet();
         } else if (attesterCount == 1) {
             check({ module: module, attester: attester0 });
         } else if (attesterCount > 1) {
@@ -98,7 +89,7 @@ abstract contract Query is IQuery {
         address attester0 = _att.attester;
         // if there is no attester or threshold, the user never configured any attesters. This is a revert.
         if (attesterCount == 0 || threshold == 0) {
-            revert();
+            revert NoAttesterSet();
         } else if (_att.attesterCount == 1) {
             check({ module: module, attester: attester0 });
         } else if (_att.attesterCount > 1) {
@@ -131,6 +122,7 @@ abstract contract Query is IQuery {
 
         // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
         // @dev the solidity version of the assembly code is above
+        // solhint-disable-next-line no-inline-assembly
         assembly {
             let mask := 0xffffffffffff
             let times := sload(attestation.slot)
@@ -187,6 +179,7 @@ abstract contract Query is IQuery {
 
             // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
             // @dev the solidity version of the assembly code is above
+            // solhint-disable-next-line no-inline-assembly
             assembly {
                 let mask := 0xffffffffffff
                 let times := sload(attestation.slot)
@@ -246,6 +239,7 @@ abstract contract Query is IQuery {
 
             // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
             // @dev the solidity version of the assembly code is above
+            // solhint-disable-next-line no-inline-assembly
             assembly {
                 let mask := 0xffffffffffff
                 let times := sload(attestation.slot)

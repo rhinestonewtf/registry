@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "./BaseUtils.sol";
+import "src/DataTypes.sol";
 import "../../src/external/IResolver.sol";
 import "../../src/external/examples/DebugResolver.sol";
 

@@ -2,15 +2,7 @@
 pragma solidity ^0.8.19;
 
 import { Test } from "forge-std/Test.sol";
-import {
-    Attestation,
-    MultiDelegatedAttestationRequest,
-    AttestationRecord,
-    IAttestation,
-    InvalidSchema,
-    NotFound,
-    AccessDenied
-} from "../src/base/Attestation.sol";
+import { IAttestation, InvalidSchema, NotFound, AccessDenied } from "../src/base/Attestation.sol";
 
 import { ERC1271Attester, EXPECTED_SIGNATURE } from "./utils/ERC1271Attester.sol";
 
@@ -20,15 +12,14 @@ import {
     RegistryInstance,
     console2,
     AttestationRequestData,
-    DelegatedAttestationRequest,
     MockModuleWithArgs,
-    ResolverUID,
-    IResolver,
     SchemaUID,
     ISchemaValidator
 } from "./utils/BaseTest.t.sol";
 
 import {
+    AttestationRecord,
+    MultiDelegatedAttestationRequest,
     MultiAttestationRequest,
     MultiRevocationRequest,
     RevocationRequestData,

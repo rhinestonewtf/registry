@@ -26,14 +26,10 @@ function _time() view returns (uint48) {
 
 /**
  * @dev Returns whether an address is a contract.
- * @param account The address to check.
+ * @param addr The address to check.
  *
  * @return true if `account` is a contract, false otherwise.
  */
-function _isContract(address account) view returns (bool) {
-    uint256 size;
-    assembly {
-        size := extcodesize(account)
-    }
-    return size > 0;
+function _isContract(address addr) view returns (bool) {
+    return addr.code.length > 0;
 }

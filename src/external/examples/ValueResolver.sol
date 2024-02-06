@@ -9,7 +9,7 @@ import { ResolverBase, AttestationRecord, ModuleRecord } from "../ResolverBase.s
  * @notice A resolver for value (ETH) attestations.
  */
 contract ValueResolver is ResolverBase {
-    uint256 immutable fee = 10;
+    uint256 public immutable FEE = 10;
 
     constructor(address rs) ResolverBase(rs) { }
 
@@ -22,7 +22,7 @@ contract ValueResolver is ResolverBase {
         override
         returns (bool)
     {
-        return msg.value > fee;
+        return msg.value > FEE;
     }
 
     function onRevoke(

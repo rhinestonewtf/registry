@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { AccessDenied, ZERO_TIMESTAMP, NotFound, ZERO_ADDRESS } from "../Common.sol";
+import { AccessDenied, ZERO_ADDRESS } from "../Common.sol";
 import { AttestationRecord, ModuleRecord } from "../DataTypes.sol";
 import { IResolver } from "./IResolver.sol";
 
@@ -19,7 +19,7 @@ abstract contract ResolverBase is IResolver {
     string public constant VERSION = "0.1";
 
     // The global Rhinestone Registry contract.
-    address internal immutable _rs;
+    address internal immutable REGISTRY;
 
     /**
      * @dev Creates a new resolver.
@@ -30,7 +30,7 @@ abstract contract ResolverBase is IResolver {
         if (rs == ZERO_ADDRESS) {
             revert InvalidRS();
         }
-        _rs = rs;
+        REGISTRY = rs;
     }
 
     /**
@@ -225,7 +225,7 @@ abstract contract ResolverBase is IResolver {
      * @dev Ensures that only the RS contract can make this call.
      */
     function _onlyRSRegistry() private view {
-        if (msg.sender != _rs) {
+        if (msg.sender != REGISTRY) {
             revert AccessDenied();
         }
     }

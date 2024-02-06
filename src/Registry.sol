@@ -3,18 +3,17 @@ pragma solidity ^0.8.19;
 
 import { Schema } from "./base/Schema.sol";
 import { AttestationDelegation } from "./base/AttestationDelegation.sol";
+import { Attestation, AttestationResolve } from "./base/Attestation.sol";
 import { Module } from "./base/Module.sol";
+import { Query } from "./base/QueryAttester.sol";
 import {
-    Query,
+    AttestationRecord,
     SchemaUID,
     SchemaRecord,
-    AttestationResolve,
-    Attestation,
-    AttestationRecord,
-    ResolverUID,
     ResolverRecord,
+    ResolverUID,
     ModuleRecord
-} from "./base/QueryAttester.sol";
+} from "./DataTypes.sol";
 
 /**
  * @author zeroknots

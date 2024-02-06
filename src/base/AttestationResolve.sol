@@ -3,19 +3,13 @@ pragma solidity ^0.8.19;
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
-import {
-    IAttestation,
-    ResolverUID,
-    AttestationRecord,
-    SchemaUID,
-    SchemaRecord,
-    ModuleRecord,
-    ResolverRecord,
-    IResolver
-} from "../interface/IAttestation.sol";
+import { IAttestation, SchemaUID } from "../interface/IAttestation.sol";
+import { ResolverUID } from "./Schema.sol";
 import { EIP712Verifier } from "./EIP712Verifier.sol";
 
 import { ZERO_ADDRESS } from "../Common.sol";
+import { AttestationRecord, SchemaRecord, ModuleRecord, ResolverRecord } from "../DataTypes.sol";
+import { IResolver } from "../external/IResolver.sol";
 
 /**
  * @title AttestationResolve
@@ -102,6 +96,7 @@ abstract contract AttestationResolve is IAttestation, EIP712Verifier {
      *
      * @return Returns the total sent ETH amount.
      */
+    // solhint-disable-next-line code-complexity
     function _resolveAttestations(
         ResolverUID resolverUID,
         AttestationRecord[] memory attestationRecords,
