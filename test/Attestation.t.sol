@@ -5,7 +5,7 @@ import "./Base.t.sol";
 import "src/DataTypes.sol";
 
 contract AttestationTest is BaseTest {
-    function setUp() public override {
+    function setUp() public virtual override {
         super.setUp();
     }
 
@@ -16,6 +16,7 @@ contract AttestationTest is BaseTest {
         uint32[] memory types
     )
         internal
+        pure
         returns (AttestationRequest memory request)
     {
         ModuleType[] memory typesEnc = new ModuleType[](types.length);
@@ -30,8 +31,29 @@ contract AttestationTest is BaseTest {
         });
     }
 
-    function mockRevocation(address module) internal returns (RevocationRequest memory request) {
+    function mockRevocation(address module)
+        internal
+        pure
+        returns (RevocationRequest memory request)
+    {
         request = RevocationRequest({ moduleAddr: module });
+    }
+
+    function test_WhenAttestingWithNoAttestationData(address module)
+        public
+        prankWithAccount(attester1)
+    {
+        uint32[] memory types = new uint32[](1);
+        AttestationRequest memory request =
+            mockAttestation(module, uint48(block.timestamp + 1), "", types);
+        // It should store.
+        registry.attest(defaultSchemaUID, request);
+        AttestationRecord memory record = registry.readAttestation(module, attester1.addr);
+
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, request.expirationTime);
+        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.attester, attester1.addr);
     }
 
     function test_WhenAttestingWithExpirationTimeInThePast(
@@ -101,21 +123,6 @@ contract AttestationTest is BaseTest {
         // It should revert.
         vm.expectRevert(abi.encodeWithSelector(IRegistry.AttestationNotFound.selector));
         registry.revoke(mockRevocation(module));
-    }
-
-    function test_WhenAttestingWithNoAttestationData() external prankWithAccount(attester1) {
-        uint32[] memory types = new uint32[](1);
-        AttestationRequest memory request =
-            mockAttestation(makeAddr("module"), uint48(block.timestamp + 1), "", types);
-        // It should store.
-        registry.attest(defaultSchemaUID, request);
-        AttestationRecord memory record =
-            registry.readAttestation(makeAddr("module"), attester1.addr);
-
-        assertEq(record.time, block.timestamp);
-        assertEq(record.expirationTime, request.expirationTime);
-        assertEq(record.moduleAddr, request.moduleAddr);
-        assertEq(record.attester, attester1.addr);
     }
 
     function test_WhenAttesting_ShouldCallResolver() external {

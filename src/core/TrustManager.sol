@@ -5,6 +5,7 @@ import { AttestationRecord, PackedModuleTypes, ModuleType } from "../DataTypes.s
 import { ZERO_TIMESTAMP } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
+import { LibSort } from "solady/utils/LibSort.sol";
 
 /**
  * @title TrustManager
@@ -14,6 +15,7 @@ import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
  */
 abstract contract TrustManager is IRegistry {
     using ModuleTypeLib for PackedModuleTypes;
+    using LibSort for address[];
 
     // packed struct to allow for efficient storage.
     // if only one attester is trusted, it only requires 1 SLOAD
@@ -27,9 +29,13 @@ abstract contract TrustManager is IRegistry {
 
     mapping(address account => TrustedAttesters attesters) internal _accountToAttester;
 
-    function trustAttesters(uint8 threshold, address[] calldata attesters) external {
+    // Deliberately using memory here, so we can sort the array
+    function trustAttesters(uint8 threshold, address[] memory attesters) external {
         uint256 attestersLength = attesters.length;
-        if (attestersLength == 0) revert NoTrustedAttestersFound();
+        attesters.sort();
+        attesters.uniquifySorted();
+        if (attestersLength == 0) revert InvalidTrustedAttesterInput();
+        if (attesters.length != attestersLength) revert InvalidTrustedAttesterInput();
         // sort attesters
 
         TrustedAttesters storage _att = _accountToAttester[msg.sender];
@@ -44,13 +50,39 @@ abstract contract TrustManager is IRegistry {
 
         attestersLength--;
         for (uint256 i; i < attestersLength; i++) {
-            _att.linkedAttesters[attesters[i]] = attesters[i + 1];
+            address _attester = attesters[i];
+            if (_attester == address(0)) revert InvalidTrustedAttesterInput();
+            _att.linkedAttesters[_attester] = attesters[i + 1];
         }
     }
 
-    function check(address module) external view { }
+    function getTrustedAttesters() public view returns (address[] memory attesters) {
+        return getTrustedAttesters(msg.sender);
+    }
 
-    function checkForAccount(address smartAccount, address module) external view { }
+    function getTrustedAttesters(address smartAccount)
+        public
+        view
+        returns (address[] memory attesters)
+    {
+        TrustedAttesters storage trustedAttesters = _accountToAttester[smartAccount];
+        uint256 count = trustedAttesters.attesterCount;
+        attesters = new address[](count);
+        attesters[0] = trustedAttesters.attester;
+
+        for (uint256 i = 1; i < count; i++) {
+            // get next attester from linked List
+            attesters[i] = trustedAttesters.linkedAttesters[attesters[i - 1]];
+        }
+    }
+
+    function check(address module) external view {
+        _check(msg.sender, module);
+    }
+
+    function checkForAccount(address smartAccount, address module) external view {
+        _check(smartAccount, module);
+    }
 
     function check(address module, ModuleType moduleType) external view {
         _check(msg.sender, module, moduleType);
@@ -103,6 +135,42 @@ abstract contract TrustManager is IRegistry {
         }
     }
 
+    function _check(address smartAccount, address module) internal view {
+        TrustedAttesters storage trustedAttesters = _accountToAttester[smartAccount];
+        // SLOAD from one slot
+        uint256 attesterCount = trustedAttesters.attesterCount;
+        uint256 threshold = trustedAttesters.threshold;
+        address attester = trustedAttesters.attester;
+
+        // smart account has no trusted attesters set
+        if (attester == address(0) && threshold != 0) {
+            revert NoTrustedAttestersFound();
+        }
+        // smart account only has ONE trusted attester
+        // use this condition to save gas
+        else if (threshold == 1) {
+            AttestationRecord storage record =
+                _getAttestation({ module: module, attester: attester });
+            _requireValidAttestation(record);
+        }
+        // smart account has more than one trusted attester
+        else {
+            // loop though list and check if the attestation is valid
+            AttestationRecord storage record =
+                _getAttestation({ module: module, attester: attester });
+            _requireValidAttestation(record);
+            threshold--;
+            for (uint256 i = 1; i < attesterCount; i++) {
+                // get next attester from linked List
+                attester = trustedAttesters.linkedAttesters[attester];
+                record = _getAttestation({ module: module, attester: attester });
+                _requireValidAttestation(record);
+                // if threshold reached, exit loop
+                if (threshold == 0) return;
+            }
+        }
+    }
+
     function _requireValidAttestation(
         ModuleType expectedType,
         AttestationRecord storage record
@@ -129,6 +197,25 @@ abstract contract TrustManager is IRegistry {
         }
         if (!packedModuleType.isType(expectedType)) {
             revert InvalidModuleType();
+        }
+    }
+
+    function _requireValidAttestation(AttestationRecord storage record) internal view {
+        // cache values
+        uint256 attestedAt = record.time;
+        uint256 expirationTime = record.expirationTime;
+        uint256 revocationTime = record.revocationTime;
+
+        if (attestedAt == ZERO_TIMESTAMP) {
+            revert AttestationNotFound();
+        }
+
+        if (expirationTime != ZERO_TIMESTAMP && block.timestamp > expirationTime) {
+            revert AttestationNotFound();
+        }
+
+        if (revocationTime != ZERO_TIMESTAMP) {
+            revert RevokedAttestation(record.attester);
         }
     }
 

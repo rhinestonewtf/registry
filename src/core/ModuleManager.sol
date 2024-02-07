@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
 import { StubLib } from "../lib/StubLib.sol";
 
-import { InvalidResolver, _isContract, EMPTY_RESOLVER_UID, ZERO_ADDRESS } from "../Common.sol";
+import { _isContract, EMPTY_RESOLVER_UID, ZERO_ADDRESS } from "../Common.sol";
 import { ResolverRecord, ModuleRecord, ResolverUID } from "../DataTypes.sol";
 import { ResolverManager } from "./ResolverManager.sol";
 import { IRegistry } from "../IRegistry.sol";

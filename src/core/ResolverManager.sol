@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import { ResolverRecord, ResolverUID } from "../DataTypes.sol";
-import { ZERO_ADDRESS, AccessDenied } from "../Common.sol";
+import { ZERO_ADDRESS } from "../Common.sol";
 import { IExternalResolver } from "../external/IExternalResolver.sol";
 import { UIDLib } from "../lib/Helpers.sol";
 import { IRegistry } from "../IRegistry.sol";

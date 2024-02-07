@@ -13,13 +13,6 @@ uint256 constant ZERO_TIMESTAMP = 0;
 
 address constant ZERO_ADDRESS = address(0);
 
-error AccessDenied();
-error InvalidSchema();
-error InvalidResolver();
-error InvalidLength();
-error InvalidSignature();
-error NotFound();
-
 /**
  * @dev Returns the current's block timestamp. This method is overridden during tests and used to simulate the
  * current block time.

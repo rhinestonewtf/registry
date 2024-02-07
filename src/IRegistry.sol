@@ -37,6 +37,8 @@ interface IRegistry is IERC7484 {
 
     event NewTrustedAttesters();
 
+    error InvalidResolver(IExternalResolver resolver);
+    error InvalidTrustedAttesterInput();
     error NoTrustedAttestersFound();
     error RevokedAttestation(address attester);
     error InvalidModuleType();
@@ -180,7 +182,6 @@ interface IRegistry is IERC7484 {
     event NewResolver(ResolverUID indexed uid, address resolver);
 
     error ResolverAlreadyExists();
-    error InvalidResolver(IExternalResolver resolver);
 
     function registerResolver(IExternalResolver _resolver) external returns (ResolverUID uid);
 
