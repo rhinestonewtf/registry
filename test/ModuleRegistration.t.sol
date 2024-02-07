@@ -7,7 +7,9 @@ contract ModuleRegistrationTest is BaseTest {
     function test_WhenDeployingViaRegistry() public prankWithAccount(moduleDev1) {
         bytes32 salt = keccak256(abi.encodePacked("ModuleRegistration", address(this)));
 
-        registry.deployModule(salt, defaultResolverUID, address(module1).code, "", "");
+        bytes memory bytecode = type(MockModuleWithArgs).creationCode;
+
+        address moduleAddr = registry.deployModule(salt, defaultResolverUID, bytecode, abi.encode(313_131), "");
     }
 
     function test_WhenRegisteringAModuleOnAnInvalidResolverUID()
