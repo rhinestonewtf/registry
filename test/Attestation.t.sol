@@ -155,7 +155,11 @@ contract AttestationTest is BaseTest {
         _;
     }
 
-    function test_WhenUsingValidECDSA() external whenAttestingWithSignature {
+    modifier whenRevokingWithSignature() {
+        _;
+    }
+
+    function test_WhenUsingValidECDSA() public whenAttestingWithSignature {
         uint256 nonceBefore = registry.attesterNonce(attester1.addr);
         // It should recover.
         uint32[] memory types = new uint32[](1);
@@ -177,7 +181,27 @@ contract AttestationTest is BaseTest {
         assertEq(nonceAfter, nonceBefore + 1);
     }
 
-    function test_WhenUsingValidECDSAMulti() external whenAttestingWithSignature {
+    function test_WhenRevokingWithValidECDSA() public {
+        test_WhenUsingValidECDSA();
+
+        RevocationRequest memory request = mockRevocation(makeAddr("module"));
+        bytes32 digest = registry.getDigest(request, attester1.addr);
+        bytes memory sig = ecdsaSign(attester1.key, digest);
+        registry.revoke(attester1.addr, request, sig);
+    }
+
+    function test_WhenRevokingWithValidECDSAMulti() public {
+        test_WhenUsingValidECDSAMulti();
+
+        RevocationRequest[] memory requests = new RevocationRequest[](2);
+        requests[0] = mockRevocation(makeAddr("module"));
+        requests[1] = mockRevocation(makeAddr("module1"));
+        bytes32 digest = registry.getDigest(requests, attester1.addr);
+        bytes memory sig = ecdsaSign(attester1.key, digest);
+        registry.revoke(attester1.addr, requests, sig);
+    }
+
+    function test_WhenUsingValidECDSAMulti() public whenAttestingWithSignature {
         uint256 nonceBefore = registry.attesterNonce(attester1.addr);
         // It should recover.
         uint32[] memory types = new uint32[](1);

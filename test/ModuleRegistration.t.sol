@@ -4,6 +4,12 @@ pragma solidity ^0.8.0;
 import "./Base.t.sol";
 
 contract ModuleRegistrationTest is BaseTest {
+    function test_WhenDeployingViaRegistry() public prankWithAccount(moduleDev1) {
+        bytes32 salt = keccak256(abi.encodePacked("ModuleRegistration", address(this)));
+
+        registry.deployModule(salt, defaultResolverUID, address(module1).code, "", "");
+    }
+
     function test_WhenRegisteringAModuleOnAnInvalidResolverUID()
         external
         prankWithAccount(moduleDev1)
