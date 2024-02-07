@@ -21,7 +21,7 @@ import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 import { EMPTY_ATTESTATION_REF, EMPTY_RESOLVER_UID, _time, ZERO_TIMESTAMP } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 
-abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, SchemaManager {
+abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager, TrustManager {
     using StubLib for *;
     using AttestationLib for *; // TODO: specify what
     using ModuleTypeLib for ModuleType[];
