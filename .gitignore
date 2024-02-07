@@ -8,7 +8,8 @@ out/
 /broadcast/*/31337/
 /broadcast/**/dry-run/
 
-
 # Dotenv file
 .env
 .t
+
+node_modules
