@@ -34,7 +34,7 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
     function _revoke(address attester, RevocationRequest calldata request) internal {
         (AttestationRecord memory record, ResolverUID resolverUID) =
             _storeRevocation(attester, request);
-        record.requireExternalResolverCheck({ resolver: resolvers[resolverUID] });
+        record.requireExternalResolverOnRevocation({ resolver: resolvers[resolverUID] });
     }
 
     function _revoke(address attester, RevocationRequest[] calldata requests) internal {
@@ -51,7 +51,7 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
         // No schema validation required during revocation. the attestation data was already checked against
 
         // TODO: what if this fails? it would stop attesters from revoking. Is this wanted behavior?
-        records.requireExternalResolverCheck({ resolver: resolvers[resolverUID] });
+        records.requireExternalResolverOnRevocation({ resolver: resolvers[resolverUID] });
     }
 
     function _attest(
@@ -65,7 +65,7 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
             _storeAttestation({ schemaUID: schemaUID, attester: attester, request: request });
 
         record.requireExternalSchemaValidation({ schema: schemas[schemaUID] });
-        record.requireExternalResolverCheck({ resolver: resolvers[resolverUID] });
+        record.requireExternalResolverOnAttestation({ resolver: resolvers[resolverUID] });
     }
 
     function _attest(
@@ -93,7 +93,7 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
         }
 
         records.requireExternalSchemaValidation({ schema: schemas[schemaUID] });
-        records.requireExternalResolverCheck({ resolver: resolvers[resolverUID] });
+        records.requireExternalResolverOnAttestation({ resolver: resolvers[resolverUID] });
     }
 
     function _storeAttestation(
@@ -165,16 +165,14 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
             revert AlreadyRevoked();
         }
 
+        resolverUID = _modules[attestation.moduleAddr].resolverUID;
+        attestationStorage.revocationTime = _time();
         // set revocation time to NOW
         emit Revoked({
             moduleAddr: attestation.moduleAddr,
             revoker: revoker,
             schema: attestation.schemaUID
         });
-        // resolverUID =
-
-        resolverUID = _modules[attestation.moduleAddr].resolverUID;
-        attestationStorage.revocationTime = _time();
     }
 
     function _getAttestation(

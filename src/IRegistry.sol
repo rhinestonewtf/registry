@@ -162,6 +162,8 @@ interface IRegistry is IERC7484 {
 
     error SchemaAlreadyExists(SchemaUID uid);
 
+    error InvalidSchema();
+
     function registerSchema(
         string calldata schema,
         IExternalSchemaValidator validator // OPTIONAL
@@ -182,19 +184,12 @@ interface IRegistry is IERC7484 {
 
     function setResolver(ResolverUID uid, IExternalResolver resolver) external;
 
-    // error InvalidDeployment();
-    // // EVENTS
-    // error AlreadyExists();
-    // error InvalidSignature();
-    // error InvalidResolver();
-    /**
-     * @dev Emitted when a new schema has been registered
-     *
-     * @param uid The schema UID.
-     * @param registerer The address of the account used to register the schema.
-     */
-    // error DifferentResolvers();
-    // error NotFound();
-    // error InvalidAttestation();
-    // error InvalidExpirationTime();
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                       Stub Errors                          */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    error ExternalError_SchemaValidation();
+    error ExternalError_ResolveAtteststation();
+    error ExternalError_ResolveRevocation();
+    error ExternalError_ModuleRegistration();
 }

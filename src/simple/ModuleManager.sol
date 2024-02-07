@@ -62,7 +62,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             resolverUID: resolverUID,
             metadata: metadata
         });
-        record.requireExternalResolverCheck(resolver);
+        record.requireExternalResolverOnModuleRegistration(resolver);
     }
 
     function register(
@@ -81,7 +81,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             resolverUID: resolverUID,
             metadata: metadata
         });
-        record.requireExternalResolverCheck(resolver);
+        record.requireExternalResolverOnModuleRegistration(resolver);
     }
 
     function _storeModuleRecord(
