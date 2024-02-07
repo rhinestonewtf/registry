@@ -18,7 +18,13 @@ import { StubLib } from "../lib/StubLib.sol";
 import { AttestationLib } from "../lib/AttestationLib.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 
-import { EMPTY_RESOLVER_UID, ZERO_ADDRESS, ZERO_TIMESTAMP, _time } from "../Common.sol";
+import {
+    EMPTY_ATTESTATION_REF,
+    EMPTY_RESOLVER_UID,
+    ZERO_ADDRESS,
+    ZERO_TIMESTAMP,
+    _time
+} from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, SchemaManager {
@@ -52,6 +58,14 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
         records.requireExternalResolverOnRevocation({ resolver: resolvers[resolverUID] });
     }
 
+    /**
+     * Processes an attestation request and stores the attestation in the registry.
+     * If the attestation was made for a module that was not registered, the function will revert.
+     * function will get the external Schema Validator for the supplied SchemaUID
+     *         and call it, if an external IExternalSchemaValidator was set
+     * function will get the external IExternalResolver for the module - that the attestation is for
+     *        and call it, if an external Resolver was set
+     */
     function _attest(
         address attester,
         SchemaUID schemaUID,
@@ -76,7 +90,6 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
         uint256 length = requests.length;
         AttestationRecord[] memory records = new AttestationRecord[](length);
         // loop will check that the batched attestation is made ONLY for the same resolver
-        // @dev if you want to use different resolvers, make different attestation calls
         ResolverUID resolverUID;
         for (uint256 i; i < length; i++) {
             ResolverUID resolverUID_cache;
@@ -86,6 +99,8 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
                 request: requests[i]
             });
             // cache the first resolverUID and compare it to the rest
+            // If the resolverUID is different, revert
+            // @dev if you want to use different resolvers, make different attestation calls
             if (i == 0) resolverUID = resolverUID_cache;
             else if (resolverUID_cache != resolverUID) revert DifferentResolvers();
         }
@@ -94,6 +109,9 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
         records.requireExternalResolverOnAttestation({ resolver: resolvers[resolverUID] });
     }
 
+    /**
+     * Stores an attestation in the registry.
+     */
     function _storeAttestation(
         SchemaUID schemaUID,
         address attester,
@@ -145,11 +163,13 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
     {
         AttestationRecord storage attestationStorage =
             _moduleToAttesterToAttestations[request.moduleAddr][revoker];
-        // SSLOAD entire record. This will later be passed to the resolver
+
+        // SLOAD entire record. This will later be passed to the resolver
         attestation = attestationStorage;
+        resolverUID = _modules[request.moduleAddr].resolverUID;
 
         // Ensure that we aren't attempting to revoke a non-existing attestation.
-        if (AttestationDataRef.unwrap(attestation.dataPointer) == ZERO_ADDRESS) {
+        if (attestation.dataPointer == EMPTY_ATTESTATION_REF) {
             revert AttestationNotFound();
         }
 
@@ -163,7 +183,7 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
             revert AlreadyRevoked();
         }
 
-        resolverUID = _modules[attestation.moduleAddr].resolverUID;
+        // SSTORE revocation time to registry storage
         attestationStorage.revocationTime = _time();
         // set revocation time to NOW
         emit Revoked({

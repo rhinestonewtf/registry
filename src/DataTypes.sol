@@ -93,6 +93,18 @@ function resolverNotEq(ResolverUID uid1, ResolverUID uid2) pure returns (bool) {
 
 type AttestationDataRef is address;
 
+using { attestationDataRefEq as == } for AttestationDataRef global;
+
+function attestationDataRefEq(
+    AttestationDataRef uid1,
+    AttestationDataRef uid2
+)
+    pure
+    returns (bool)
+{
+    return AttestationDataRef.unwrap(uid1) == AttestationDataRef.unwrap(uid2);
+}
+
 type PackedModuleTypes is uint32;
 
 type ModuleType is uint32;
