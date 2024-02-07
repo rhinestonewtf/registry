@@ -177,6 +177,30 @@ contract AttestationTest is BaseTest {
         assertEq(nonceAfter, nonceBefore + 1);
     }
 
+    function test_WhenUsingValidECDSAMulti() external whenAttestingWithSignature {
+        uint256 nonceBefore = registry.attesterNonce(attester1.addr);
+        // It should recover.
+        uint32[] memory types = new uint32[](1);
+
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(makeAddr("module"), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(makeAddr("module1"), uint48(block.timestamp + 100), "", types);
+
+        bytes32 digest = registry.getDigest(requests, attester1.addr);
+        bytes memory sig = ecdsaSign(attester1.key, digest);
+        registry.attest(defaultSchemaUID, attester1.addr, requests, sig);
+
+        AttestationRecord memory record =
+            registry.readAttestation(makeAddr("module"), attester1.addr);
+        uint256 nonceAfter = registry.attesterNonce(attester1.addr);
+
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, requests[0].expirationTime);
+        assertEq(record.moduleAddr, requests[0].moduleAddr);
+        assertEq(record.attester, attester1.addr);
+        assertEq(nonceAfter, nonceBefore + 1);
+    }
+
     function test_WhenUsingInvalidECDSA() external whenAttestingWithSignature {
         uint32[] memory types = new uint32[](1);
         AttestationRequest memory request =
@@ -188,6 +212,20 @@ contract AttestationTest is BaseTest {
         // It should revert.
         vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidSignature.selector));
         registry.attest(defaultSchemaUID, attester1.addr, request, sig);
+    }
+
+    function test_WhenUsingInvalidECDSAMulti() external whenAttestingWithSignature {
+        uint32[] memory types = new uint32[](1);
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(makeAddr("module"), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(makeAddr("module1"), uint48(block.timestamp + 100), "", types);
+
+        bytes32 digest = registry.getDigest(requests, attester1.addr);
+        bytes memory sig = ecdsaSign(attester1.key, digest);
+        sig = abi.encodePacked(sig, "foo");
+        // It should revert.
+        vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidSignature.selector));
+        registry.attest(defaultSchemaUID, attester1.addr, requests, sig);
     }
 
     function test_WhenUsingValidERC1271() external whenAttestingWithSignature {
@@ -205,6 +243,37 @@ contract AttestationTest is BaseTest {
         assertEq(record.expirationTime, request.expirationTime);
         assertEq(record.moduleAddr, request.moduleAddr);
         assertEq(record.attester, address(erc1271AttesterTrue));
+    }
+
+    function test_WhenUsingValidERC1271Multi() external whenAttestingWithSignature {
+        uint32[] memory types = new uint32[](1);
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(makeAddr("module"), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(makeAddr("module1"), uint48(block.timestamp + 100), "", types);
+
+        bytes memory sig = "signature";
+        registry.attest(defaultSchemaUID, address(erc1271AttesterTrue), requests, sig);
+
+        AttestationRecord memory record =
+            registry.readAttestation(makeAddr("module"), address(erc1271AttesterTrue));
+
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, requests[0].expirationTime);
+        assertEq(record.moduleAddr, requests[0].moduleAddr);
+        assertEq(record.attester, address(erc1271AttesterTrue));
+    }
+
+    function test_WhenUsingInvalidERC1271Multi() external whenAttestingWithSignature {
+        // It should revert.
+        uint32[] memory types = new uint32[](1);
+
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(makeAddr("module"), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(makeAddr("module1"), uint48(block.timestamp + 100), "", types);
+
+        bytes memory sig = "signature";
+        vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidSignature.selector));
+        registry.attest(defaultSchemaUID, address(erc1271AttesterFalse), requests, sig);
     }
 
     function test_WhenUsingInvalidERC1271() external whenAttestingWithSignature {

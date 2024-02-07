@@ -100,4 +100,15 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
     {
         return _hashTypedData(request.hash(attesterNonce[attester] + 1));
     }
+
+    function getDigest(
+        AttestationRequest[] calldata requests,
+        address attester
+    )
+        external
+        view
+        returns (bytes32)
+    {
+        return _hashTypedData(requests.hash(attesterNonce[attester] + 1));
+    }
 }
