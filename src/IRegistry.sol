@@ -14,16 +14,7 @@ import {
 import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.sol";
 import { IExternalResolver } from "./external/IExternalResolver.sol";
 
-interface IRegistry {
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                       Common Errors                         */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                      Query Registry                        */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    function setAttester(uint8 threshold, address[] calldata attesters) external;
-
+interface IERC7484 {
     function check(address module) external view;
 
     function checkForAccount(address smartAccount, address module) external view;
@@ -37,9 +28,41 @@ interface IRegistry {
     )
         external
         view;
+}
+
+interface IRegistry is IERC7484 {
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*             Smart Account - Trust Management               */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    event NewTrustedAttesters();
+
+    error NoTrustedAttestersFound();
+    error RevokedAttestation(address attester);
+    error InvalidModuleType();
+    error AttestationNotFound();
+
+    function trustAttesters(uint8 threshold, address[] calldata attesters) external;
+
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                       Attestations                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    event Revoked(address indexed moduleAddr, address indexed revoker, SchemaUID schema);
+    event Attested(
+        address indexed moduleAddr,
+        address indexed attester,
+        SchemaUID schemaUID,
+        AttestationDataRef sstore2Pointer
+    );
+
+    error AlreadyRevoked();
+    error AccessDenied();
+    error InvalidAttestation();
+    error InvalidExpirationTime();
+    error DifferentResolvers();
+    error InvalidSignature();
+
     function attest(SchemaUID schemaUID, AttestationRequest calldata request) external;
 
     function attest(SchemaUID schemaUID, AttestationRequest[] calldata requests) external;
@@ -101,6 +124,17 @@ interface IRegistry {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                    Module Registration                     */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+    // Event triggered when a module is deployed.
+    event ModuleRegistration(
+        address indexed implementation, address indexed sender, bytes32 resolver
+    );
+    event ModuleDeployed(address indexed implementation, bytes32 indexed salt, bytes32 resolver);
+    event ModuleDeployedExternalFactory(
+        address indexed implementation, address indexed factory, bytes32 resolver
+    );
+
+    error AlreadyRegistered(address module);
+    error InvalidDeployment();
 
     function deploy(
         bytes32 salt,
@@ -123,6 +157,11 @@ interface IRegistry {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                      Manage Schemas                        */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    event SchemaRegistered(SchemaUID indexed uid, address registerer);
+
+    error SchemaAlreadyExists(SchemaUID uid);
+
     function registerSchema(
         string calldata schema,
         IExternalSchemaValidator validator // OPTIONAL
@@ -134,58 +173,28 @@ interface IRegistry {
     /*                     Manage Resolvers                       */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
+    event NewResolver(ResolverUID indexed uid, address resolver);
+
+    error ResolverAlreadyExists();
+    error InvalidResolver();
+
     function registerResolver(IExternalResolver _resolver) external returns (ResolverUID uid);
 
     function setResolver(ResolverUID uid, IExternalResolver resolver) external;
 
-    // Event triggered when a module is deployed.
-    event ModuleRegistration(
-        address indexed implementation, address indexed sender, bytes32 resolver
-    );
-    event ModuleDeployed(address indexed implementation, bytes32 indexed salt, bytes32 resolver);
-    event ModuleDeployedExternalFactory(
-        address indexed implementation, address indexed factory, bytes32 resolver
-    );
-
-    error AlreadyRegistered(address module);
-    error InvalidDeployment();
-    // EVENTS
-    error AlreadyExists();
-    error InvalidSignature();
-    error InvalidResolver();
-    error InvalidModuleType();
+    // error InvalidDeployment();
+    // // EVENTS
+    // error AlreadyExists();
+    // error InvalidSignature();
+    // error InvalidResolver();
     /**
      * @dev Emitted when a new schema has been registered
      *
      * @param uid The schema UID.
      * @param registerer The address of the account used to register the schema.
      */
-
-    event SchemaRegistered(SchemaUID indexed uid, address registerer);
-
-    event SchemaResolverRegistered(ResolverUID indexed uid, address registerer);
-
-    /**
-     * @dev Emitted when a new schema resolver
-     *
-     * @param uid The schema UID.
-     * @param resolver The address of the resolver.
-     */
-    event NewSchemaResolver(ResolverUID indexed uid, address resolver);
-
-    error DifferentResolvers();
-    error AlreadyRevoked();
-    error AccessDenied();
-    error NotFound();
-    error InvalidAttestation();
-    error InvalidExpirationTime();
-
-    event Revoked(address moduleAddr, address revoker, SchemaUID schema);
-    event Attested(
-        address moduleAddr, address attester, SchemaUID schemaUID, AttestationDataRef sstore2Pointer
-    );
-
-    error RevokedAttestation(address attester);
-    error AttestationNotFound();
-    error NoAttestersFound();
+    // error DifferentResolvers();
+    // error NotFound();
+    // error InvalidAttestation();
+    // error InvalidExpirationTime();
 }

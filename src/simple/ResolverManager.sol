@@ -36,18 +36,24 @@ abstract contract ResolverManager is IRegistry {
 
         // Checking if a schema with this UID already exists -> resolver can never be ZERO_ADDRESS
         if (address(resolvers[uid].resolver) != ZERO_ADDRESS) {
-            revert AlreadyExists();
+            revert ResolverAlreadyExists();
         }
 
         // Storing schema in the _schemas mapping
         resolvers[uid] = resolver;
 
-        emit SchemaResolverRegistered(uid, msg.sender);
+        emit NewResolver(uid, address(_resolver));
     }
 
-    function setResolver(ResolverUID uid, IExternalResolver resolver) external onlyResolverOwner(uid) {
+    function setResolver(
+        ResolverUID uid,
+        IExternalResolver resolver
+    )
+        external
+        onlyResolverOwner(uid)
+    {
         ResolverRecord storage referrer = resolvers[uid];
         referrer.resolver = resolver;
-        emit NewSchemaResolver(uid, address(resolver));
+        emit NewResolver(uid, address(resolver));
     }
 }

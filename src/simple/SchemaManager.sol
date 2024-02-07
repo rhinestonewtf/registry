@@ -28,7 +28,7 @@ abstract contract SchemaManager is IRegistry {
         // Computing a unique ID for the schema using its properties
         uid = schemaRecord.getUID();
 
-        if (schemas[uid].registeredAt != ZERO_TIMESTAMP) revert AlreadyExists();
+        if (schemas[uid].registeredAt != ZERO_TIMESTAMP) revert SchemaAlreadyExists(uid);
 
         // Storing schema in the _schemas mapping
         schemas[uid] = schemaRecord;

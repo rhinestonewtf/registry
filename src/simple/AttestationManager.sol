@@ -152,7 +152,7 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
 
         // Ensure that we aren't attempting to revoke a non-existing attestation.
         if (AttestationDataRef.unwrap(attestation.dataPointer) == ZERO_ADDRESS) {
-            revert NotFound();
+            revert AttestationNotFound();
         }
 
         // Allow only original attesters to revoke their attestations.

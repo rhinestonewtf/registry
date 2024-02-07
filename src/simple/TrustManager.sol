@@ -15,7 +15,6 @@ import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 abstract contract TrustManager is IRegistry {
     using ModuleTypeLib for PackedModuleTypes;
 
-    event NewAttesters();
     // packed struct to allow for efficient storage.
     // if only one attester is trusted, it only requires 1 SLOAD
 
@@ -28,9 +27,9 @@ abstract contract TrustManager is IRegistry {
 
     mapping(address account => TrustedAttesters attesters) internal _accountToAttester;
 
-    function setAttester(uint8 threshold, address[] calldata attesters) external {
+    function trustAttesters(uint8 threshold, address[] calldata attesters) external {
         uint256 attestersLength = attesters.length;
-        if (attestersLength == 0) revert();
+        if (attestersLength == 0) revert NoTrustedAttestersFound();
         // sort attesters
 
         TrustedAttesters storage _att = _accountToAttester[msg.sender];
@@ -77,7 +76,7 @@ abstract contract TrustManager is IRegistry {
 
         // smart account has no trusted attesters set
         if (attester == address(0) && threshold != 0) {
-            revert NoAttestersFound();
+            revert NoTrustedAttestersFound();
         }
         // smart account only has ONE trusted attester
         // use this condition to save gas
