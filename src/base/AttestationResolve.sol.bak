@@ -9,7 +9,7 @@ import { EIP712Verifier } from "./EIP712Verifier.sol";
 
 import { ZERO_ADDRESS } from "../Common.sol";
 import { AttestationRecord, SchemaRecord, ModuleRecord, ResolverRecord } from "../DataTypes.sol";
-import { IResolver } from "../external/IResolver.sol";
+import { IExternalResolver } from "../external/IExternalResolver.sol";
 
 /**
  * @title AttestationResolve
@@ -43,7 +43,7 @@ abstract contract AttestationResolve is IAttestation, EIP712Verifier {
         returns (uint256)
     {
         ResolverRecord memory resolver = getResolver(resolverUID);
-        IResolver resolverContract = resolver.resolver;
+        IExternalResolver resolverContract = resolver.resolver;
 
         if (address(resolverContract) == ZERO_ADDRESS) {
             // Ensure that we don't accept payments if there is no resolver.
@@ -67,12 +67,12 @@ abstract contract AttestationResolve is IAttestation, EIP712Verifier {
             availableValue -= value;
         }
 
-        // Resolve a revocation with external IResolver
+        // Resolve a revocation with external IExternalResolver
         if (isRevocation) {
             if (!resolverContract.revoke{ value: value }(attestationRecord)) {
                 revert InvalidRevocation();
             }
-            // Resolve an attestation with external IResolver
+            // Resolve an attestation with external IExternalResolver
         } else if (!resolverContract.attest{ value: value }(attestationRecord)) {
             revert InvalidAttestation();
         }
@@ -120,7 +120,7 @@ abstract contract AttestationResolve is IAttestation, EIP712Verifier {
             });
         }
         ResolverRecord memory resolver = getResolver({ resolverUID: resolverUID });
-        IResolver resolverContract = resolver.resolver;
+        IExternalResolver resolverContract = resolver.resolver;
         if (address(resolverContract) == ZERO_ADDRESS) {
             // Ensure that we don't accept payments if there is no resolver.
             for (uint256 i; i < length; ++i) {
@@ -150,13 +150,13 @@ abstract contract AttestationResolve is IAttestation, EIP712Verifier {
             }
         }
 
-        // Resolve a revocation with external IResolver
+        // Resolve a revocation with external IExternalResolver
         if (isRevocation) {
             if (!resolverContract.multiRevoke{ value: totalUsedValue }(attestationRecords, values))
             {
                 revert InvalidRevocations();
             }
-            // Resolve an attestation with external IResolver
+            // Resolve an attestation with external IExternalResolver
         } else if (
             !resolverContract.multiAttest{ value: totalUsedValue }(attestationRecords, values)
         ) {

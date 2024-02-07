@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import { SchemaRecord, ResolverRecord, SchemaUID, ResolverUID } from "../DataTypes.sol";
-import { ISchemaValidator } from "../external/ISchemaValidator.sol";
+import { IExternalSchemaValidator } from "../external/IExternalSchemaValidator.sol";
 import { UIDLib } from "../lib/Helpers.sol";
 
 import { ZERO_TIMESTAMP, _time } from "../Common.sol";
@@ -16,7 +16,7 @@ abstract contract SchemaManager is IRegistry {
 
     function registerSchema(
         string calldata schema,
-        ISchemaValidator validator // OPTIONAL
+        IExternalSchemaValidator validator // OPTIONAL
     )
         external
         returns (SchemaUID uid)

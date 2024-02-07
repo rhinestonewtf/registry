@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { ISchemaValidator, AttestationRequest } from "./ISchemaValidator.sol";
+import { IExternalSchemaValidator, AttestationRequest } from "./IExternalSchemaValidator.sol";
 
 /**
  * @title SchemaValidatorBase
  * @notice Base contract for schema validators
  */
-contract SchemaValidatorBase is ISchemaValidator {
+contract SchemaValidatorBase is IExternalSchemaValidator {
     function validateSchema(AttestationRequest calldata attestation)
         external
         view

@@ -11,7 +11,7 @@ import {
     MultiRevocationRequest,
     AttestationLib
 } from "../interface/IAttestation.sol";
-import { SchemaUID, ResolverUID, SchemaRecord, ISchemaValidator } from "./Schema.sol";
+import { SchemaUID, ResolverUID, SchemaRecord, IExternalSchemaValidator } from "./Schema.sol";
 import { ModuleRecord } from "./Module.sol";
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
 import {
@@ -154,10 +154,10 @@ contract Attestation {
         SchemaRecord storage schema = _getSchema({ schemaUID: schemaUID });
         if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
         // validate Schema
-        ISchemaValidator validator = schema.validator;
+        IExternalSchemaValidator validator = schema.validator;
         // if validator is set, call the validator
         if (address(validator) != ZERO_ADDRESS && validator.validateSchema(record) == false) {
-            // revert if ISchemaValidator returns false
+            // revert if IExternalSchemaValidator returns false
             revert InvalidAttestation();
         }
     }
@@ -173,10 +173,10 @@ contract Attestation {
         SchemaRecord storage schema = _getSchema({ schemaUID: schemaUID });
         if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
         // validate Schema
-        ISchemaValidator validator = schema.validator;
+        IExternalSchemaValidator validator = schema.validator;
         // if validator is set, call the validator
         if (address(validator) != ZERO_ADDRESS && validator.validateSchema(records) == false) {
-            // revert if ISchemaValidator returns false
+            // revert if IExternalSchemaValidator returns false
             revert InvalidAttestation();
         }
     }

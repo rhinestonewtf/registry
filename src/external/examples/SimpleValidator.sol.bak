@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { ISchemaValidator } from "../ISchemaValidator.sol";
+import { IExternalSchemaValidator } from "../IExternalSchemaValidator.sol";
 import { AttestationRequest } from "../../DataTypes.sol";
 
 /**
@@ -9,7 +9,7 @@ import { AttestationRequest } from "../../DataTypes.sol";
  * @author zeroknots
  * @notice A simple validator that always returns true.
  */
-contract SimpleValidator is ISchemaValidator {
+contract SimpleValidator is IExternalSchemaValidator {
     function validateSchema(AttestationRequest calldata attestation)
         external
         pure

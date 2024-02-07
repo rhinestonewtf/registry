@@ -10,7 +10,7 @@ import { IERC165 } from "forge-std/interfaces/IERC165.sol";
  * @dev The resolver is also responsible for processing the attestation and revocation requests.
  *
  */
-interface IResolver is IERC165 {
+interface IExternalResolver is IERC165 {
     /**
      * @dev Returns whether the resolver supports ETH transfers.
      */

@@ -42,9 +42,9 @@ struct AttestationRecord {
 
 Attestation data can be validated with an external contract than may to `abi.decode()` and validate all or specific fields.
 
-### Interaction with the IResolver
+### Interaction with the IExternalResolver
 
-Upon an Attestation's revocation, the Registry calls hooks on the associated IResolver, allowing the IResolver to update its internal state or
+Upon an Attestation's revocation, the Registry calls hooks on the associated IExternalResolver, allowing the IExternalResolver to update its internal state or
 perform other necessary actions. This allows for extended business logic integrations.
 
 ### The Revocation Process

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { IResolver } from "../external/IResolver.sol";
-import { ISchemaValidator } from "../external/ISchemaValidator.sol";
+import { IExternalResolver } from "../external/IExternalResolver.sol";
+import { IExternalSchemaValidator } from "../external/IExternalSchemaValidator.sol";
 import { SchemaUID, SchemaRecord, ResolverUID, ResolverRecord } from "../DataTypes.sol";
 
 /**
@@ -43,7 +43,7 @@ interface ISchema {
      */
     function registerSchema(
         string calldata schema,
-        ISchemaValidator validator
+        IExternalSchemaValidator validator
     )
         external
         returns (SchemaUID);
@@ -53,11 +53,11 @@ interface ISchema {
      * @dev This function allows the registration of a resolver by computing a unique ID and associating it with the owner.
      *      Emits a SchemaResolverRegistered event upon successful registration.
      *
-     * @param _resolver Address of the IResolver to be registered.
+     * @param _resolver Address of the IExternalResolver to be registered.
      *
      * @return uid The unique ID (ResolverUID) associated with the registered resolver.
      */
-    function registerResolver(IResolver _resolver) external returns (ResolverUID);
+    function registerResolver(IExternalResolver _resolver) external returns (ResolverUID);
 
     /**
      * @notice Updates the resolver for a given UID.
@@ -67,7 +67,7 @@ interface ISchema {
      * @param uid The UID of the schema to update.
      * @param resolver The new resolver interface.
      */
-    function setResolver(ResolverUID uid, IResolver resolver) external;
+    function setResolver(ResolverUID uid, IExternalResolver resolver) external;
 
     /**
      * @notice Retrieves the schema record for a given UID.

@@ -11,8 +11,8 @@ import {
     ModuleType
 } from "./DataTypes.sol";
 
-import { ISchemaValidator } from "./external/ISchemaValidator.sol";
-import { IResolver } from "./external/IResolver.sol";
+import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.sol";
+import { IExternalResolver } from "./external/IExternalResolver.sol";
 
 interface IRegistry {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -125,7 +125,7 @@ interface IRegistry {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     function registerSchema(
         string calldata schema,
-        ISchemaValidator validator // OPTIONAL
+        IExternalSchemaValidator validator // OPTIONAL
     )
         external
         returns (SchemaUID uid);
@@ -134,9 +134,9 @@ interface IRegistry {
     /*                     Manage Resolvers                       */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    function registerResolver(IResolver _resolver) external returns (ResolverUID uid);
+    function registerResolver(IExternalResolver _resolver) external returns (ResolverUID uid);
 
-    function setResolver(ResolverUID uid, IResolver resolver) external;
+    function setResolver(ResolverUID uid, IExternalResolver resolver) external;
 
     // Event triggered when a module is deployed.
     event ModuleRegistration(

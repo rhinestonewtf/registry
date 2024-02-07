@@ -3,14 +3,14 @@ pragma solidity ^0.8.19;
 
 import { AccessDenied, ZERO_ADDRESS } from "../Common.sol";
 import { AttestationRecord, ModuleRecord } from "../DataTypes.sol";
-import { IResolver } from "./IResolver.sol";
+import { IExternalResolver } from "./IExternalResolver.sol";
 
 /**
  * @title A base resolver contract
  *
  * @author zeroknots.eth
  */
-abstract contract ResolverBase is IResolver {
+abstract contract ResolverBase is IExternalResolver {
     error InsufficientValue();
     error NotPayable();
     error InvalidRS();
@@ -42,7 +42,7 @@ abstract contract ResolverBase is IResolver {
     }
 
     /**
-     * @inheritdoc IResolver
+     * @inheritdoc IExternalResolver
      */
     function isPayable() public pure virtual returns (bool) {
         return false;
@@ -58,7 +58,7 @@ abstract contract ResolverBase is IResolver {
     }
 
     /**
-     * @inheritdoc IResolver
+     * @inheritdoc IExternalResolver
      */
     function attest(AttestationRecord calldata attestation)
         external
@@ -70,7 +70,7 @@ abstract contract ResolverBase is IResolver {
     }
 
     /**
-     * @inheritdoc IResolver
+     * @inheritdoc IExternalResolver
      */
     function moduleRegistration(ModuleRecord calldata module)
         external
@@ -82,7 +82,7 @@ abstract contract ResolverBase is IResolver {
     }
 
     /**
-     * @inheritdoc IResolver
+     * @inheritdoc IExternalResolver
      */
     function multiAttest(
         AttestationRecord[] calldata attestations,
@@ -123,7 +123,7 @@ abstract contract ResolverBase is IResolver {
     }
 
     /**
-     * @inheritdoc IResolver
+     * @inheritdoc IExternalResolver
      */
     function revoke(AttestationRecord calldata attestation)
         external
@@ -135,7 +135,7 @@ abstract contract ResolverBase is IResolver {
     }
 
     /**
-     * @inheritdoc IResolver
+     * @inheritdoc IExternalResolver
      */
     function multiRevoke(
         AttestationRecord[] calldata attestations,

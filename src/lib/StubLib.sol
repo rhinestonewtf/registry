@@ -2,8 +2,8 @@
 pragma solidity ^0.8.19;
 
 import { AttestationRecord, ResolverRecord, SchemaRecord, ModuleRecord } from "../DataTypes.sol";
-import { ISchemaValidator } from "../external/ISchemaValidator.sol";
-import { IResolver } from "../external/IResolver.sol";
+import { IExternalSchemaValidator } from "../external/IExternalSchemaValidator.sol";
+import { IExternalResolver } from "../external/IExternalResolver.sol";
 import { ZERO_ADDRESS, ZERO_TIMESTAMP } from "../Common.sol";
 
 // TODO: fix errors
@@ -21,13 +21,13 @@ library StubLib {
         // only run this function if the selected schemaUID exists
         if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
         // validate Schema
-        ISchemaValidator validator = schema.validator;
+        IExternalSchemaValidator validator = schema.validator;
         // if validator is set, call the validator
         if (
             address(validator) != ZERO_ADDRESS
                 && validator.validateSchema(attestationRecord) == false
         ) {
-            // revert if ISchemaValidator returns false
+            // revert if IExternalSchemaValidator returns false
             revert();
             // if (!success) { // If call reverts
             //   // If there is return data, the call reverted without a reason or a custom error.
@@ -49,7 +49,7 @@ library StubLib {
         // only run this function if the selected schemaUID exists
         if (schema.registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
         // validate Schema
-        ISchemaValidator validator = schema.validator;
+        IExternalSchemaValidator validator = schema.validator;
         // if validator is set, call the validator
         if (
             address(validator) != ZERO_ADDRESS
@@ -65,7 +65,7 @@ library StubLib {
     )
         internal
     {
-        IResolver resolverContract = resolver.resolver;
+        IExternalResolver resolverContract = resolver.resolver;
 
         if (address(resolverContract) != ZERO_ADDRESS) return;
         if (resolverContract.resolveAttestation(attestationRecord) == false) {
@@ -79,7 +79,7 @@ library StubLib {
     )
         internal
     {
-        IResolver resolverContract = resolver.resolver;
+        IExternalResolver resolverContract = resolver.resolver;
 
         if (address(resolverContract) != ZERO_ADDRESS) return;
 
@@ -94,7 +94,7 @@ library StubLib {
     )
         internal
     {
-        IResolver resolverContract = resolver.resolver;
+        IExternalResolver resolverContract = resolver.resolver;
 
         if (address(resolverContract) != ZERO_ADDRESS) return;
 

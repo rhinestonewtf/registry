@@ -7,7 +7,7 @@ import { IERC165 } from "forge-std/interfaces/IERC165.sol";
 /**
  * @title The interface of an optional schema resolver.
  */
-interface ISchemaValidator is IERC165 {
+interface IExternalSchemaValidator is IERC165 {
     /**
      * @notice Validates an attestation request.
      */

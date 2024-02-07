@@ -5,7 +5,7 @@ import { CREATE3 } from "solady/utils/CREATE3.sol";
 
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
 import { StubLib } from "../lib/StubLib.sol";
-import { IResolver } from "../external/IResolver.sol";
+import { IExternalResolver } from "../external/IExternalResolver.sol";
 
 import { InvalidResolver, _isContract, EMPTY_RESOLVER_UID, ZERO_ADDRESS } from "../Common.sol";
 import { ResolverRecord, ModuleRecord, ResolverUID } from "../DataTypes.sol";

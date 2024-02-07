@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { ISchemaValidator } from "./external/ISchemaValidator.sol";
-import { IResolver } from "./external/IResolver.sol";
+import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.sol";
+import { IExternalResolver } from "./external/IExternalResolver.sol";
 import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 
 /*//////////////////////////////////////////////////////////////
@@ -30,12 +30,12 @@ struct ModuleRecord {
 
 struct SchemaRecord {
     uint48 registeredAt; // The time when the schema was registered (Unix timestamp).
-    ISchemaValidator validator; // Optional external schema validator.
+    IExternalSchemaValidator validator; // Optional external schema validator.
     string schema; // Custom specification of the schema (e.g., an ABI).
 }
 
 struct ResolverRecord {
-    IResolver resolver; // Optional resolver.
+    IExternalResolver resolver; // Optional resolver.
     address resolverOwner; // The address of the account used to register the resolver.
 }
 

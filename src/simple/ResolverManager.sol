@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import { ResolverRecord, SchemaUID, ResolverUID } from "../DataTypes.sol";
 import { ZERO_ADDRESS, AccessDenied } from "../Common.sol";
-import { IResolver } from "../external/IResolver.sol";
+import { IExternalResolver } from "../external/IExternalResolver.sol";
 import { UIDLib } from "../lib/Helpers.sol";
 import { IRegistry } from "../IRegistry.sol";
 
@@ -24,7 +24,7 @@ abstract contract ResolverManager is IRegistry {
         _;
     }
 
-    function registerResolver(IResolver _resolver) external returns (ResolverUID uid) {
+    function registerResolver(IExternalResolver _resolver) external returns (ResolverUID uid) {
         if (address(_resolver) == ZERO_ADDRESS) revert InvalidResolver();
 
         // build a ResolverRecord from the input
@@ -45,7 +45,7 @@ abstract contract ResolverManager is IRegistry {
         emit SchemaResolverRegistered(uid, msg.sender);
     }
 
-    function setResolver(ResolverUID uid, IResolver resolver) external onlyResolverOwner(uid) {
+    function setResolver(ResolverUID uid, IExternalResolver resolver) external onlyResolverOwner(uid) {
         ResolverRecord storage referrer = resolvers[uid];
         referrer.resolver = resolver;
         emit NewSchemaResolver(uid, address(resolver));

@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import { Script } from "forge-std/Script.sol";
 import { RegistryTestTools, RegistryInstance } from "../test/utils/BaseUtils.sol";
 import { DebugResolver } from "../src/external/examples/DebugResolver.sol";
-import { IResolver } from "../src/external/IResolver.sol";
+import { IExternalResolver } from "../src/external/IExternalResolver.sol";
 import { ResolverUID } from "../src/DataTypes.sol";
 import { console2 } from "forge-std/console2.sol";
 
@@ -23,7 +23,7 @@ contract DeployRegistryScript is Script, RegistryTestTools {
 
         // Set up default resolver
         DebugResolver debugResolver = new DebugResolver{ salt: salt }(address(instance.registry));
-        instance.registry.registerResolver(IResolver(address(debugResolver)));
+        instance.registry.registerResolver(IExternalResolver(address(debugResolver)));
 
         vm.stopBroadcast();
     }
