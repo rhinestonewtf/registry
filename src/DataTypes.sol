@@ -4,9 +4,9 @@ pragma solidity ^0.8.19;
 import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.sol";
 import { IExternalResolver } from "./external/IExternalResolver.sol";
 
-/*//////////////////////////////////////////////////////////////
-                          STORAGE 
-//////////////////////////////////////////////////////////////*/
+/*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+/*                     Storage Structs                        */
+/*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
 // Struct that represents an attestation.
 struct AttestationRecord {
@@ -38,9 +38,9 @@ struct ResolverRecord {
     address resolverOwner; // The address of the account used to register the resolver.
 }
 
-/*//////////////////////////////////////////////////////////////
-                          Attestation Requests
-//////////////////////////////////////////////////////////////*/
+/*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+/*            Attestation / Revocation Requests               */
+/*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
 /**
  * @dev A struct representing the arguments of the attestation request.
@@ -51,20 +51,17 @@ struct AttestationRequest {
     bytes data; // Custom attestation data.
     ModuleType[] moduleTypes; // optional: The type(s) of the module.
 }
-/*//////////////////////////////////////////////////////////////
-                          Revocation Requests
-//////////////////////////////////////////////////////////////*/
-
 /**
  * @dev A struct representing the arguments of the revocation request.
  */
+
 struct RevocationRequest {
     address moduleAddr; // The module address.
 }
 
-/*//////////////////////////////////////////////////////////////
-                          CUSTOM TYPES
-//////////////////////////////////////////////////////////////*/
+/*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+/*                       Custom Types                         */
+/*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
 //---------------------- SchemaUID ------------------------------|
 type SchemaUID is bytes32;
