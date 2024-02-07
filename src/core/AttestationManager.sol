@@ -2,14 +2,14 @@
 pragma solidity ^0.8.19;
 
 import {
-    AttestationRequest,
-    AttestationRecord,
     AttestationDataRef,
-    RevocationRequest,
+    AttestationRecord,
+    AttestationRequest,
     ModuleRecord,
-    SchemaUID,
+    ModuleType,
     ResolverUID,
-    ModuleType
+    RevocationRequest,
+    SchemaUID
 } from "../DataTypes.sol";
 import { SchemaManager } from "./SchemaManager.sol";
 import { ModuleManager } from "./ModuleManager.sol";
@@ -18,13 +18,7 @@ import { StubLib } from "../lib/StubLib.sol";
 import { AttestationLib } from "../lib/AttestationLib.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 
-import {
-    EMPTY_ATTESTATION_REF,
-    EMPTY_RESOLVER_UID,
-    ZERO_ADDRESS,
-    ZERO_TIMESTAMP,
-    _time
-} from "../Common.sol";
+import { EMPTY_ATTESTATION_REF, EMPTY_RESOLVER_UID, _time, ZERO_TIMESTAMP } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, SchemaManager {

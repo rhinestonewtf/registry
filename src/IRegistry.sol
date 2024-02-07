@@ -2,13 +2,13 @@
 pragma solidity ^0.8.19;
 
 import {
-    SchemaUID,
-    ResolverUID,
-    AttestationRequest,
-    AttestationRecord,
     AttestationDataRef,
+    AttestationRecord,
+    AttestationRequest,
+    ModuleType,
+    ResolverUID,
     RevocationRequest,
-    ModuleType
+    SchemaUID
 } from "./DataTypes.sol";
 
 import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.sol";
