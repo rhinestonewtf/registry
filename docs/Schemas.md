@@ -24,11 +24,11 @@ The implementation of this Validator is up to the Schema validators discression.
 
 ```solidity
 interface ISchemaValidator is IERC165 {
-    function validateSchema(AttestationRequestData calldata attestation)
+    function validateSchema(AttestationRequest calldata attestation)
         external
         view
         returns (bool);
-    function validateSchema(AttestationRequestData[] calldata attestations)
+    function validateSchema(AttestationRequest[] calldata attestations)
         external
         view
         returns (bool);

@@ -8,11 +8,11 @@ import {
     MultiSignedAttestationRequest,
     SignedRevocationRequest,
     MultiSignedRevocationRequest,
-    AttestationRequestData,
+    AttestationRequest,
     ModuleRecord,
     ResolverUID,
     AttestationRecord,
-    RevocationRequestData
+    RevocationRequest
 } from "../DataTypes.sol";
 import { InvalidLength } from "../Common.sol";
 
@@ -35,22 +35,22 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         payable
         nonReentrant
     {
-        // Get attestationRequestData calldata pointer
-        AttestationRequestData calldata attestationRequestData = signedRequest.data;
+        // Get AttestationRequest calldata pointer
+        AttestationRequest calldata AttestationRequest = signedRequest.data;
         // check signature. this will revert  if signedRequest.attester != signer
         _requireValidAttestSignatureCalldata(signedRequest);
         // check if schema exists and is valid. This will revert if validtor returns false
-        _requireSchemaCheck(signedRequest.schemaUID, attestationRequestData);
+        _requireSchemaCheck(signedRequest.schemaUID, AttestationRequest);
 
         // @audit could this be address(0), what happens if there is no module Record
         ModuleRecord storage moduleRecord =
-            _getModule({ moduleAddress: attestationRequestData.moduleAddr });
+            _getModule({ moduleAddress: AttestationRequest.moduleAddr });
         ResolverUID resolverUID = moduleRecord.resolverUID;
 
         // store attestation record
         (AttestationRecord memory attestationRecord, uint256 value) = _writeAttestation({
             schemaUID: signedRequest.schemaUID,
-            attestationRequestData: attestationRequestData,
+            AttestationRequest: AttestationRequest,
             attester: signedRequest.attester
         });
 
@@ -106,8 +106,8 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             }
 
             MultiSignedAttestationRequest calldata multiSignedRequest = multiSignedRequests[i];
-            AttestationRequestData[] calldata attestationRequestDatas = multiSignedRequest.data;
-            uint256 dataLength = attestationRequestDatas.length;
+            AttestationRequest[] calldata AttestationRequests = multiSignedRequest.data;
+            uint256 dataLength = AttestationRequests.length;
 
             // Ensure that no inputs are missing.
             if (dataLength != multiSignedRequest.signatures.length) {
@@ -119,7 +119,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
                 _requireValidAttestSignature(
                     SignedAttestationRequest({
                         schemaUID: multiSignedRequest.schemaUID,
-                        data: attestationRequestDatas[j],
+                        data: AttestationRequests[j],
                         signature: multiSignedRequest.signatures[j],
                         attester: multiSignedRequest.attester
                     })
@@ -130,7 +130,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             uint256 usedValue = _multiAttest({
                 schemaUID: multiSignedRequest.schemaUID,
                 resolverUID: moduleRecord.resolverUID,
-                attestationRequestDatas: attestationRequestDatas,
+                AttestationRequests: AttestationRequests,
                 attester: multiSignedRequest.attester,
                 availableValue: availableValue,
                 isLastAttestation: last
@@ -151,7 +151,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
     function revoke(SignedRevocationRequest calldata request) external payable nonReentrant {
         _verifyRevoke(request);
 
-        RevocationRequestData[] memory data = new RevocationRequestData[](1);
+        RevocationRequest[] memory data = new RevocationRequest[](1);
         data[0] = request.data;
 
         ModuleRecord memory moduleRecord = _getModule({ moduleAddress: request.data.moduleAddr });
@@ -159,7 +159,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
         _multiRevoke({
             schemaUID: request.schemaUID,
             resolverUID: moduleRecord.resolverUID,
-            revocationRequestDatas: data,
+            RevocationRequests: data,
             revoker: request.revoker,
             availableValue: msg.value,
             isLastRevocation: true
@@ -195,8 +195,8 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             }
 
             MultiSignedRevocationRequest memory multiSignedRequest = multiSignedRequests[i];
-            RevocationRequestData[] memory revocationRequestDatas = multiSignedRequest.data;
-            uint256 dataLength = revocationRequestDatas.length;
+            RevocationRequest[] memory RevocationRequests = multiSignedRequest.data;
+            uint256 dataLength = RevocationRequests.length;
 
             // Ensure that no inputs are missing.
             if (dataLength == 0 || dataLength != multiSignedRequest.signatures.length) {
@@ -208,7 +208,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
                 _verifyRevoke(
                     SignedRevocationRequest({
                         schemaUID: multiSignedRequest.schemaUID,
-                        data: revocationRequestDatas[j],
+                        data: RevocationRequests[j],
                         signature: multiSignedRequest.signatures[j],
                         revoker: multiSignedRequest.revoker
                     })
@@ -219,7 +219,7 @@ abstract contract AttestationDelegation is IAttestation, Attestation {
             availableValue -= _multiRevoke({
                 schemaUID: multiSignedRequest.schemaUID,
                 resolverUID: moduleRecord.resolverUID,
-                revocationRequestDatas: revocationRequestDatas,
+                RevocationRequests: RevocationRequests,
                 revoker: multiSignedRequest.revoker,
                 availableValue: availableValue,
                 isLastRevocation: last

@@ -26,8 +26,8 @@ import {
 import {
     AttestationDataRef,
     AttestationRecord,
-    AttestationRequestData,
-    RevocationRequestData,
+    AttestationRequest,
+    RevocationRequest,
     writeAttestationData
 } from "../DataTypes.sol";
 import { AttestationResolve } from "./AttestationResolve.sol";
@@ -39,25 +39,25 @@ contract Attestation {
     mapping(address module => mapping(address attester => AttestationRecord attestation)) internal
         _moduleToAttesterToAttestations;
 
-    function attest(SchemaUID schemaUID, AttestationRequestData calldata request) external {
+    function attest(SchemaUID schemaUID, AttestationRequest calldata request) external {
         _attestAndCheckExternal(msg.sender, schemaUID, request);
     }
 
-    function attest(SchemaUID schemaUID, AttestationRequestData[] calldata requests) external {
+    function attest(SchemaUID schemaUID, AttestationRequest[] calldata requests) external {
         _attestAndCheckExternal(msg.sender, schemaUID, requests);
     }
 
     function _attestAndCheckExternal(
         address attester,
         SchemaUID schemaUID,
-        AttestationRequestData calldata request
+        AttestationRequest calldata request
     )
         internal
     {
         AttestationRecord memory record = _storeAttestation({
             schemaUID: schemaUID,
             attester: attester,
-            attestationRequestData: request
+            AttestationRequest: request
         });
 
         // check if schema exists and is valid. This will revert if validtor returns false
@@ -70,7 +70,7 @@ contract Attestation {
     function _attestAndCheckExternal(
         address attester,
         SchemaUID schemaUID,
-        AttestationRequestData[] calldata requests
+        AttestationRequest[] calldata requests
     )
         internal
     {
@@ -81,7 +81,7 @@ contract Attestation {
             attestationRecord[i] = _storeAttestation({
                 schemaUID: schemaUID,
                 attester: attester,
-                attestationRequestData: requests[i]
+                AttestationRequest: requests[i]
             });
         }
 
@@ -98,7 +98,7 @@ contract Attestation {
     function _storeAttestation(
         SchemaUID schemaUID,
         address attester,
-        AttestationRequestData calldata attestationRequestData
+        AttestationRequest calldata AttestationRequest
     )
         internal
         returns (AttestationRecord memory record)
@@ -107,13 +107,13 @@ contract Attestation {
         uint48 timeNow = _time();
         // Ensure that either no expiration time was set or that it was set in the future.
         if (
-            attestationRequestData.expirationTime != ZERO_TIMESTAMP
-                && attestationRequestData.expirationTime <= timeNow
+            AttestationRequest.expirationTime != ZERO_TIMESTAMP
+                && AttestationRequest.expirationTime <= timeNow
         ) {
             revert InvalidExpirationTime();
         }
         // caching module address.
-        address module = attestationRequestData.moduleAddr;
+        address module = AttestationRequest.moduleAddr;
         ModuleRecord storage moduleRecord = _getModule({ moduleAddress: module });
 
         // Ensure that attestation is for module that was registered.
@@ -124,7 +124,7 @@ contract Attestation {
         // get salt used for SSTORE2 to avoid collisions during CREATE2
         bytes32 attestationSalt = AttestationLib.attestationSalt(attester, module);
         AttestationDataRef sstore2Pointer = writeAttestationData({
-            attestationData: attestationRequestData.data,
+            attestationData: AttestationRequest.data,
             salt: attestationSalt
         });
 
@@ -134,7 +134,7 @@ contract Attestation {
             moduleAddr: module,
             attester: attester,
             time: timeNow,
-            expirationTime: attestationRequestData.expirationTime,
+            expirationTime: AttestationRequest.expirationTime,
             revocationTime: uint48(ZERO_TIMESTAMP),
             dataPointer: sstore2Pointer
         });

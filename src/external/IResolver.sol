@@ -23,29 +23,11 @@ interface IResolver is IERC165 {
      *
      * @return Whether the attestation is valid.
      */
-    function attest(AttestationRecord calldata attestation) external payable returns (bool);
-
-    /**
-     * @dev Processes a Module Registration
-     *
-     * @param module Module registration artefact
-     *
-     * @return Whether the registration is valid
-     */
-    function moduleRegistration(ModuleRecord calldata module) external payable returns (bool);
-
-    /**
-     * @dev Processes multiple attestations and verifies whether they are valid.
-     *
-     * @param attestations The new attestations.
-     * @param values Explicit ETH amounts which were sent with each attestation.
-     *
-     * @return Whether all the attestations are valid.
-     */
-    function multiAttest(
-        AttestationRecord[] calldata attestations,
-        uint256[] calldata values
-    )
+    function resolveAttestation(AttestationRecord calldata attestation)
+        external
+        payable
+        returns (bool);
+    function resolveAttestation(AttestationRecord[] calldata attestation)
         external
         payable
         returns (bool);
@@ -57,20 +39,23 @@ interface IResolver is IERC165 {
      *
      * @return Whether the attestation can be revoked.
      */
-    function revoke(AttestationRecord calldata attestation) external payable returns (bool);
+    function resolveRevocation(AttestationRecord calldata attestation)
+        external
+        payable
+        returns (bool);
+    function resolveRevocation(AttestationRecord[] calldata attestation)
+        external
+        payable
+        returns (bool);
 
     /**
-     * @dev Processes revocation of multiple attestation and verifies they can be revoked.
+     * @dev Processes a Module Registration
      *
-     * @param attestations The existing attestations to be revoked.
-     * @param values Explicit ETH amounts which were sent with each revocation.
+     * @param module Module registration artefact
      *
-     * @return Whether the attestations can be revoked.
+     * @return Whether the registration is valid
      */
-    function multiRevoke(
-        AttestationRecord[] calldata attestations,
-        uint256[] calldata values
-    )
+    function resolveModuleRegistration(ModuleRecord calldata module)
         external
         payable
         returns (bool);

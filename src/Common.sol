@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
+import { ResolverUID, SchemaUID } from "./DataTypes.sol";
+
 // A representation of an empty/uninitialized UID.
 bytes32 constant EMPTY_UID = 0;
+ResolverUID constant EMPTY_RESOLVER_UID = ResolverUID.wrap(EMPTY_UID);
+SchemaUID constant EMPTY_SCHEMA_UID = SchemaUID.wrap(EMPTY_UID);
 
 // A zero expiration represents an non-expiring attestation.
 uint256 constant ZERO_TIMESTAMP = 0;

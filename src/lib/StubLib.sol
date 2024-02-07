@@ -1,9 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { AttestationRecord, ResolverRecord } from "../DataTypes.sol";
+import { AttestationRecord, ResolverRecord, SchemaRecord, ModuleRecord } from "../DataTypes.sol";
+import { ISchemaValidator } from "../external/ISchemaValidator.sol";
+import { IResolver } from "../external/IResolver.sol";
+import { ZERO_ADDRESS, ZERO_TIMESTAMP } from "../Common.sol";
 
+// TODO: fix errors
 library StubLib {
+    error InvalidDeployment();
+    error InvalidSchema();
+
     function requireExternalSchemaValidation(
         AttestationRecord memory attestationRecord,
         SchemaRecord storage schema
@@ -16,13 +23,23 @@ library StubLib {
         // validate Schema
         ISchemaValidator validator = schema.validator;
         // if validator is set, call the validator
-        if (address(validator) != ZERO_ADDRESS && validator.validateSchema(requestData) == false) {
+        if (
+            address(validator) != ZERO_ADDRESS
+                && validator.validateSchema(attestationRecord) == false
+        ) {
             // revert if ISchemaValidator returns false
-            revert InvalidAttestation();
+            revert();
+            // if (!success) { // If call reverts
+            //   // If there is return data, the call reverted without a reason or a custom error.
+            //   if (result.length == 0) revert();
+            //   assembly {
+            //     // We use Yul's revert() to bubble up errors from the target contract.
+            //     revert(add(32, result), mload(result))
+            //   }
         }
     }
 
-    function _requireSchemaCheck(
+    function requireExternalSchemaValidation(
         AttestationRecord[] memory attestationRecords,
         SchemaRecord storage schema
     )
@@ -38,7 +55,7 @@ library StubLib {
             address(validator) != ZERO_ADDRESS
                 && validator.validateSchema(attestationRecords) == false
         ) {
-            revert InvalidAttestation();
+            revert();
         }
     }
 
@@ -52,11 +69,11 @@ library StubLib {
 
         if (address(resolverContract) != ZERO_ADDRESS) return;
         if (resolverContract.resolveAttestation(attestationRecord) == false) {
-            revert InvalidAttestation();
+            revert();
         }
     }
 
-    function requireExternalResolver(
+    function requireExternalResolverCheck(
         AttestationRecord[] memory attestationRecords,
         ResolverRecord storage resolver
     )
@@ -67,7 +84,22 @@ library StubLib {
         if (address(resolverContract) != ZERO_ADDRESS) return;
 
         if (resolverContract.resolveAttestation(attestationRecords) == false) {
-            revert InvalidAttestation();
+            revert();
+        }
+    }
+
+    function requireExternalResolverCheck(
+        ModuleRecord memory moduleRecord,
+        ResolverRecord storage resolver
+    )
+        internal
+    {
+        IResolver resolverContract = resolver.resolver;
+
+        if (address(resolverContract) != ZERO_ADDRESS) return;
+
+        if (resolverContract.resolveModuleRegistration(moduleRecord) == false) {
+            revert();
         }
     }
 }

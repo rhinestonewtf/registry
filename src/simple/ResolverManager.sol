@@ -1,9 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { ResolverRecord, ResolverUID } from "../DataTypes.sol";
+import { ResolverRecord, SchemaUID, ResolverUID } from "../DataTypes.sol";
+import { ZERO_ADDRESS, AccessDenied } from "../Common.sol";
+import { IResolver } from "../external/IResolver.sol";
+import { UIDLib } from "../lib/Helpers.sol";
+import { IRegistry } from "../IRegistry.sol";
 
-abstract contract ResolverManager {
+abstract contract ResolverManager is IRegistry {
+    using UIDLib for ResolverRecord;
+
     mapping(ResolverUID uid => ResolverRecord resolver) public resolvers;
 
     /**
@@ -18,9 +24,6 @@ abstract contract ResolverManager {
         _;
     }
 
-    /**
-     * @inheritdoc IExternalResolver
-     */
     function registerResolver(IResolver _resolver) external returns (ResolverUID uid) {
         if (address(_resolver) == ZERO_ADDRESS) revert InvalidResolver();
 
@@ -42,9 +45,6 @@ abstract contract ResolverManager {
         emit SchemaResolverRegistered(uid, msg.sender);
     }
 
-    /**
-     * @inheritdoc IExternalResolver
-     */
     function setResolver(ResolverUID uid, IResolver resolver) external onlyResolverOwner(uid) {
         ResolverRecord storage referrer = resolvers[uid];
         referrer.resolver = resolver;

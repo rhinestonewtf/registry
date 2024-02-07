@@ -14,6 +14,7 @@ struct AttestationRecord {
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
+    PackedModuleTypes moduleTypes; // bit-wise encoded module types. See ModuleTypeLib
     SchemaUID schemaUID; // The unique identifier of the schema.
     address moduleAddr; // The implementation address of the module that is being attested.
     address attester; // The attesting account.
@@ -45,12 +46,12 @@ struct ResolverRecord {
 /**
  * @dev A struct representing the arguments of the attestation request.
  */
-struct AttestationRequestData {
+struct AttestationRequest {
     address moduleAddr; // The moduleAddr of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     bytes data; // Custom attestation data.
+    ModuleType[] moduleTypes; // optional: The type(s) of the module.
 }
-
 /*//////////////////////////////////////////////////////////////
                           Revocation Requests
 //////////////////////////////////////////////////////////////*/
@@ -58,7 +59,7 @@ struct AttestationRequestData {
 /**
  * @dev A struct representing the arguments of the revocation request.
  */
-struct RevocationRequestData {
+struct RevocationRequest {
     address moduleAddr; // The module address.
 }
 
@@ -83,8 +84,6 @@ function schemaNotEq(SchemaUID uid1, SchemaUID uid) pure returns (bool) {
 //--------------------- ResolverUID -----------------------------|
 type ResolverUID is bytes32;
 
-ResolverUID constant RESOLVER_UID_ZERO = ResolverUID.wrap(bytes32(0));
-
 using { resolverEq as == } for ResolverUID global;
 using { resolverNotEq as != } for ResolverUID global;
 
@@ -98,19 +97,6 @@ function resolverNotEq(ResolverUID uid1, ResolverUID uid2) pure returns (bool) {
 
 type AttestationDataRef is address;
 
-function readAttestationData(AttestationDataRef dataPointer) view returns (bytes memory data) {
-    data = SSTORE2.read(AttestationDataRef.unwrap(dataPointer));
-}
+type PackedModuleTypes is uint32;
 
-function writeAttestationData(
-    bytes memory attestationData,
-    bytes32 salt
-)
-    returns (AttestationDataRef dataPointer)
-{
-    /**
-     * @dev We are using CREATE2 to deterministically generate the address of the attestation data.
-     * Checking if an attestation pointer already exists, would cost more GAS in the average case.
-     */
-    dataPointer = AttestationDataRef.wrap(SSTORE2.writeDeterministic(attestationData, salt));
-}
+type ModuleType is uint32;

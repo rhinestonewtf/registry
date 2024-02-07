@@ -8,11 +8,11 @@ When an Attester creates an Attestation, the Attestation data, structured accord
 
 Inputs:
 
-AttestationRequestData
+AttestationRequest
 data is `abi.encode()` according to a defined schema. The data is not stored in the storage of thr Registry, but is rather stored with `SSTORE2` to save gas and a pointer to this data is stored on the Registry.
 
 ```solidity
-struct AttestationRequestData {
+struct AttestationRequest {
     address moduleAddr; // The moduleAddr of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
@@ -75,7 +75,7 @@ This becomes particularly beneficial when:
  */
 struct SignedAttestationRequest {
     SchemaUID schemaUID; // The unique identifier of the schema.
-    AttestationRequestData data; // The arguments of the attestation request.
+    AttestationRequest data; // The arguments of the attestation request.
     bytes signature; // The signature data.
     address attester; // The attesting account.
 }

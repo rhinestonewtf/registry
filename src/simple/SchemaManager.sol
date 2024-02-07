@@ -1,10 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { ResolverRecord, ResolverUID } from "../DataTypes.sol";
+import { SchemaRecord, ResolverRecord, SchemaUID, ResolverUID } from "../DataTypes.sol";
+import { ISchemaValidator } from "../external/ISchemaValidator.sol";
+import { UIDLib } from "../lib/Helpers.sol";
 
-abstract contract SchemaManager {
+import { ZERO_TIMESTAMP, _time } from "../Common.sol";
+import { IRegistry } from "../IRegistry.sol";
+
+abstract contract SchemaManager is IRegistry {
+    using UIDLib for SchemaRecord;
     // The global mapping between schema records and their IDs.
+
     mapping(SchemaUID uid => SchemaRecord schemaRecord) internal schemas;
 
     function registerSchema(
@@ -21,10 +28,10 @@ abstract contract SchemaManager {
         // Computing a unique ID for the schema using its properties
         uid = schemaRecord.getUID();
 
-        if (_schemas[uid].registeredAt != ZERO_TIMESTAMP) revert AlreadyExists();
+        if (schemas[uid].registeredAt != ZERO_TIMESTAMP) revert AlreadyExists();
 
         // Storing schema in the _schemas mapping
-        _schemas[uid] = schemaRecord;
+        schemas[uid] = schemaRecord;
 
         emit SchemaRegistered(uid, msg.sender);
     }

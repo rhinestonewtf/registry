@@ -2,27 +2,31 @@
 pragma solidity ^0.8.19;
 
 import { Attestation } from "./Attestation.sol";
+import { AttestationRequest, RevocationRequest, SchemaUID } from "../DataTypes.sol";
 import { AttestationLib } from "../lib/AttestationLib.sol";
+import { EIP712 } from "solady/utils/EIP712.sol";
+import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
+import { IRegistry } from "../IRegistry.sol";
 
-contract SignedAttestation is Attestation {
-    using AttestationLib for AttestationRequestData;
-
-    error InvalidSignature();
+contract SignedAttestation is IRegistry, Attestation, EIP712 {
+    using AttestationLib for AttestationRequest;
+    using AttestationLib for AttestationRequest[];
+    using AttestationLib for RevocationRequest;
+    using AttestationLib for RevocationRequest[];
 
     mapping(address attester => uint256 nonce) public attesterNonce;
 
     function attest(
         SchemaUID schemaUID,
-        AttestationRequestData calldata request,
         address attester,
+        AttestationRequest calldata request,
         bytes calldata signature
     )
         external
-        payable
     {
         // verify signature
         uint256 nonce = ++attesterNonce[attester];
-        bytes32 digest = request.digest(nonce, schemaUID);
+        bytes32 digest = _hashTypedData(request.hash(nonce));
         bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature);
         if (!valid) revert InvalidSignature();
 
@@ -31,25 +35,58 @@ contract SignedAttestation is Attestation {
 
     function attest(
         SchemaUID schemaUID,
-        AttestationRequestData[] calldata requests,
         address attester,
-        bytes[] calldata signature // TODO: should we maybe sign all requests at once?
+        AttestationRequest[] calldata requests,
+        bytes calldata signature
     )
         external
-        payable
     {
-        // verify all signatures. Iterate nonces and digests
-        uint256 nonce = attesterNonce[attester];
-        uint256 length = requests.length;
-        if (length != signature.length) revert InvalidSignature();
-        for (uint256 i; i < length; i++) {
-            bytes32 digest = requests[i].digest(nonce + i);
-            bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature[i]);
-            if (!valid) revert InvalidSignature();
-        }
-        // update nonce
-        attesterNonce[attester] += length;
+        uint256 nonce = ++attesterNonce[attester];
+        bytes32 digest = _hashTypedData(requests.hash(nonce));
+        bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature);
+        if (!valid) revert InvalidSignature();
 
         _attest(attester, schemaUID, requests);
+    }
+
+    function revoke(
+        address attester,
+        RevocationRequest calldata request,
+        bytes calldata signature
+    )
+        external
+    {
+        uint256 nonce = ++attesterNonce[attester];
+        bytes32 digest = _hashTypedData(request.hash(nonce));
+        bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature);
+        if (!valid) revert InvalidSignature();
+
+        _revoke(attester, request);
+    }
+
+    function revoke(
+        address attester,
+        RevocationRequest[] calldata requests,
+        bytes calldata signature
+    )
+        external
+    {
+        uint256 nonce = ++attesterNonce[attester];
+        bytes32 digest = _hashTypedData(requests.hash(nonce));
+        bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature);
+        if (!valid) revert InvalidSignature();
+
+        _revoke(attester, requests);
+    }
+
+    function _domainNameAndVersion()
+        internal
+        view
+        virtual
+        override
+        returns (string memory name, string memory version)
+    {
+        name = "RhinestoneRegistry";
+        version = "v1.0";
     }
 }
