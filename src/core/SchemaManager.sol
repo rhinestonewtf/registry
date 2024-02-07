@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { SchemaRecord, ResolverRecord, SchemaUID, ResolverUID } from "../DataTypes.sol";
+import { SchemaRecord, SchemaUID } from "../DataTypes.sol";
 import { IExternalSchemaValidator } from "../external/IExternalSchemaValidator.sol";
 import { UIDLib } from "../lib/Helpers.sol";
 
@@ -19,9 +19,11 @@ abstract contract SchemaManager is IRegistry {
         IExternalSchemaValidator validator // OPTIONAL
     )
         external
+        onlySchemaValidator(validator)
         returns (SchemaUID uid)
     {
         // TODO: ERC165 check that validator is actually a valivator
+
         SchemaRecord memory schemaRecord =
             SchemaRecord({ validator: validator, registeredAt: _time(), schema: schema });
 
@@ -34,5 +36,15 @@ abstract contract SchemaManager is IRegistry {
         schemas[uid] = schemaRecord;
 
         emit SchemaRegistered(uid, msg.sender);
+    }
+
+    modifier onlySchemaValidator(IExternalSchemaValidator validator) {
+        if (
+            address(validator) != address(0)
+                && !validator.supportsInterface(type(IExternalSchemaValidator).interfaceId)
+        ) {
+            revert InvalidSchemaValidator(validator);
+        }
+        _;
     }
 }

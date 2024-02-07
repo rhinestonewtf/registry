@@ -1,0 +1,19 @@
+TrustTest
+├── When setting attester
+│   ├── When supplying same attester multiple times
+│   │   └── It should revert.
+│   ├── When supplying one attester
+│   │   ├── It should set.
+│   │   └── It should emit event.
+│   └── When supplying many attesters
+│       ├── It should set.
+│       └── It should emit event.
+└── When querying registy
+    ├── When no attesters set
+    │   └── It should revert.
+    ├── When attester set but no attestation made
+    │   └── It should revert.
+    ├── When attesters set but threshold too low
+    │   └── It should revert.
+    └── When attesters set and all ok
+        └── It should not revert.

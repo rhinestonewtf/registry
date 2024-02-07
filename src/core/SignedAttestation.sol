@@ -89,4 +89,15 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
         name = "RhinestoneRegistry";
         version = "v1.0";
     }
+
+    function getDigest(
+        AttestationRequest calldata request,
+        address attester
+    )
+        external
+        view
+        returns (bytes32)
+    {
+        return _hashTypedData(request.hash(attesterNonce[attester] + 1));
+    }
 }

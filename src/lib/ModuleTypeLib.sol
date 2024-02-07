@@ -2,6 +2,7 @@
 pragma solidity ^0.8.21;
 
 import { PackedModuleTypes, ModuleType } from "../DataTypes.sol";
+import { IRegistry } from "../IRegistry.sol";
 
 library ModuleTypeLib {
     function isType(PackedModuleTypes self, ModuleType moduleType) internal pure returns (bool) {
@@ -24,7 +25,9 @@ library ModuleTypeLib {
     {
         uint32 result;
         for (uint256 i; i < moduleTypes.length; i++) {
-            result = result + uint32(2 ** ModuleType.unwrap(moduleTypes[i]));
+            uint32 _type = ModuleType.unwrap(moduleTypes[i]);
+            if (_type > 31) revert IRegistry.InvalidModuleType();
+            result = result + uint32(2 ** _type);
         }
         return PackedModuleTypes.wrap(result);
     }

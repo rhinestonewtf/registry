@@ -57,7 +57,7 @@ library StubLib {
     {
         IExternalResolver resolverContract = resolver.resolver;
 
-        if (address(resolverContract) != ZERO_ADDRESS) return;
+        if (address(resolverContract) == ZERO_ADDRESS) return;
         if (resolverContract.resolveAttestation(attestationRecord) == false) {
             revert IRegistry.ExternalError_ResolveAtteststation();
         }
@@ -71,7 +71,7 @@ library StubLib {
     {
         IExternalResolver resolverContract = resolver.resolver;
 
-        if (address(resolverContract) != ZERO_ADDRESS) return;
+        if (address(resolverContract) == ZERO_ADDRESS) return;
 
         if (resolverContract.resolveAttestation(attestationRecords) == false) {
             revert IRegistry.ExternalError_ResolveAtteststation();
@@ -86,7 +86,7 @@ library StubLib {
     {
         IExternalResolver resolverContract = resolver.resolver;
 
-        if (address(resolverContract) != ZERO_ADDRESS) return;
+        if (address(resolverContract) == ZERO_ADDRESS) return;
         if (resolverContract.resolveRevocation(attestationRecord) == false) {
             revert IRegistry.ExternalError_ResolveAtteststation();
         }
@@ -100,7 +100,7 @@ library StubLib {
     {
         IExternalResolver resolverContract = resolver.resolver;
 
-        if (address(resolverContract) != ZERO_ADDRESS) return;
+        if (address(resolverContract) == ZERO_ADDRESS) return;
 
         if (resolverContract.resolveAttestation(attestationRecords) == false) {
             revert IRegistry.ExternalError_ResolveAtteststation();

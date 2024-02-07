@@ -12,11 +12,6 @@ import { IERC165 } from "forge-std/interfaces/IERC165.sol";
  */
 interface IExternalResolver is IERC165 {
     /**
-     * @dev Returns whether the resolver supports ETH transfers.
-     */
-    function isPayable() external pure returns (bool);
-
-    /**
      * @dev Processes an attestation and verifies whether it's valid.
      *
      * @param attestation The new attestation.
@@ -27,6 +22,7 @@ interface IExternalResolver is IERC165 {
         external
         payable
         returns (bool);
+
     function resolveAttestation(AttestationRecord[] calldata attestation)
         external
         payable

@@ -62,6 +62,7 @@ interface IRegistry is IERC7484 {
     error InvalidExpirationTime();
     error DifferentResolvers();
     error InvalidSignature();
+    error InvalidModuleTypes();
 
     function attest(SchemaUID schemaUID, AttestationRequest calldata request) external;
 
@@ -136,7 +137,7 @@ interface IRegistry is IERC7484 {
     error AlreadyRegistered(address module);
     error InvalidDeployment();
 
-    function deploy(
+    function deployModule(
         bytes32 salt,
         ResolverUID resolverUID,
         bytes calldata code,
@@ -147,7 +148,7 @@ interface IRegistry is IERC7484 {
         payable
         returns (address moduleAddr);
 
-    function register(
+    function registerModule(
         ResolverUID resolverUID,
         address moduleAddress,
         bytes calldata metadata
@@ -163,6 +164,7 @@ interface IRegistry is IERC7484 {
     error SchemaAlreadyExists(SchemaUID uid);
 
     error InvalidSchema();
+    error InvalidSchemaValidator(IExternalSchemaValidator validator);
 
     function registerSchema(
         string calldata schema,
@@ -178,7 +180,7 @@ interface IRegistry is IERC7484 {
     event NewResolver(ResolverUID indexed uid, address resolver);
 
     error ResolverAlreadyExists();
-    error InvalidResolver();
+    error InvalidResolver(IExternalResolver resolver);
 
     function registerResolver(IExternalResolver _resolver) external returns (ResolverUID uid);
 

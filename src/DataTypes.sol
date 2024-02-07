@@ -3,7 +3,6 @@ pragma solidity ^0.8.19;
 
 import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.sol";
 import { IExternalResolver } from "./external/IExternalResolver.sol";
-import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 
 /*//////////////////////////////////////////////////////////////
                           STORAGE 

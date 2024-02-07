@@ -9,10 +9,8 @@ import {
     ModuleRecord,
     SchemaUID,
     ResolverUID,
-    ModuleType,
-    PackedModuleTypes
+    ModuleType
 } from "../DataTypes.sol";
-import { ResolverManager } from "./ResolverManager.sol";
 import { SchemaManager } from "./SchemaManager.sol";
 import { ModuleManager } from "./ModuleManager.sol";
 import { TrustManager } from "./TrustManager.sol";
@@ -126,7 +124,7 @@ abstract contract AttestationManager is IRegistry, TrustManager, ModuleManager, 
             time: timeNow,
             expirationTime: request.expirationTime,
             revocationTime: uint48(ZERO_TIMESTAMP),
-            moduleTypes: request.moduleTypes.pack(),
+            moduleTypes: request.moduleTypes.packCalldata(),
             schemaUID: schemaUID,
             moduleAddr: module,
             attester: attester,

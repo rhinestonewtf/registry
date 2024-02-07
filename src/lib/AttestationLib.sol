@@ -6,10 +6,11 @@ import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 
 library AttestationLib {
     // The hash of the data type used to relay calls to the attest function. It's the value of
-    bytes32 constant ATTEST_TYPEHASH = keccak256("AttestationRequest(address,uint48,uint256,bytes)");
+    bytes32 internal constant ATTEST_TYPEHASH =
+        keccak256("AttestationRequest(address,uint48,bytes,uint32[])");
 
     // The hash of the data type used to relay calls to the revoke function. It's the value of
-    bytes32 constant REVOKE_TYPEHASH = keccak256("RevocationRequest(address,address,uint256)");
+    bytes32 internal constant REVOKE_TYPEHASH = keccak256("RevocationRequest(address)");
 
     function sload2(AttestationDataRef dataPointer) internal view returns (bytes memory data) {
         data = SSTORE2.read(AttestationDataRef.unwrap(dataPointer));

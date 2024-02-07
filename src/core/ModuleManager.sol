@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { CREATE3 } from "solady/utils/CREATE3.sol";
-
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
 import { StubLib } from "../lib/StubLib.sol";
-import { IExternalResolver } from "../external/IExternalResolver.sol";
 
 import { InvalidResolver, _isContract, EMPTY_RESOLVER_UID, ZERO_ADDRESS } from "../Common.sol";
 import { ResolverRecord, ModuleRecord, ResolverUID } from "../DataTypes.sol";
@@ -37,7 +34,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
 
     mapping(address moduleAddress => ModuleRecord moduleRecord) internal _modules;
 
-    function deploy(
+    function deployModule(
         bytes32 salt,
         ResolverUID resolverUID,
         bytes calldata code,
@@ -49,7 +46,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         returns (address moduleAddr)
     {
         ResolverRecord storage resolver = resolvers[resolverUID];
-        if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver();
+        if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver(resolver.resolver);
 
         // address predictedModuleAddress = code.calculateAddress(deployParams, salt);
 
@@ -65,7 +62,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         record.requireExternalResolverOnModuleRegistration(resolver);
     }
 
-    function register(
+    function registerModule(
         ResolverUID resolverUID,
         address moduleAddress,
         bytes calldata metadata
@@ -73,7 +70,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         external
     {
         ResolverRecord storage resolver = resolvers[resolverUID];
-        if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver();
+        if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver(resolver.resolver);
 
         ModuleRecord memory record = _storeModuleRecord({
             moduleAddress: moduleAddress,

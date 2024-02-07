@@ -4,11 +4,8 @@ pragma solidity ^0.8.19;
 import {
     AttestationRecord, AttestationRequest, RevocationRequest, SchemaUID
 } from "../DataTypes.sol";
-import { ResolverManager } from "./ResolverManager.sol";
-import { SchemaManager } from "./SchemaManager.sol";
 import { AttestationManager } from "./AttestationManager.sol";
 import { IRegistry } from "../IRegistry.sol";
-import { StubLib } from "../lib/StubLib.sol";
 
 abstract contract Attestation is IRegistry, AttestationManager {
     function attest(SchemaUID schemaUID, AttestationRequest calldata request) external {
