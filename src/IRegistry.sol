@@ -200,6 +200,8 @@ interface IRegistry is IERC7484 {
 
     error AlreadyRegistered(address module);
     error InvalidDeployment();
+    error ModuleAddressIsNotContract(address moduleAddress);
+    error FactoryCallFailed(address factory);
 
     function deployModule(
         bytes32 salt,

@@ -97,13 +97,15 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
     {
         ResolverRecord storage resolver = resolvers[resolverUID];
         if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
+        // prevent someone from calling a registry function pretending its a factory
+        if (factory == address(this)) revert FactoryCallFailed(factory);
         // call external factory to deploy module
         (bool ok, bytes memory returnData) = factory.call{ value: msg.value }(callOnFactory);
-        if (!ok) revert InvalidDeployment();
+        if (!ok) revert FactoryCallFailed(factory);
 
         moduleAddress = abi.decode(returnData, (address));
         if (moduleAddress == ZERO_ADDRESS) revert InvalidDeployment();
-        if (_isContract(moduleAddress) != true) revert InvalidDeployment();
+        if (_isContract(moduleAddress) == false) revert ModuleAddressIsNotContract(moduleAddress);
 
         ModuleRecord memory record = _storeModuleRecord({
             moduleAddress: moduleAddress,
@@ -133,6 +135,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             revert AlreadyRegistered(moduleAddress);
         }
         // revert if moduleAddress is NOT a contract
+        // this should catch address(0)
         if (!_isContract(moduleAddress)) revert InvalidDeployment();
 
         // Store module metadata in _modules mapping
