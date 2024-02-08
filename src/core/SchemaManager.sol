@@ -22,8 +22,6 @@ abstract contract SchemaManager is IRegistry {
         onlySchemaValidator(validator)
         returns (SchemaUID uid)
     {
-        // TODO: ERC165 check that validator is actually a valivator
-
         SchemaRecord memory schemaRecord =
             SchemaRecord({ validator: validator, registeredAt: _time(), schema: schema });
 
@@ -38,6 +36,9 @@ abstract contract SchemaManager is IRegistry {
         emit SchemaRegistered(uid, msg.sender);
     }
 
+    /**
+     * If a validator is not address(0), we check if it supports the IExternalSchemaValidator interface
+     */
     modifier onlySchemaValidator(IExternalSchemaValidator validator) {
         if (
             address(validator) != address(0)
