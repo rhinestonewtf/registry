@@ -6,6 +6,7 @@ import {
     AttestationRecord,
     AttestationRequest,
     ModuleType,
+    ModuleRecord,
     ResolverUID,
     RevocationRequest,
     SchemaUID
@@ -75,6 +76,15 @@ interface IRegistry is IERC7484 {
      */
     function trustAttesters(uint8 threshold, address[] calldata attesters) external;
 
+    /**
+     * Get trusted attester for a specific smartAccount
+     * @param smartAccount The address of the smartAccount
+     */
+    function getTrustedAttesters(address smartAccount)
+        external
+        view
+        returns (address[] memory attesters);
+
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                       Attestations                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
@@ -88,6 +98,7 @@ interface IRegistry is IERC7484 {
     );
 
     error AlreadyRevoked();
+    error ModuleNotFoundInRegistry(address module);
     error AccessDenied();
     error InvalidAttestation();
     error InvalidExpirationTime();
@@ -207,6 +218,11 @@ interface IRegistry is IERC7484 {
         bytes calldata metadata
     )
         external;
+
+    function getRegisteredModules(address moduleAddress)
+        external
+        view
+        returns (ModuleRecord memory moduleRecord);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                      Manage Schemas                        */

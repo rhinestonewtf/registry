@@ -32,7 +32,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
     using ModuleDeploymentLib for address;
     using StubLib for *;
 
-    mapping(address moduleAddress => ModuleRecord moduleRecord) internal _modules;
+    mapping(address moduleAddress => ModuleRecord moduleRecord) internal _moduleAddrToRecords;
 
     function deployModule(
         bytes32 salt,
@@ -50,6 +50,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
 
         // address predictedModuleAddress = code.calculateAddress(deployParams, salt);
 
+        // TODO: should we use the initCode hash return value?
         (moduleAddr,,) = code.deploy(deployParams, salt, msg.value);
         // _storeModuleRecord() will check if module is already registered,
         // which should prevent reentry to any deploy function
@@ -128,7 +129,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         // ensure that non-zero resolverUID was provided
         if (resolverUID == EMPTY_RESOLVER_UID) revert InvalidDeployment();
         // ensure moduleAddress is not already registered
-        if (_modules[moduleAddress].resolverUID != EMPTY_RESOLVER_UID) {
+        if (_moduleAddrToRecords[moduleAddress].resolverUID != EMPTY_RESOLVER_UID) {
             revert AlreadyRegistered(moduleAddress);
         }
         // revert if moduleAddress is NOT a contract
@@ -139,9 +140,17 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             ModuleRecord({ resolverUID: resolverUID, sender: sender, metadata: metadata });
 
         // Store module record in _modules mapping
-        _modules[moduleAddress] = moduleRegistration;
+        _moduleAddrToRecords[moduleAddress] = moduleRegistration;
 
         // Emit ModuleRegistration event
         emit ModuleRegistration(moduleAddress, sender, ResolverUID.unwrap(resolverUID));
+    }
+
+    function getRegisteredModules(address moduleAddress)
+        external
+        view
+        returns (ModuleRecord memory moduleRecord)
+    {
+        return _moduleAddrToRecords[moduleAddress];
     }
 }

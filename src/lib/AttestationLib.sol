@@ -64,6 +64,7 @@ library AttestationLib {
         pure
         returns (bytes32 _hash)
     {
+        // TODO: check if this is correct
         _hash = keccak256(abi.encode(REVOKE_TYPEHASH, keccak256(abi.encode(data)), nonce));
     }
 
@@ -75,6 +76,7 @@ library AttestationLib {
         pure
         returns (bytes32 _hash)
     {
+        // TODO: check if this is correct
         _hash = keccak256(abi.encode(REVOKE_TYPEHASH, keccak256(abi.encode(data)), nonce));
     }
 }

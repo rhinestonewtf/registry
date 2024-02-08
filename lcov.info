@@ -10592,11 +10592,11 @@ DA:20,512
 FN:23,Attestation.revoke
 FNDA:0,Attestation.revoke
 DA:24,0
-FN:27,Attestation.readAttestation
-FNDA:520,Attestation.readAttestation
+FN:27,Attestation.findAttestation
+FNDA:520,Attestation.findAttestation
 DA:35,520
-FN:38,Attestation.readAttestations
-FNDA:0,Attestation.readAttestations
+FN:38,Attestation.findAttestations
+FNDA:0,Attestation.findAttestations
 DA:46,0
 DA:47,0
 DA:48,0

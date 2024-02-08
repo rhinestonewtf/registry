@@ -2,11 +2,13 @@
 pragma solidity ^0.8.19;
 
 import { AttestationRecord, PackedModuleTypes, ModuleType } from "../DataTypes.sol";
-import { ZERO_TIMESTAMP, ZERO_MODULE_TYPE } from "../Common.sol";
+import { ZERO_TIMESTAMP, ZERO_MODULE_TYPE, ZERO_ADDRESS } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 import { TrustManagerExternalAttesterList } from "./TrustManagerExternalAttesterList.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
+
+import "forge-std/console2.sol";
 
 /**
  * @title TrustManager
@@ -52,9 +54,11 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         attestersLength--;
         for (uint256 i; i < attestersLength; i++) {
             address _attester = attesters[i];
-            if (_attester == address(0)) revert InvalidTrustedAttesterInput();
+            // user could have set attester to address(0)
+            if (_attester == ZERO_ADDRESS) revert InvalidTrustedAttesterInput();
             _att.linkedAttesters[_attester] = attesters[i + 1];
         }
+        emit NewTrustedAttesters();
     }
 
     function check(address module) external view {
@@ -88,7 +92,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         address attester = trustedAttesters.attester;
 
         // smart account has no trusted attesters set
-        if (attester == address(0) && threshold != 0) {
+        if (attester == ZERO_ADDRESS && threshold != 0) {
             revert NoTrustedAttestersFound();
         }
         // smart account only has ONE trusted attester
@@ -96,26 +100,32 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         else if (threshold == 1) {
             AttestationRecord storage record =
                 _getAttestation({ module: module, attester: attester });
-            if (moduleType != ZERO_MODULE_TYPE) _requireValidAttestation(moduleType, record);
+            _requireValidAttestation(moduleType, record);
         }
         // smart account has more than one trusted attester
         else {
             // loop though list and check if the attestation is valid
             AttestationRecord storage record =
                 _getAttestation({ module: module, attester: attester });
-            if (moduleType != ZERO_MODULE_TYPE) _requireValidAttestation(moduleType, record);
-            threshold--;
+            _requireValidAttestation(moduleType, record);
             for (uint256 i = 1; i < attesterCount; i++) {
+                threshold--;
                 // get next attester from linked List
                 attester = trustedAttesters.linkedAttesters[attester];
                 record = _getAttestation({ module: module, attester: attester });
-                if (moduleType != ZERO_MODULE_TYPE) _requireValidAttestation(moduleType, record);
+                _requireValidAttestation(moduleType, record);
                 // if threshold reached, exit loop
                 if (threshold == 0) return;
             }
         }
     }
 
+    /**
+     * Check that attestationRecord is valid:
+     *                 - not revoked
+     *                 - not expired
+     *                 - correct module type (if not ZERO_MODULE_TYPE)
+     */
     function _requireValidAttestation(
         ModuleType expectedType,
         AttestationRecord storage record
@@ -123,49 +133,31 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         internal
         view
     {
-        // cache values
+        // cache values TODO:: assembly to ensure single SLOAD
         uint256 attestedAt = record.time;
         uint256 expirationTime = record.expirationTime;
         uint256 revocationTime = record.revocationTime;
         PackedModuleTypes packedModuleType = record.moduleTypes;
 
+        // check if any attestation was made
         if (attestedAt == ZERO_TIMESTAMP) {
             revert AttestationNotFound();
         }
 
+        // check if attestation has expired
         if (expirationTime != ZERO_TIMESTAMP && block.timestamp > expirationTime) {
             revert AttestationNotFound();
         }
 
+        // check if attestation has been revoked
         if (revocationTime != ZERO_TIMESTAMP) {
             revert RevokedAttestation(record.attester);
         }
-        if (!packedModuleType.isType(expectedType)) {
+        // if a expectedType is set, check if the attestation is for the correct module type
+        // if no expectedType is set, module type is not checked
+        if (expectedType != ZERO_MODULE_TYPE && !packedModuleType.isType(expectedType)) {
             revert InvalidModuleType();
         }
-    }
-
-    function _requireValidAttestation(AttestationRecord storage record) internal view {
-        // cache values
-        uint256 attestedAt = record.time;
-        uint256 expirationTime = record.expirationTime;
-        uint256 revocationTime = record.revocationTime;
-
-        if (attestedAt == ZERO_TIMESTAMP) {
-            revert AttestationNotFound();
-        }
-
-        if (expirationTime != ZERO_TIMESTAMP && block.timestamp > expirationTime) {
-            revert AttestationNotFound();
-        }
-
-        if (revocationTime != ZERO_TIMESTAMP) {
-            revert RevokedAttestation(record.attester);
-        }
-    }
-
-    function getTrustedAttesters() public view returns (address[] memory attesters) {
-        return getTrustedAttesters(msg.sender);
     }
 
     function getTrustedAttesters(address smartAccount)

@@ -89,5 +89,7 @@ contract BaseTest is Test {
 
         vm.prank(moduleDev1.addr);
         registry.registerModule(defaultResolverUID, address(module1), "");
+        vm.prank(moduleDev2.addr);
+        registry.registerModule(defaultResolverUID, address(module2), "");
     }
 }

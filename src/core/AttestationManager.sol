@@ -21,10 +21,12 @@ import { IRegistry } from "../IRegistry.sol";
 
 import { EMPTY_ATTESTATION_REF, EMPTY_RESOLVER_UID, _time, ZERO_TIMESTAMP } from "../Common.sol";
 
+import "forge-std/console2.sol";
 /**
  * AttestationManager handles the registry's internal storage of new attestations and revocation of attestation
  * @dev This contract is abstract and provides utility functions to store attestations and revocations.
  */
+
 abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager, TrustManager {
     using StubLib for *;
     using AttestationLib for AttestationDataRef;
@@ -135,10 +137,10 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         // caching module address.
         address module = request.moduleAddr;
         // SLOAD the resolverUID from the moduleRecord
-        resolverUID = _modules[module].resolverUID;
+        resolverUID = _moduleAddrToRecords[module].resolverUID;
         // Ensure that attestation is for module that was registered.
-        if (resolverUID != EMPTY_RESOLVER_UID) {
-            revert InvalidAttestation();
+        if (resolverUID == EMPTY_RESOLVER_UID) {
+            revert ModuleNotFoundInRegistry(module);
         }
 
         // use SSTORE2 to store the data in attestationRequest
@@ -223,7 +225,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
 
         // SLOAD entire record. This will later be passed to the resolver
         record = attestationStorage;
-        resolverUID = _modules[request.moduleAddr].resolverUID;
+        resolverUID = _moduleAddrToRecords[request.moduleAddr].resolverUID;
 
         // Ensure that we aren't attempting to revoke a non-existing attestation.
         if (record.dataPointer == EMPTY_ATTESTATION_REF) {

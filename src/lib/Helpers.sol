@@ -12,6 +12,7 @@ library UIDLib {
      * @return schema UID.
      */
     function getUID(SchemaRecord memory schemaRecord) internal pure returns (SchemaUID) {
+        // TODO: this is a frontrunning vuln
         return SchemaUID.wrap(
             keccak256(abi.encodePacked(schemaRecord.schema, address(schemaRecord.validator)))
         );
@@ -25,6 +26,7 @@ library UIDLib {
      * @return ResolverUID.
      */
     function getUID(ResolverRecord memory resolver) internal pure returns (ResolverUID) {
+        // TODO: this is a frontrunning vuln
         return ResolverUID.wrap(keccak256(abi.encodePacked(resolver.resolver)));
     }
 }

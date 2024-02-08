@@ -17,12 +17,16 @@ contract TrustTest is AttestationTest {
         _;
     }
 
-    function test_WhenSupplyingOneAttester() external whenSettingAttester {
+    function test_WhenSupplyingOneAttester()
+        external
+        whenSettingAttester
+        prankWithAccount(smartAccount1)
+    {
         // It should set.
         address[] memory trustedAttesters = new address[](1);
         trustedAttesters[0] = address(attester1.addr);
         registry.trustAttesters(1, trustedAttesters);
-        address[] memory result = registry.getTrustedAttesters();
+        address[] memory result = registry.getTrustedAttesters(smartAccount1.addr);
         assertEq(result.length, 1);
         assertEq(result[0], address(attester1.addr));
     }
@@ -30,6 +34,7 @@ contract TrustTest is AttestationTest {
     function test_WhenSupplyingManyAttesters(address[] memory attesters)
         external
         whenSettingAttester
+        prankWithAccount(smartAccount1)
     {
         vm.assume(attesters.length < 100);
         vm.assume(attesters.length > 0);
@@ -41,7 +46,7 @@ contract TrustTest is AttestationTest {
         registry.trustAttesters(uint8(attesters.length), attesters);
         // It should set.
         // It should emit event.
-        address[] memory result = registry.getTrustedAttesters();
+        address[] memory result = registry.getTrustedAttesters(smartAccount1.addr);
 
         assertEq(result.length, attesters.length);
         for (uint256 i; i < attesters.length; i++) {

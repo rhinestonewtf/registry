@@ -49,8 +49,6 @@ library ModuleDeploymentLib {
         // if params were abi.encodePacked in createCode, this will revert
         initCodeHash = keccak256(initCode);
 
-        // TODO: can we use a lib for this?
-
         // solhint-disable-next-line no-inline-assembly
         assembly {
             moduleAddress := create2(value, add(initCode, 0x20), mload(initCode), salt)
