@@ -44,6 +44,8 @@ interface IRegistry is IERC7484 {
     error InvalidModuleType();
     error AttestationNotFound();
 
+    error InsufficientAttestations();
+
     function trustAttesters(uint8 threshold, address[] calldata attesters) external;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/

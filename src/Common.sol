@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { ResolverUID, SchemaUID, AttestationDataRef } from "./DataTypes.sol";
+import { ResolverUID, SchemaUID, AttestationDataRef, ModuleType } from "./DataTypes.sol";
 
 // A representation of an empty/uninitialized UID.
 bytes32 constant EMPTY_UID = 0;
@@ -12,6 +12,7 @@ SchemaUID constant EMPTY_SCHEMA_UID = SchemaUID.wrap(EMPTY_UID);
 uint256 constant ZERO_TIMESTAMP = 0;
 
 address constant ZERO_ADDRESS = address(0);
+ModuleType constant ZERO_MODULE_TYPE = ModuleType.wrap(0);
 
 AttestationDataRef constant EMPTY_ATTESTATION_REF = AttestationDataRef.wrap(address(0));
 

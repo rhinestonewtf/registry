@@ -108,3 +108,14 @@ function attestationDataRefEq(
 type PackedModuleTypes is uint32;
 
 type ModuleType is uint32;
+
+using { moduleTypeEq as == } for ModuleType global;
+using { moduleTypeNeq as != } for ModuleType global;
+
+function moduleTypeEq(ModuleType uid1, ModuleType uid2) pure returns (bool) {
+    return ModuleType.unwrap(uid1) == ModuleType.unwrap(uid2);
+}
+
+function moduleTypeNeq(ModuleType uid1, ModuleType uid2) pure returns (bool) {
+    return ModuleType.unwrap(uid1) != ModuleType.unwrap(uid2);
+}
