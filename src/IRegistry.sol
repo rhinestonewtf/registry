@@ -38,6 +38,7 @@ interface IRegistry is IERC7484 {
     event NewTrustedAttesters();
 
     error InvalidResolver(IExternalResolver resolver);
+    error InvalidResolverUID(ResolverUID uid);
     error InvalidTrustedAttesterInput();
     error NoTrustedAttestersFound();
     error RevokedAttestation(address attester);
@@ -68,8 +69,30 @@ interface IRegistry is IERC7484 {
     error InvalidSignature();
     error InvalidModuleTypes();
 
+    /**
+     * Allows msg.sender to attest to multiple modules' security status.
+     * The AttestationRequest.Data provided should match the attestation
+     * schema defined by the Schema corresponding to the SchemaUID
+     *
+     * @dev This function will revert if the same module is attested twice by the same attester.
+     *      If you want to re-attest, you have to revoke your attestation first, and then attest again.
+     *
+     * @param schemaUID The SchemaUID of the schema the attestation is based on.
+     * @param request a single AttestationRequest
+     */
     function attest(SchemaUID schemaUID, AttestationRequest calldata request) external;
 
+    /**
+     * Allows msg.sender to attest to multiple modules' security status.
+     * The AttestationRequest.Data provided should match the attestation
+     * schema defined by the Schema corresponding to the SchemaUID
+     *
+     * @dev This function will revert if the same module is attested twice by the same attester.
+     *      If you want to re-attest, you have to revoke your attestation first, and then attest again.
+     *
+     * @param schemaUID The SchemaUID of the schema the attestation is based on.
+     * @param requests An array of AttestationRequest
+     */
     function attest(SchemaUID schemaUID, AttestationRequest[] calldata requests) external;
 
     function attest(
@@ -88,21 +111,21 @@ interface IRegistry is IERC7484 {
     )
         external;
 
-    function readAttestations(
-        address module,
-        address[] calldata attesters
-    )
-        external
-        view
-        returns (AttestationRecord[] memory attestations);
-
-    function readAttestation(
+    function findAttestation(
         address module,
         address attester
     )
         external
         view
         returns (AttestationRecord memory attestation);
+
+    function findAttestations(
+        address module,
+        address[] calldata attesters
+    )
+        external
+        view
+        returns (AttestationRecord[] memory attestations);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                       Revocations                          */

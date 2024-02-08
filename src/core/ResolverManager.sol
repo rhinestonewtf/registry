@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import { ResolverRecord, ResolverUID } from "../DataTypes.sol";
-import { ZERO_ADDRESS } from "../Common.sol";
+import { EMPTY_RESOLVER_UID, ZERO_ADDRESS } from "../Common.sol";
 import { IExternalResolver } from "../external/IExternalResolver.sol";
 import { UIDLib } from "../lib/Helpers.sol";
 import { IRegistry } from "../IRegistry.sol";
@@ -24,6 +24,16 @@ abstract contract ResolverManager is IRegistry {
         _;
     }
 
+    modifier notZero(ResolverUID uid) {
+        if (uid == EMPTY_RESOLVER_UID) {
+            revert InvalidResolverUID(uid);
+        }
+        _;
+    }
+
+    /**
+     * If a resolver is not address(0), we check if it supports the IExternalResolver interface
+     */
     modifier onlyResolver(IExternalResolver resolver) {
         if (
             address(resolver) == address(0)
@@ -34,36 +44,38 @@ abstract contract ResolverManager is IRegistry {
         _;
     }
 
-    function registerResolver(IExternalResolver _resolver)
+    function registerResolver(IExternalResolver resolver)
         external
-        onlyResolver(_resolver)
+        onlyResolver(resolver)
         returns (ResolverUID uid)
     {
         // build a ResolverRecord from the input
-        ResolverRecord memory resolver =
-            ResolverRecord({ resolver: _resolver, resolverOwner: msg.sender });
+        ResolverRecord memory resolverRecord =
+            ResolverRecord({ resolver: resolver, resolverOwner: msg.sender });
 
         // Computing a unique ID for the schema using its properties
-        uid = resolver.getUID();
+        uid = resolverRecord.getUID();
 
         // Checking if a schema with this UID already exists -> resolver can never be ZERO_ADDRESS
         if (address(resolvers[uid].resolver) != ZERO_ADDRESS) {
             revert ResolverAlreadyExists();
         }
 
-        // Storing schema in the _schemas mapping
-        resolvers[uid] = resolver;
+        // SSTORE schema in the resolvers mapping
+        resolvers[uid] = resolverRecord;
 
-        emit NewResolver(uid, address(_resolver));
+        emit NewResolver(uid, address(resolver));
     }
 
+    // TODO: VULN:
+    // Attacker could register the same resolver, thus be the owner of the resolverUID, then set the resolver to a malicious contract
     function setResolver(
         ResolverUID uid,
         IExternalResolver resolver
     )
         external
         onlyResolver(resolver)
-        onlyResolverOwner(uid)
+        onlyResolverOwner(uid) // authorization control
     {
         ResolverRecord storage referrer = resolvers[uid];
         referrer.resolver = resolver;

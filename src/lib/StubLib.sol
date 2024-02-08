@@ -7,7 +7,6 @@ import { IExternalResolver } from "../external/IExternalResolver.sol";
 import { ZERO_ADDRESS, ZERO_TIMESTAMP } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 
-// TODO: fix errors
 library StubLib {
     function requireExternalSchemaValidation(
         AttestationRecord memory attestationRecord,

@@ -5,7 +5,7 @@ import { AttestationRecord } from "../DataTypes.sol";
 import { ZERO_TIMESTAMP } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 
-abstract contract TrustManagerLegacy is IRegistry {
+abstract contract TrustManagerExternalAttesterList is IRegistry {
     function check(address module, address attester) public view returns (uint256 attestedAt) {
         AttestationRecord storage attestation = _getAttestation(module, attester);
 

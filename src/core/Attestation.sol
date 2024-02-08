@@ -24,7 +24,7 @@ abstract contract Attestation is IRegistry, AttestationManager {
         _revoke(msg.sender, requests);
     }
 
-    function readAttestation(
+    function findAttestation(
         address module,
         address attester
     )
@@ -35,7 +35,7 @@ abstract contract Attestation is IRegistry, AttestationManager {
         attestation = _getAttestation(module, attester);
     }
 
-    function readAttestations(
+    function findAttestations(
         address module,
         address[] calldata attesters
     )

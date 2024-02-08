@@ -70,6 +70,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         external
     {
         ResolverRecord storage resolver = resolvers[resolverUID];
+
         if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver(resolver.resolver);
 
         ModuleRecord memory record = _storeModuleRecord({
@@ -78,6 +79,8 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             resolverUID: resolverUID,
             metadata: metadata
         });
+        // TODO: in case of registerModule() the resolver doesnt know the msg.sender since record.sender == address(0)s
+        // is this a problemt?
         record.requireExternalResolverOnModuleRegistration(resolver);
     }
 

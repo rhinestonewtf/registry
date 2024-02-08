@@ -10,12 +10,18 @@ import { IRegistry } from "../IRegistry.sol";
 
 contract SignedAttestation is IRegistry, Attestation, EIP712 {
     using AttestationLib for AttestationRequest;
-    using AttestationLib for AttestationRequest[];
     using AttestationLib for RevocationRequest;
+    using AttestationLib for AttestationRequest[];
     using AttestationLib for RevocationRequest[];
 
     mapping(address attester => uint256 nonce) public attesterNonce;
 
+    /**
+     * Attestation can be made on any SchemaUID.
+     * @dev the registry, will forward your AttestationRequest.Data to the SchemaManager to
+     * check if the schema exists.
+     * @param schemaUID The SchemaUID of the schema to be attested.
+     */
     function attest(
         SchemaUID schemaUID,
         address attester,

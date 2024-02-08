@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import { AttestationRecord, PackedModuleTypes, ModuleType } from "../DataTypes.sol";
 import { ZERO_TIMESTAMP, ZERO_MODULE_TYPE } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
-import { TrustManagerLegacy } from "./TrustManagerLegacy.sol";
+import { TrustManagerExternalAttesterList } from "./TrustManagerExternalAttesterList.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
@@ -14,7 +14,7 @@ import { LibSort } from "solady/utils/LibSort.sol";
  * Implements EIP-7484 to query attestations stored in the registry.
  * @dev This contract is abstract and provides utility functions to query attestations.
  */
-abstract contract TrustManager is IRegistry, TrustManagerLegacy {
+abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
     using ModuleTypeLib for PackedModuleTypes;
     using LibSort for address[];
 
