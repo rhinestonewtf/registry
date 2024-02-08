@@ -15,6 +15,9 @@ import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.so
 import { IExternalResolver } from "./external/IExternalResolver.sol";
 
 interface IERC7484 {
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*          Check with Registry internal attesters            */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     function check(address module) external view;
 
     function checkForAccount(address smartAccount, address module) external view;
@@ -28,6 +31,21 @@ interface IERC7484 {
     )
         external
         view;
+
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*              Check with external attester(s)               */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    function check(address module, address attester) external view returns (uint256 attestedAt);
+
+    function checkN(
+        address module,
+        address[] calldata attesters,
+        uint256 threshold
+    )
+        external
+        view
+        returns (uint256[] memory attestedAtArray);
 }
 
 interface IRegistry is IERC7484 {
@@ -47,6 +65,14 @@ interface IRegistry is IERC7484 {
 
     error InsufficientAttestations();
 
+    /**
+     * Allows smartaccounts - the end users of the registry - to appoint
+     * one or many attesters as trusted.
+     *
+     * @param threshold The minimum number of attestations required for a module
+     *                  to be considered secure.
+     * @param attesters The addresses of the attesters to be trusted.
+     */
     function trustAttesters(uint8 threshold, address[] calldata attesters) external;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/

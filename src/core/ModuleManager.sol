@@ -84,6 +84,38 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         record.requireExternalResolverOnModuleRegistration(resolver);
     }
 
+    function deployViaFactory(
+        address factory,
+        bytes calldata callOnFactory,
+        bytes calldata metadata,
+        ResolverUID resolverUID
+    )
+        external
+        payable
+        returns (address moduleAddress)
+    {
+        ResolverRecord storage resolver = resolvers[resolverUID];
+        if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
+        // call external factory to deploy module
+        (bool ok, bytes memory returnData) = factory.call{ value: msg.value }(callOnFactory);
+        if (!ok) revert InvalidDeployment();
+
+        moduleAddress = abi.decode(returnData, (address));
+        if (moduleAddress == ZERO_ADDRESS) revert InvalidDeployment();
+        if (_isContract(moduleAddress) != true) revert InvalidDeployment();
+
+        ModuleRecord memory record = _storeModuleRecord({
+            moduleAddress: moduleAddress,
+            // TODO: should we use msg.sender or the factory address?
+            sender: ZERO_ADDRESS, // setting sender to address(0) since anyone can invoke this function
+            resolverUID: resolverUID,
+            metadata: metadata
+        });
+        // TODO: in case of registerModule() the resolver doesnt know the msg.sender since record.sender == address(0)s
+        // is this a problemt?
+        record.requireExternalResolverOnModuleRegistration(resolver);
+    }
+
     function _storeModuleRecord(
         address moduleAddress,
         address sender,

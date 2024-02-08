@@ -6,7 +6,7 @@ import { ZERO_TIMESTAMP } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 abstract contract TrustManagerExternalAttesterList is IRegistry {
-    function check(address module, address attester) public view returns (uint256 attestedAt) {
+    function check(address module, address attester) external view returns (uint256 attestedAt) {
         AttestationRecord storage attestation = _getAttestation(module, attester);
 
         // attestedAt = attestation.time;
