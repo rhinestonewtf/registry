@@ -220,7 +220,6 @@ interface IRegistry is IERC7484 {
     )
         external;
 
-
     function calcModuleAddress(
         bytes32 salt,
         bytes calldata initCode
