@@ -5,7 +5,6 @@ import {
     AttestationDataRef,
     AttestationRecord,
     AttestationRequest,
-    ModuleRecord,
     ModuleType,
     ResolverUID,
     RevocationRequest,
@@ -21,12 +20,10 @@ import { IRegistry } from "../IRegistry.sol";
 
 import { EMPTY_ATTESTATION_REF, EMPTY_RESOLVER_UID, _time, ZERO_TIMESTAMP } from "../Common.sol";
 
-import "forge-std/console2.sol";
 /**
  * AttestationManager handles the registry's internal storage of new attestations and revocation of attestation
  * @dev This contract is abstract and provides utility functions to store attestations and revocations.
  */
-
 abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager, TrustManager {
     using StubLib for *;
     using AttestationLib for AttestationDataRef;

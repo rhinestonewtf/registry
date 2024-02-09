@@ -94,7 +94,7 @@ interface IRegistry is IERC7484 {
         address indexed moduleAddr,
         address indexed attester,
         SchemaUID schemaUID,
-        AttestationDataRef sstore2Pointer
+        AttestationDataRef indexed sstore2Pointer
     );
 
     error AlreadyRevoked();
@@ -230,7 +230,7 @@ interface IRegistry is IERC7484 {
     /*                      Manage Schemas                        */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    event SchemaRegistered(SchemaUID indexed uid, address registerer);
+    event SchemaRegistered(SchemaUID indexed uid, address indexed registerer);
 
     error SchemaAlreadyExists(SchemaUID uid);
 
@@ -248,7 +248,7 @@ interface IRegistry is IERC7484 {
     /*                     Manage Resolvers                       */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    event NewResolver(ResolverUID indexed uid, address resolver);
+    event NewResolver(ResolverUID indexed uid, address indexed resolver);
 
     error ResolverAlreadyExists();
 
