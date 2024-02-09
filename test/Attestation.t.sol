@@ -161,7 +161,9 @@ contract AttestationTest is BaseTest {
     function test_WhenUsingValidECDSA() public whenAttestingWithSignature {
         uint256 nonceBefore = registry.attesterNonce(attester1.addr);
         // It should recover.
-        uint32[] memory types = new uint32[](1);
+        uint32[] memory types = new uint32[](2);
+        types[0] = 1;
+        types[1] = 2;
         AttestationRequest memory request =
             mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
 
@@ -177,6 +179,7 @@ contract AttestationTest is BaseTest {
         assertEq(record.moduleAddr, request.moduleAddr);
         assertEq(record.attester, attester1.addr);
         assertEq(nonceAfter, nonceBefore + 1);
+        assertEq(PackedModuleTypes.unwrap(record.moduleTypes), 2 ** 1 + 2 ** 2);
     }
 
     function test_WhenRevokingWithValidECDSA() public {

@@ -8,6 +8,8 @@ import { TrustManagerExternalAttesterList } from "./TrustManagerExternalAttester
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
+import "forge-std/console2.sol";
+
 /**
  * @title TrustManager
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
@@ -131,11 +133,32 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         internal
         view
     {
-        // cache values TODO:: assembly to ensure single SLOAD
-        uint256 attestedAt = record.time;
-        uint256 expirationTime = record.expirationTime;
-        uint256 revocationTime = record.revocationTime;
-        PackedModuleTypes packedModuleType = record.moduleTypes;
+        uint256 attestedAt;
+        uint256 expirationTime;
+        uint256 revocationTime;
+        PackedModuleTypes packedModuleType;
+        /*
+         * Ensure only one SLOAD
+         * Assembly equiv to:
+         *
+         *     uint256 attestedAt = record.time;
+         *     uint256 expirationTime = record.expirationTime;
+         *     uint256 revocationTime = record.revocationTime;
+         *     PackedModuleTypes packedModuleType = record.moduleTypes;
+         */
+
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            let mask := 0xffffffffffff
+            let slot := sload(record.slot)
+            attestedAt := and(mask, slot)
+            slot := shr(48, slot)
+            expirationTime := and(mask, slot)
+            slot := shr(48, slot)
+            revocationTime := and(mask, slot)
+            slot := shr(48, slot)
+            packedModuleType := and(mask, slot)
+        }
 
         // check if any attestation was made
         if (attestedAt == ZERO_TIMESTAMP) {

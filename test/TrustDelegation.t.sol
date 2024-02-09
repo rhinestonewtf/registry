@@ -88,6 +88,18 @@ contract TrustTest is AttestationTest {
     }
 
     function test_WhenAttestersSetAndAllOk() external whenQueryingRegisty {
+        test_WhenUsingValidECDSA();
+
+        vm.startPrank(smartAccount1.addr);
         // It should not revert.
+        address[] memory attesters = new address[](2);
+        attesters[0] = address(attester1.addr);
+        attesters[1] = address(attester2.addr);
+        registry.trustAttesters(1, attesters);
+
+        registry.check(address(module1), ModuleType.wrap(1));
+        registry.check(address(module1), ModuleType.wrap(2));
+        vm.expectRevert();
+        registry.check(address(module1), ModuleType.wrap(3));
     }
 }
