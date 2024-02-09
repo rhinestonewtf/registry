@@ -206,8 +206,7 @@ interface IRegistry is IERC7484 {
     function deployModule(
         bytes32 salt,
         ResolverUID resolverUID,
-        bytes calldata code,
-        bytes calldata deployParams,
+        bytes calldata initCode,
         bytes calldata metadata
     )
         external
@@ -220,6 +219,15 @@ interface IRegistry is IERC7484 {
         bytes calldata metadata
     )
         external;
+
+
+    function calcModuleAddress(
+        bytes32 salt,
+        bytes calldata initCode
+    )
+        external
+        view
+        returns (address);
 
     function getRegisteredModules(address moduleAddress)
         external

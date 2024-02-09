@@ -47,11 +47,17 @@ interface IExternalResolver is IERC165 {
     /**
      * @dev Processes a Module Registration
      *
-     * @param module Module registration artefact
+     * @param sender The msg.sender of the module registration
+     * @param moduleAddress address of the module
+     * @param record Module registration artefact
      *
      * @return Whether the registration is valid
      */
-    function resolveModuleRegistration(ModuleRecord calldata module)
+    function resolveModuleRegistration(
+        address sender,
+        address moduleAddress,
+        ModuleRecord calldata record
+    )
         external
         payable
         returns (bool);

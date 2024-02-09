@@ -22,7 +22,7 @@ contract ModuleRegistrationTest is BaseTest {
 
         bytes memory bytecode = type(MockModule).creationCode;
 
-        address moduleAddr = registry.deployModule(salt, defaultResolverUID, bytecode, "", "data");
+        address moduleAddr = registry.deployModule(salt, defaultResolverUID, bytecode, "");
         ModuleRecord memory record = registry.getRegisteredModules(moduleAddr);
         assertTrue(record.resolverUID == defaultResolverUID);
     }
@@ -31,9 +31,12 @@ contract ModuleRegistrationTest is BaseTest {
         bytes32 salt = keccak256(abi.encodePacked("ModuleRegistration", address(this)));
 
         bytes memory bytecode = type(MockModuleWithArgs).creationCode;
+        bytes memory initCode = abi.encodePacked(bytecode, abi.encode(313_131));
 
-        address moduleAddr =
-            registry.deployModule(salt, defaultResolverUID, bytecode, abi.encode(313_131), "");
+        address moduleAddr = registry.deployModule(salt, defaultResolverUID, initCode, "");
+
+        address moduleAddrCalc = registry.calcModuleAddress(salt, initCode);
+        assertTrue(moduleAddr == moduleAddrCalc);
     }
 
     function test_WhenRegisteringAModuleOnAnInvalidResolverUID()

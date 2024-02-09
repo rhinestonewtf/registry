@@ -37,30 +37,42 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
     function deployModule(
         bytes32 salt,
         ResolverUID resolverUID,
-        bytes calldata code,
-        bytes calldata deployParams,
+        bytes calldata initCode,
         bytes calldata metadata
     )
         external
         payable
-        returns (address moduleAddr)
+        returns (address moduleAddress)
     {
         ResolverRecord storage resolver = resolvers[resolverUID];
         if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver(resolver.resolver);
 
         // address predictedModuleAddress = code.calculateAddress(deployParams, salt);
 
-        // TODO: should we use the initCode hash return value?
-        (moduleAddr,,) = code.deploy(deployParams, salt, msg.value);
+        moduleAddress = initCode.deploy(salt);
         // _storeModuleRecord() will check if module is already registered,
         // which should prevent reentry to any deploy function
         ModuleRecord memory record = _storeModuleRecord({
-            moduleAddress: moduleAddr, // TODO: is this reentrancy?
+            moduleAddress: moduleAddress, // TODO: is this reentrancy?
             sender: msg.sender,
             resolverUID: resolverUID,
             metadata: metadata
         });
-        record.requireExternalResolverOnModuleRegistration(resolver);
+        record.requireExternalResolverOnModuleRegistration({
+            moduleAddress: moduleAddress,
+            resolver: resolver
+        });
+    }
+
+    function calcModuleAddress(
+        bytes32 salt,
+        bytes calldata initCode
+    )
+        external
+        view
+        returns (address)
+    {
+        return initCode.calcAddress(salt);
     }
 
     function registerModule(
@@ -81,9 +93,10 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             resolverUID: resolverUID,
             metadata: metadata
         });
-        // TODO: in case of registerModule() the resolver doesnt know the msg.sender since record.sender == address(0)s
-        // is this a problem?
-        record.requireExternalResolverOnModuleRegistration(resolver);
+        record.requireExternalResolverOnModuleRegistration({
+            moduleAddress: moduleAddress,
+            resolver: resolver
+        });
     }
 
     function deployViaFactory(
@@ -96,7 +109,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         payable
         returns (address moduleAddress)
     {
-        ResolverRecord storage resolver = resolvers[resolverUID];
+        ResolverRecord memory resolver = resolvers[resolverUID];
         if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
         // prevent someone from calling a registry function pretending its a factory
         if (factory == address(this)) revert FactoryCallFailed(factory);
@@ -115,9 +128,11 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             resolverUID: resolverUID,
             metadata: metadata
         });
-        // TODO: in case of registerModule() the resolver doesnt know the msg.sender since record.sender == address(0)s
-        // is this a problemt?
-        record.requireExternalResolverOnModuleRegistration(resolver);
+
+        record.requireExternalResolverOnModuleRegistration({
+            moduleAddress: moduleAddress,
+            resolver: resolver
+        });
     }
 
     function _storeModuleRecord(

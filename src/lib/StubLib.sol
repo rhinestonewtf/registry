@@ -108,7 +108,8 @@ library StubLib {
 
     function requireExternalResolverOnModuleRegistration(
         ModuleRecord memory moduleRecord,
-        ResolverRecord storage resolver
+        address moduleAddress,
+        ResolverRecord memory resolver
     )
         internal
     {
@@ -116,7 +117,13 @@ library StubLib {
 
         if (address(resolverContract) != ZERO_ADDRESS) return;
 
-        if (resolverContract.resolveModuleRegistration(moduleRecord) == false) {
+        if (
+            resolverContract.resolveModuleRegistration({
+                sender: msg.sender,
+                moduleAddress: moduleAddress,
+                record: moduleRecord
+            }) == false
+        ) {
             revert IRegistry.ExternalError_ModuleRegistration();
         }
     }

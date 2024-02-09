@@ -64,7 +64,11 @@ contract MockResolver is IExternalResolver {
         return returnVal;
     }
 
-    function resolveModuleRegistration(ModuleRecord calldata module)
+    function resolveModuleRegistration(
+        address sender,
+        address moduleRecord,
+        ModuleRecord calldata record
+    )
         external
         payable
         override

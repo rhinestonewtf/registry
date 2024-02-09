@@ -8,53 +8,21 @@ pragma solidity ^0.8.19;
  */
 library ModuleDeploymentLib {
     /**
-     * @dev Gets the code hash of a contract at a given address.
-     *
-     * @param contractAddr The address of the contract.
-     *
-     * @return hash The hash of the contract code.
-     */
-    function codeHash(address contractAddr) internal view returns (bytes32 hash) {
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            if iszero(extcodesize(contractAddr)) { revert(0, 0) }
-            hash := extcodehash(contractAddr)
-        }
-    }
-
-    /**
      * @notice Creates a new contract using CREATE2 opcode.
      * @dev This method uses the CREATE2 opcode to deploy a new contract with a deterministic address.
      *
-     * @param createCode The creationCode for the contract.
-     * @param params The parameters for creating the contract. If the contract has a constructor,
+     * @param initCode The creationCode for the contract.
      *               this MUST be provided. Function will fail if params are abi.encodePacked in createCode.
-     * @param salt The salt for creating the contract.
      *
      * @return moduleAddress The address of the deployed contract.
-     * @return initCodeHash packed (creationCode, constructor params)
-     * @return contractCodeHash hash of deployed bytecode
      */
-    function deploy(
-        bytes memory createCode,
-        bytes memory params,
-        bytes32 salt,
-        uint256 value
-    )
-        internal
-        returns (address moduleAddress, bytes32 initCodeHash, bytes32 contractCodeHash)
-    {
-        bytes memory initCode = abi.encodePacked(createCode, params);
-        // this enforces, that constructor params were supplied via params argument
-        // if params were abi.encodePacked in createCode, this will revert
-        initCodeHash = keccak256(initCode);
-
+    function deploy(bytes memory initCode, bytes32 salt) internal returns (address moduleAddress) {
+        uint256 value = msg.value;
         // solhint-disable-next-line no-inline-assembly
         assembly {
             moduleAddress := create2(value, add(initCode, 0x20), mload(initCode), salt)
             // If the contract was not created successfully, the transaction is reverted.
             if iszero(extcodesize(moduleAddress)) { revert(0, 0) }
-            contractCodeHash := extcodehash(moduleAddress)
         }
     }
 
@@ -70,7 +38,7 @@ library ModuleDeploymentLib {
      * @return The address that the contract would be deployed
      *            at if the CREATE2 opcode was called with the specified _code and _salt.
      */
-    function calcAddress(bytes memory _code, bytes32 _salt) internal view returns (address) {
+    function calcAddress(bytes calldata _code, bytes32 _salt) internal view returns (address) {
         bytes32 hash =
             keccak256(abi.encodePacked(bytes1(0xff), address(this), _salt, keccak256(_code)));
         // NOTE: cast last 20 bytes of hash to address

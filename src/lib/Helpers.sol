@@ -11,10 +11,11 @@ library UIDLib {
      *
      * @return schema UID.
      */
-    function getUID(SchemaRecord memory schemaRecord) internal pure returns (SchemaUID) {
-        // TODO: this is a frontrunning vuln
+    function getUID(SchemaRecord memory schemaRecord) internal view returns (SchemaUID) {
         return SchemaUID.wrap(
-            keccak256(abi.encodePacked(schemaRecord.schema, address(schemaRecord.validator)))
+            keccak256(
+                abi.encodePacked(msg.sender, schemaRecord.schema, address(schemaRecord.validator))
+            )
         );
     }
 
@@ -25,8 +26,7 @@ library UIDLib {
      *
      * @return ResolverUID.
      */
-    function getUID(ResolverRecord memory resolver) internal pure returns (ResolverUID) {
-        // TODO: this is a frontrunning vuln
-        return ResolverUID.wrap(keccak256(abi.encodePacked(resolver.resolver)));
+    function getUID(ResolverRecord memory resolver) internal view returns (ResolverUID) {
+        return ResolverUID.wrap(keccak256(abi.encodePacked(msg.sender, resolver.resolver)));
     }
 }
