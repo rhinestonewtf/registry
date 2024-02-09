@@ -8,8 +8,6 @@ import { TrustManagerExternalAttesterList } from "./TrustManagerExternalAttester
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
-import "forge-std/console2.sol";
-
 /**
  * @title TrustManager
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
