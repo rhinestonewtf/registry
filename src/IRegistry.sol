@@ -132,6 +132,19 @@ interface IRegistry is IERC7484 {
      */
     function attest(SchemaUID schemaUID, AttestationRequest[] calldata requests) external;
 
+    /**
+     * Allows attester to attest by signing an AttestationRequest (ECDSA or ERC1271)
+     * The AttestationRequest.Data provided should match the attestation
+     * schema defined by the Schema corresponding to the SchemaUID
+     *
+     * @dev This function will revert if the same module is attested twice by the same attester.
+     *      If you want to re-attest, you have to revoke your attestation first, and then attest again.
+     *
+     * @param schemaUID The SchemaUID of the schema the attestation is based on.
+     * @param attester The address of the attester
+     * @param request An AttestationRequest
+     * @param signature The signature of the attester. ECDSA or ERC1271
+     */
     function attest(
         SchemaUID schemaUID,
         address attester,
@@ -140,6 +153,19 @@ interface IRegistry is IERC7484 {
     )
         external;
 
+    /**
+     * Allows attester to attest by signing an AttestationRequest (ECDSA or ERC1271)
+     * The AttestationRequest.Data provided should match the attestation
+     * schema defined by the Schema corresponding to the SchemaUID
+     *
+     * @dev This function will revert if the same module is attested twice by the same attester.
+     *      If you want to re-attest, you have to revoke your attestation first, and then attest again.
+     *
+     * @param schemaUID The SchemaUID of the schema the attestation is based on.
+     * @param attester The address of the attester
+     * @param requests An array of AttestationRequest
+     * @param signature The signature of the attester. ECDSA or ERC1271
+     */
     function attest(
         SchemaUID schemaUID,
         address attester,
@@ -148,6 +174,9 @@ interface IRegistry is IERC7484 {
     )
         external;
 
+    /**
+     * Getter function to get AttestationRequest made by one attester
+     */
     function findAttestation(
         address module,
         address attester
@@ -156,6 +185,9 @@ interface IRegistry is IERC7484 {
         view
         returns (AttestationRecord memory attestation);
 
+    /**
+     * Getter function to get AttestationRequest made by multiple attesters
+     */
     function findAttestations(
         address module,
         address[] calldata attesters
