@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.24;
 
 import "./Base.t.sol";
 import "src/DataTypes.sol";
@@ -132,7 +132,6 @@ contract AttestationTest is BaseTest {
         AttestationRequest memory request =
             mockAttestation(address(module1), uint48(block.timestamp + 1), "", types);
         // It should store.
-        // TODO: it seems that the resolver is not being called
         registry.attest(defaultSchemaUID, request);
 
         assertTrue(resolverTrue.onAttestCalled());
