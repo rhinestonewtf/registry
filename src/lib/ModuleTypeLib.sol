@@ -9,20 +9,7 @@ library ModuleTypeLib {
         return (PackedModuleTypes.unwrap(self) & 2 ** ModuleType.unwrap(moduleType)) != 0;
     }
 
-    function pack(ModuleType[] memory moduleTypes) internal pure returns (PackedModuleTypes) {
-        uint32 result;
-        uint256 length = moduleTypes.length;
-        for (uint256 i; i < length; i++) {
-            result = result + uint32(2 ** ModuleType.unwrap(moduleTypes[i]));
-        }
-        return PackedModuleTypes.wrap(result);
-    }
-
-    function packCalldata(ModuleType[] calldata moduleTypes)
-        internal
-        pure
-        returns (PackedModuleTypes)
-    {
+    function pack(ModuleType[] calldata moduleTypes) internal pure returns (PackedModuleTypes) {
         uint32 result;
         for (uint256 i; i < moduleTypes.length; i++) {
             uint32 _type = ModuleType.unwrap(moduleTypes[i]);

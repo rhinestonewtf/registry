@@ -124,8 +124,9 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         internal
         returns (AttestationRecord memory record, ResolverUID resolverUID)
     {
-        // TODO: what if schema behind schemaUID doesnt exist?
-        // Frontrun on L2s?
+        // if schema behind schemaUID is not registered, revert.
+        if (schemas[schemaUID].registeredAt == ZERO_TIMESTAMP) revert InvalidSchema();
+
         uint48 timeNow = _time();
         // Ensure that either no expiration time was set or that it was set in the future.
         if (request.expirationTime != ZERO_TIMESTAMP && request.expirationTime <= timeNow) {
@@ -150,7 +151,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
             time: timeNow,
             expirationTime: request.expirationTime,
             revocationTime: uint48(ZERO_TIMESTAMP),
-            moduleTypes: request.moduleTypes.packCalldata(),
+            moduleTypes: request.moduleTypes.pack(),
             schemaUID: schemaUID,
             moduleAddr: module,
             attester: attester,

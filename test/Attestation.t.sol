@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.24;
 
 import "./Base.t.sol";
 import "src/DataTypes.sol";
@@ -132,7 +132,6 @@ contract AttestationTest is BaseTest {
         AttestationRequest memory request =
             mockAttestation(address(module1), uint48(block.timestamp + 1), "", types);
         // It should store.
-        // TODO: it seems that the resolver is not being called
         registry.attest(defaultSchemaUID, request);
 
         assertTrue(resolverTrue.onAttestCalled());
@@ -161,7 +160,9 @@ contract AttestationTest is BaseTest {
     function test_WhenUsingValidECDSA() public whenAttestingWithSignature {
         uint256 nonceBefore = registry.attesterNonce(attester1.addr);
         // It should recover.
-        uint32[] memory types = new uint32[](1);
+        uint32[] memory types = new uint32[](2);
+        types[0] = 1;
+        types[1] = 2;
         AttestationRequest memory request =
             mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
 
@@ -177,6 +178,7 @@ contract AttestationTest is BaseTest {
         assertEq(record.moduleAddr, request.moduleAddr);
         assertEq(record.attester, attester1.addr);
         assertEq(nonceAfter, nonceBefore + 1);
+        assertEq(PackedModuleTypes.unwrap(record.moduleTypes), 2 ** 1 + 2 ** 2);
     }
 
     function test_WhenRevokingWithValidECDSA() public {

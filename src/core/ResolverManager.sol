@@ -67,9 +67,6 @@ abstract contract ResolverManager is IRegistry {
         emit NewResolver(uid, address(resolver));
     }
 
-    // TODO: VULN:
-    // Attacker could register the same resolver, thus be the owner of the resolverUID,
-    // then set the resolver to a malicious contract
     function setResolver(
         ResolverUID uid,
         IExternalResolver resolver
