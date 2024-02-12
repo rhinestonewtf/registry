@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.19;
 
-import { AttestationRecord, PackedModuleTypes, ModuleType } from "../DataTypes.sol";
+import {
+    AttestationRecord,
+    PackedModuleTypes,
+    ModuleType,
+    TrustedAttesterRecord
+} from "../DataTypes.sol";
 import { ZERO_TIMESTAMP, ZERO_MODULE_TYPE, ZERO_ADDRESS } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 import { TrustManagerExternalAttesterList } from "./TrustManagerExternalAttesterList.sol";
@@ -18,17 +23,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
     using ModuleTypeLib for PackedModuleTypes;
     using LibSort for address[];
 
-    // packed struct to allow for efficient storage.
-    // if only one attester is trusted, it only requires 1 SLOAD
-
-    struct TrustedAttesters {
-        uint8 attesterCount;
-        uint8 threshold;
-        address attester;
-        mapping(address attester => address linkedAttester) linkedAttesters;
-    }
-
-    mapping(address account => TrustedAttesters attesters) internal _accountToAttester;
+    mapping(address account => TrustedAttesterRecord attesters) internal _accountToAttester;
 
     // Deliberately using memory here, so we can sort the array
     function trustAttesters(uint8 threshold, address[] memory attesters) external {
@@ -39,7 +34,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         if (attesters.length != attestersLength) revert InvalidTrustedAttesterInput();
         // sort attesters
 
-        TrustedAttesters storage _att = _accountToAttester[msg.sender];
+        TrustedAttesterRecord storage _att = _accountToAttester[msg.sender];
         // threshold cannot be greater than the number of attesters
         if (threshold > attestersLength) {
             threshold = uint8(attestersLength);
@@ -83,7 +78,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
     }
 
     function _check(address smartAccount, address module, ModuleType moduleType) internal view {
-        TrustedAttesters storage trustedAttesters = _accountToAttester[smartAccount];
+        TrustedAttesterRecord storage trustedAttesters = _accountToAttester[smartAccount];
         // SLOAD from one slot
         uint256 attesterCount = trustedAttesters.attesterCount;
         uint256 threshold = trustedAttesters.threshold;
@@ -184,10 +179,11 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         view
         returns (address[] memory attesters)
     {
-        TrustedAttesters storage trustedAttesters = _accountToAttester[smartAccount];
+        TrustedAttesterRecord storage trustedAttesters = _accountToAttester[smartAccount];
         uint256 count = trustedAttesters.attesterCount;
+        address attester0 = trustedAttesters.attester;
         attesters = new address[](count);
-        attesters[0] = trustedAttesters.attester;
+        attesters[0] = attester0;
 
         for (uint256 i = 1; i < count; i++) {
             // get next attester from linked List

@@ -38,6 +38,14 @@ struct ResolverRecord {
     address resolverOwner; // The address of the account used to register the resolver.
 }
 
+// Struct that represents a trusted attester.
+struct TrustedAttesterRecord {
+    uint8 attesterCount; // number of attesters in the linked list
+    uint8 threshold; // minimum number of attesters required
+    address attester; // first attester in linked list. (packed to save gas)
+    mapping(address attester => address linkedAttester) linkedAttesters;
+}
+
 /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
 /*            Attestation / Revocation Requests               */
 /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
