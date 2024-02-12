@@ -12,11 +12,12 @@ AttestationRequest
 data is `abi.encode()` according to a defined schema. The data is not stored in the storage of thr Registry, but is rather stored with `SSTORE2` to save gas and a pointer to this data is stored on the Registry.
 
 ```solidity
+
 struct AttestationRequest {
     address moduleAddr; // The moduleAddr of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
-    uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
     bytes data; // Custom attestation data.
+    ModuleType[] moduleTypes; // optional: The type(s) of the module.
 }
 ```
 
@@ -26,19 +27,20 @@ AttestationRecord stored in the registry contract storage
 
 ```solidity
 struct AttestationRecord {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    address moduleAddr; // The recipient of the attestation i.e. module
-    address attester; // The attester/sender of the attestation.
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
+    PackedModuleTypes moduleTypes; // bit-wise encoded module types. See ModuleTypeLib
+    SchemaUID schemaUID; // The unique identifier of the schema.
+    address moduleAddr; // The implementation address of the module that is being attested.
+    address attester; // The attesting account.
     AttestationDataRef dataPointer; // SSTORE2 pointer to the attestation data.
 }
 ```
 
 ![Sequence Diagram](../public/docs/attestationOnly.svg)
 
-### Interactions with the SchemaValidator
+### Interactions with the IExternalSchemaValidator
 
 Attestation data can be validated with an external contract than may to `abi.decode()` and validate all or specific fields.
 
