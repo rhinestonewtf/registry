@@ -1,11 +1,5 @@
-on: 
-  push:
-    branches:
-      - main
-      - 'releases/**'
-
 name: Foundry Tests
-
+on: [push]
 jobs:
   check:
     name: Foundry project

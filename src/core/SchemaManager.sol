@@ -48,4 +48,8 @@ abstract contract SchemaManager is IRegistry {
         }
         _;
     }
+
+    function findSchema(SchemaUID uid) external view override returns (SchemaRecord memory) {
+        return schemas[uid];
+    }
 }

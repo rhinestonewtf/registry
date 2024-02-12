@@ -9,7 +9,8 @@ import {
     ModuleRecord,
     ResolverUID,
     RevocationRequest,
-    SchemaUID
+    SchemaUID,
+    SchemaRecord
 } from "./DataTypes.sol";
 
 import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.sol";
@@ -200,10 +201,33 @@ interface IRegistry is IERC7484 {
     /*                       Revocations                          */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
+    /**
+     * Allows msg.sender to revoke an attstation made by the same msg.sender
+     *
+     * @dev this function will revert if the attestation is not found
+     * @dev this function will revert if the attestation is already revoked
+     *
+     * @param request  the RevocationRequest
+     */
     function revoke(RevocationRequest calldata request) external;
 
+    /**
+     * Allows msg.sender to revoke multiple attstations made by the same msg.sender
+     *
+     * @dev this function will revert if the attestation is not found
+     * @dev this function will revert if the attestation is already revoked
+     *
+     * @param requests the RevocationRequests
+     */
     function revoke(RevocationRequest[] calldata requests) external;
 
+    /**
+     * Allows attester to revoke an attestation by signing an RevocationRequest (ECDSA or ERC1271)
+     *
+     * @param attester the signer / revoker
+     * @param request the RevocationRequest
+     * @param signature ECDSA or ERC1271 signature
+     */
     function revoke(
         address attester,
         RevocationRequest calldata request,
@@ -211,6 +235,14 @@ interface IRegistry is IERC7484 {
     )
         external;
 
+    /**
+     * Allows attester to revoke an attestation by signing an RevocationRequest (ECDSA or ERC1271)
+     * @dev if you want to revoke multiple attestations, but from different attesters, call this function multiple times
+     *
+     * @param attester the signer / revoker
+     * @param requests array of RevocationRequests
+     * @param signature ECDSA or ERC1271 signature
+     */
     function revoke(
         address attester,
         RevocationRequest[] calldata requests,
@@ -235,6 +267,15 @@ interface IRegistry is IERC7484 {
     error ModuleAddressIsNotContract(address moduleAddress);
     error FactoryCallFailed(address factory);
 
+    /**
+     * This registry implements a CREATE2 factory, that allows module developers to register and deploy module bytecode
+     * @param salt The salt to be used in the CREATE2 factory
+     * @param resolverUID The resolverUID to be used in the CREATE2 factory
+     * @param initCode The initCode to be used in the CREATE2 factory
+     * @param metadata The metadata to be stored on the registry.
+     *            This field is optional, and might be used by the module developer to store additional
+     *            information about the module or facilitate business logic with the Resolver stub
+     */
     function deployModule(
         bytes32 salt,
         ResolverUID resolverUID,
@@ -260,7 +301,7 @@ interface IRegistry is IERC7484 {
         view
         returns (address);
 
-    function getRegisteredModules(address moduleAddress)
+    function getRegisteredModule(address moduleAddress)
         external
         view
         returns (ModuleRecord memory moduleRecord);
@@ -282,6 +323,8 @@ interface IRegistry is IERC7484 {
     )
         external
         returns (SchemaUID uid);
+
+    function findSchema(SchemaUID uid) external returns (SchemaRecord memory record);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                     Manage Resolvers                       */
