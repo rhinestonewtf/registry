@@ -27,6 +27,13 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         return REGISTRY.registerResolver(IExternalResolver(address(resolverTrue)));
     }
 
+    function handle_setResolver() external {
+        ResolverUID uid = handle_registerResolver();
+        MockResolver resolverTrue = new MockResolver(true);
+
+        REGISTRY.setResolver(uid, resolverTrue);
+    }
+
     function _pickRandomSchemaUID(uint256 nr) internal returns (SchemaUID uid) {
         SchemaUID[] memory uids = new SchemaUID[](5);
         uids[0] = handle_registerSchema("schema1");
@@ -49,10 +56,11 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         return uids[nr % 5];
     }
 
-    function handle_registerSchema(string memory schema) public returns (SchemaUID) {
+    function handle_registerSchema(string memory schema) public returns (SchemaUID uid) {
         MockSchemaValidator schemaValidatorTrue = new MockSchemaValidator(true);
-        return
+        uid =
             REGISTRY.registerSchema(schema, IExternalSchemaValidator(address(schemaValidatorTrue)));
+        SchemaRecord memory record = REGISTRY.findSchema(uid);
     }
 
     function handle_registerModule(
@@ -96,12 +104,14 @@ contract Handler is CommonBase, StdCheats, StdUtils {
 
     function handle_registerModuleWithFactory(
         uint256 randomResolverNr,
-        bytes calldata bytecode
+        bytes calldata bytecode,
+        uint256 value
     )
         external
     {
+        vm.deal(address(this), value);
         ResolverUID uid = _pickRandomResolverUID(randomResolverNr);
-        REGISTRY.deployViaFactory(
+        REGISTRY.deployViaFactory{ value: value }(
             address(FACTORY), abi.encodeCall(MockFactory.deploy, (bytecode)), "", uid
         );
     }
