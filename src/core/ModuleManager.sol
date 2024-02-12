@@ -113,6 +113,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         // prevent someone from calling a registry function pretending its a factory
         if (factory == address(this)) revert FactoryCallFailed(factory);
         // call external factory to deploy module
+        // TODO: this could be reentrancy since its not using CEI
         (bool ok, bytes memory returnData) = factory.call{ value: msg.value }(callOnFactory);
         if (!ok) revert FactoryCallFailed(factory);
 
