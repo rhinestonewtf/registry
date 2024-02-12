@@ -8,6 +8,15 @@ import { UIDLib } from "../lib/Helpers.sol";
 import { ZERO_TIMESTAMP, _time } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 
+/**
+ * @title SchemaManager
+ * Allows the creation registration and creation of schemas.
+ *    Schemas are used to describe attestation data. It is recommended to use ABI encoded data as schema.
+ *    An external schema validator contract may be provided,
+ *    which  will be called for every attestation made against the schema.
+ *    arbitrary checks may be implemented, by SchemaValidators
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
+ */
 abstract contract SchemaManager is IRegistry {
     using UIDLib for SchemaRecord;
     // The global mapping between schema records and their IDs.

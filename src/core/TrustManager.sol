@@ -15,6 +15,10 @@ import { LibSort } from "solady/utils/LibSort.sol";
 
 /**
  * @title TrustManager
+ * Allows smart accounts to query the registry for the security status of modules.
+ * Smart accounts may trust a list of attesters to attest to the security status of
+ *   modules and configure a minimum threshold of how many attestations have to be in place
+ *   to consider a module as "trust worthy"
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  * Implements EIP-7484 to query attestations stored in the registry.
  * @dev This contract is abstract and provides utility functions to query attestations.

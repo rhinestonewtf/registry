@@ -17,6 +17,7 @@ contract BaseTest is Test {
 
     Account attester1;
     Account attester2;
+    Account invarAttester;
 
     Account moduleDev1;
     Account moduleDev2;
@@ -50,6 +51,7 @@ contract BaseTest is Test {
 
         attester1 = makeAccount("attester1");
         attester2 = makeAccount("attester2");
+        invarAttester = makeAccount("invarAttester");
 
         moduleDev1 = makeAccount("moduleDev1");
         moduleDev2 = makeAccount("moduleDev2");
@@ -91,5 +93,15 @@ contract BaseTest is Test {
         registry.registerModule(defaultResolverUID, address(module1), "");
         vm.prank(moduleDev2.addr);
         registry.registerModule(defaultResolverUID, address(module2), "");
+
+        AttestationRequest memory req = AttestationRequest({
+            moduleAddr: address(module1),
+            expirationTime: uint48(block.timestamp + 100_000),
+            data: "0x",
+            moduleTypes: new ModuleType[](0)
+        });
+
+        vm.prank(invarAttester.addr);
+        registry.attest(defaultSchemaUID, req);
     }
 }

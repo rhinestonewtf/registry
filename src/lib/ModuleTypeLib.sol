@@ -10,7 +10,6 @@ library ModuleTypeLib {
         return (PackedModuleTypes.unwrap(self) & 2 ** ModuleType.unwrap(moduleType)) != 0;
     }
 
-
     function isType(uint32 packed, uint32 check) internal pure returns (bool) {
         return (packed & 2 ** check) != 0;
     }
@@ -23,7 +22,6 @@ library ModuleTypeLib {
             _type = ModuleType.unwrap(moduleTypes[i]);
             if (_type > 31 && isType(packed, _type)) revert IRegistry.InvalidModuleType();
             packed = packed + uint32(2 ** _type);
-
         }
         return PackedModuleTypes.wrap(packed);
     }
