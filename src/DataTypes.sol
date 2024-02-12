@@ -115,7 +115,7 @@ function attestationDataRefEq(
 
 type PackedModuleTypes is uint32;
 
-type ModuleType is uint32;
+type ModuleType is uint256;
 
 using { moduleTypeEq as == } for ModuleType global;
 using { moduleTypeNeq as != } for ModuleType global;

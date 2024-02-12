@@ -30,13 +30,12 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
     )
         external
     {
-        // verify signature
         uint256 nonce = ++attesterNonce[attester];
         bytes32 digest = _hashTypedData(request.hash(nonce));
         bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature);
         if (!valid) revert InvalidSignature();
 
-        _attest(attester, schemaUID, request);
+        _attest({ attester: attester, schemaUID: schemaUID, request: request });
     }
 
     function attest(
@@ -52,7 +51,7 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
         bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature);
         if (!valid) revert InvalidSignature();
 
-        _attest(attester, schemaUID, requests);
+        _attest({ attester: attester, schemaUID: schemaUID, requests: requests });
     }
 
     function revoke(
@@ -67,7 +66,7 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
         bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature);
         if (!valid) revert InvalidSignature();
 
-        _revoke(attester, request);
+        _revoke({ attester: attester, request: request });
     }
 
     function revoke(
@@ -82,7 +81,7 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
         bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature);
         if (!valid) revert InvalidSignature();
 
-        _revoke(attester, requests);
+        _revoke({ attester: attester, requests: requests });
     }
 
     function _domainNameAndVersion()
@@ -102,9 +101,9 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
     )
         external
         view
-        returns (bytes32)
+        returns (bytes32 digest)
     {
-        return _hashTypedData(request.hash(attesterNonce[attester] + 1));
+        digest = _hashTypedData(request.hash(attesterNonce[attester] + 1));
     }
 
     function getDigest(
@@ -113,9 +112,9 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
     )
         external
         view
-        returns (bytes32)
+        returns (bytes32 digest)
     {
-        return _hashTypedData(requests.hash(attesterNonce[attester] + 1));
+        digest = _hashTypedData(requests.hash(attesterNonce[attester] + 1));
     }
 
     function getDigest(
@@ -124,9 +123,9 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
     )
         external
         view
-        returns (bytes32)
+        returns (bytes32 digest)
     {
-        return _hashTypedData(request.hash(attesterNonce[attester] + 1));
+        digest = _hashTypedData(request.hash(attesterNonce[attester] + 1));
     }
 
     function getDigest(
@@ -135,8 +134,8 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
     )
         external
         view
-        returns (bytes32)
+        returns (bytes32 digest)
     {
-        return _hashTypedData(requests.hash(attesterNonce[attester] + 1));
+        digest = _hashTypedData(requests.hash(attesterNonce[attester] + 1));
     }
 }

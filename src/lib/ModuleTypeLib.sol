@@ -10,14 +10,14 @@ library ModuleTypeLib {
         return (PackedModuleTypes.unwrap(self) & 2 ** ModuleType.unwrap(moduleType)) != 0;
     }
 
-    function isType(uint32 packed, uint32 check) internal pure returns (bool) {
+    function isType(uint32 packed, uint256 check) internal pure returns (bool) {
         return (packed & 2 ** check) != 0;
     }
 
     function pack(ModuleType[] memory moduleTypes) internal pure returns (PackedModuleTypes) {
         uint256 length = moduleTypes.length;
         uint32 packed;
-        uint32 _type;
+        uint256 _type;
         for (uint256 i; i < length; i++) {
             _type = ModuleType.unwrap(moduleTypes[i]);
             if (_type > 31 && isType(packed, _type)) revert IRegistry.InvalidModuleType();
