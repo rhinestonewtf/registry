@@ -55,6 +55,42 @@ contract AttestationTest is BaseTest {
         assertEq(record.attester, attester1.addr);
     }
 
+    function test_WhenReAttestingToARevokedAttestation() public prankWithAccount(attester1) {
+        address module = address(new MockModule());
+        registry.registerModule(defaultResolverUID, module, "");
+        uint32[] memory types = new uint32[](1);
+        AttestationRequest memory request =
+            mockAttestation(module, uint48(block.timestamp + 1), "", types);
+        // It should store.
+        registry.attest(defaultSchemaUID, request);
+        AttestationRecord memory record = registry.findAttestation(module, attester1.addr);
+
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, request.expirationTime);
+        assertEq(record.revocationTime, 0);
+        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.attester, attester1.addr);
+
+        RevocationRequest memory revocation = RevocationRequest({ moduleAddr: module });
+
+        vm.warp(block.timestamp + 100);
+        registry.revoke(revocation);
+
+        record = registry.findAttestation({ module: module, attester: attester1.addr });
+        assertEq(record.revocationTime, block.timestamp);
+        vm.warp(block.timestamp + 100);
+
+        request.expirationTime = uint48(block.timestamp + 100);
+        registry.attest(defaultSchemaUID, request);
+        record = registry.findAttestation({ module: module, attester: attester1.addr });
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, request.expirationTime);
+        // ensure revocation time is reset
+        assertEq(record.revocationTime, 0);
+        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.attester, attester1.addr);
+    }
+
     function test_WhenAttestingWithExpirationTimeInThePast(
         address module,
         bytes memory data,

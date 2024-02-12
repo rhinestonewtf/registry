@@ -160,7 +160,12 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         // SSTORE attestation to registry storage
         _moduleToAttesterToAttestations[request.moduleAddr][attester] = record;
 
-        emit Attested(module, attester, schemaUID, sstore2Pointer);
+        emit Attested({
+            moduleAddr: module,
+            attester: attester,
+            schemaUID: schemaUID,
+            sstore2Pointer: sstore2Pointer
+        });
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -243,7 +248,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         // SSTORE revocation time to registry storage
         attestationStorage.revocationTime = _time();
         // set revocation time to NOW
-        emit Revoked({ moduleAddr: record.moduleAddr, revoker: revoker, schema: record.schemaUID });
+        emit Revoked({ moduleAddr: request.moduleAddr, revoker: revoker, schema: record.schemaUID });
     }
 
     /**

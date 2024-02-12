@@ -165,7 +165,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         emit ModuleRegistration(moduleAddress, sender, ResolverUID.unwrap(resolverUID));
     }
 
-    function getRegisteredModules(address moduleAddress)
+    function getRegisteredModule(address moduleAddress)
         external
         view
         returns (ModuleRecord memory moduleRecord)

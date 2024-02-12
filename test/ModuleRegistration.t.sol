@@ -23,7 +23,7 @@ contract ModuleRegistrationTest is BaseTest {
         bytes memory bytecode = type(MockModule).creationCode;
 
         address moduleAddr = registry.deployModule(salt, defaultResolverUID, bytecode, "");
-        ModuleRecord memory record = registry.getRegisteredModules(moduleAddr);
+        ModuleRecord memory record = registry.getRegisteredModule(moduleAddr);
         assertTrue(record.resolverUID == defaultResolverUID);
     }
 
