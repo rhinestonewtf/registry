@@ -12,8 +12,7 @@ import { IRegistry } from "../IRegistry.sol";
 /**
  * @title Module
  *
- * @dev The Module contract serves as a component in a larger system for handling smart contracts or "modules"
- * within a blockchain ecosystem. This contract inherits from the IModule interface
+ * @dev The Module contract is responsible for handling the registration, storage and retrieval of modules on the Registry. This contract inherits from the IModule interface
  *
  * @dev The primary responsibility of the Module is to deploy and manage modules. A module is a smart contract
  * that has been deployed through the Module. The details of each module, such as its address, code hash, schema ID,
