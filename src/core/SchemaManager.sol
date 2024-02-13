@@ -28,7 +28,7 @@ abstract contract SchemaManager is IRegistry {
      */
     function registerSchema(
         string calldata schema,
-        IExternalSchemaValidator validator // OPTIONAL
+        IExternalSchemaValidator validator
     )
         external
         onlySchemaValidator(validator)
@@ -40,6 +40,8 @@ abstract contract SchemaManager is IRegistry {
         // Computing a unique ID for the schema using its properties
         uid = schemaRecord.getUID();
 
+        // check if schema with this UID already exists.
+        // overwriting a schema is not allowed
         if (schemas[uid].registeredAt != ZERO_TIMESTAMP) revert SchemaAlreadyExists(uid);
 
         // Storing schema in the _schemas mapping

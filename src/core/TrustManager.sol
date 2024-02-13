@@ -36,18 +36,17 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
      */
     function trustAttesters(uint8 threshold, address[] memory attesters) external {
         uint256 attestersLength = attesters.length;
+        // sort attesters and remove duplicates
         attesters.sort();
         attesters.uniquifySorted();
         if (attestersLength == 0) revert InvalidTrustedAttesterInput();
         if (attesters.length != attestersLength) revert InvalidTrustedAttesterInput();
-        // sort attesters
 
         TrustedAttesterRecord storage $trustedAttester = _accountToAttester[msg.sender];
         // threshold cannot be greater than the number of attesters
         if (threshold > attestersLength) {
             threshold = uint8(attestersLength);
         }
-        //
         $trustedAttester.attesterCount = uint8(attestersLength);
         $trustedAttester.threshold = threshold;
         $trustedAttester.attester = attesters[0];

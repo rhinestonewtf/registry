@@ -51,8 +51,6 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         ResolverRecord storage $resolver = resolvers[resolverUID];
         if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver($resolver.resolver);
 
-        // address predictedModuleAddress = code.calculateAddress(deployParams, salt);
-
         moduleAddress = initCode.deploy(salt);
         // _storeModuleRecord() will check if module is already registered,
         // which should prevent reentry to any deploy function
@@ -62,6 +60,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             resolverUID: resolverUID,
             metadata: metadata
         });
+
         record.requireExternalResolverOnModuleRegistration({
             moduleAddress: moduleAddress,
             $resolver: $resolver
@@ -178,7 +177,11 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         _moduleAddrToRecords[moduleAddress] = moduleRegistration;
 
         // Emit ModuleRegistration event
-        emit ModuleRegistration(moduleAddress, sender, ResolverUID.unwrap(resolverUID));
+        emit ModuleRegistration({
+            implementation: moduleAddress,
+            sender: sender,
+            resolverUID: resolverUID
+        });
     }
 
     /**
