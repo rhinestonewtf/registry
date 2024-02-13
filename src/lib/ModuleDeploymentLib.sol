@@ -7,23 +7,45 @@ pragma solidity ^0.8.24;
  * @author zeroknots
  */
 library ModuleDeploymentLib {
-    /**
-     * @notice Creates a new contract using CREATE2 opcode.
-     * @dev This method uses the CREATE2 opcode to deploy a new contract with a deterministic address.
-     *
-     * @param initCode The creationCode for the contract.
-     *               this MUST be provided. Function will fail if params are abi.encodePacked in createCode.
-     *
-     * @return moduleAddress The address of the deployed contract.
-     */
-    function deploy(bytes memory initCode, bytes32 salt) internal returns (address moduleAddress) {
-        uint256 value = msg.value;
-        // solhint-disable-next-line no-inline-assembly
+    // source: https://github.com/0age/metamorphic/blob/master/contracts/ImmutableCreate2Factory.sol#L194-L203
+    modifier containsCaller(bytes32 salt) {
+        // prevent contract submissions from being stolen from tx.pool by requiring
+        // that the first 20 bytes of the submitted salt match msg.sender.
+        require(
+            (address(bytes20(salt)) == msg.sender) || (bytes20(salt) == bytes20(0)), "Invalid salt"
+        );
+        _;
+    }
+
+    function deploy(
+        bytes calldata _initCode,
+        bytes32 salt
+    )
+        internal
+        containsCaller(salt)
+        returns (address deploymentAddress)
+    {
+        // move the initialization code from calldata to memory.
+        bytes memory initCode = _initCode;
+
+        // determine the target address for contract deployment.
+        address targetDeploymentAddress = calcAddress(_initCode, salt);
+
+        // using inline assembly: load data and length of data, then call CREATE2.
         assembly {
-            moduleAddress := create2(value, add(initCode, 0x20), mload(initCode), salt)
-            // If the contract was not created successfully, the transaction is reverted.
-            if iszero(extcodesize(moduleAddress)) { revert(0, 0) }
+            let encoded_data := add(0x20, initCode) // load initialization code.
+            let encoded_size := mload(initCode) // load the init code's length.
+            deploymentAddress :=
+                create2( // call CREATE2 with 4 arguments.
+                    callvalue(), // forward any attached value.
+                    encoded_data, // pass in initialization code.
+                    encoded_size, // pass in init code's length.
+                    salt // pass in the salt value.
+                )
         }
+
+        // check address against target to ensure that deployment was successful.
+        require(deploymentAddress == targetDeploymentAddress, "invalid address");
     }
 
     /**
@@ -31,18 +53,36 @@ library ModuleDeploymentLib {
      * @dev The calculated address is based on the contract's code, a salt, and the address of the current contract.
      * @dev This function uses the formula specified in EIP-1014 (https://eips.ethereum.org/EIPS/eip-1014).
      *
-     * @param _code The contract code that would be deployed.
-     * @param _salt A salt used for the address calculation.
+     * @param initCode The contract code that would be deployed.
+     * @param salt A salt used for the address calculation.
      *                 This must be the same salt that would be passed to the CREATE2 opcode.
      *
-     * @return The address that the contract would be deployed
+     * @return targetDeploymentAddress The address that the contract would be deployed
      *            at if the CREATE2 opcode was called with the specified _code and _salt.
      */
-    function calcAddress(bytes calldata _code, bytes32 _salt) internal view returns (address) {
-        bytes32 hash =
-            keccak256(abi.encodePacked(bytes1(0xff), address(this), _salt, keccak256(_code)));
-        // NOTE: cast last 20 bytes of hash to address
-        return address(uint160(uint256(hash)));
+    function calcAddress(
+        bytes calldata initCode,
+        bytes32 salt
+    )
+        internal
+        view
+        returns (address targetDeploymentAddress)
+    {
+        targetDeploymentAddress = address(
+            uint160( // downcast to match the address type.
+                uint256( // convert to uint to truncate upper digits.
+                    keccak256( // compute the CREATE2 hash using 4 inputs.
+                        abi.encodePacked( // pack all inputs to the hash together.
+                            hex"ff", // start with 0xff to distinguish from RLP.
+                            address(this), // this contract will be the caller.
+                            salt, // pass in the supplied salt value.
+                            keccak256( // pass in the hash of initialization code.
+                            abi.encodePacked(initCode))
+                        )
+                    )
+                )
+            )
+        );
     }
 
     error InvalidDeployment();

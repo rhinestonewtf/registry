@@ -18,7 +18,7 @@ contract Factory {
 
 contract ModuleRegistrationTest is BaseTest {
     function test_WhenDeployingViaRegistry() public prankWithAccount(moduleDev1) {
-        bytes32 salt = keccak256(abi.encodePacked("ModuleRegistration", address(this)));
+        bytes32 salt = bytes32(abi.encodePacked(address(moduleDev1.addr), bytes12(0)));
 
         bytes memory bytecode = type(MockModule).creationCode;
 
@@ -28,7 +28,7 @@ contract ModuleRegistrationTest is BaseTest {
     }
 
     function test_WhenDeployingViaRegistryWithArgs() public prankWithAccount(moduleDev1) {
-        bytes32 salt = keccak256(abi.encodePacked("ModuleRegistration", address(this)));
+        bytes32 salt = bytes32(abi.encodePacked(address(moduleDev1.addr), bytes12(0)));
 
         bytes memory bytecode = type(MockModuleWithArgs).creationCode;
         bytes memory initCode = abi.encodePacked(bytecode, abi.encode(313_131));
