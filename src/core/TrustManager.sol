@@ -42,22 +42,22 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         if (attesters.length != attestersLength) revert InvalidTrustedAttesterInput();
         // sort attesters
 
-        TrustedAttesterRecord storage _att = _accountToAttester[msg.sender];
+        TrustedAttesterRecord storage $trustedAttester = _accountToAttester[msg.sender];
         // threshold cannot be greater than the number of attesters
         if (threshold > attestersLength) {
             threshold = uint8(attestersLength);
         }
         //
-        _att.attesterCount = uint8(attestersLength);
-        _att.threshold = threshold;
-        _att.attester = attesters[0];
+        $trustedAttester.attesterCount = uint8(attestersLength);
+        $trustedAttester.threshold = threshold;
+        $trustedAttester.attester = attesters[0];
 
         attestersLength--;
         for (uint256 i; i < attestersLength; i++) {
             address _attester = attesters[i];
             // user could have set attester to address(0)
             if (_attester == ZERO_ADDRESS) revert InvalidTrustedAttesterInput();
-            _att.linkedAttesters[_attester] = attesters[i + 1];
+            $trustedAttester.linkedAttesters[_attester] = attesters[i + 1];
         }
         emit NewTrustedAttesters();
     }
@@ -105,11 +105,11 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
      * @param moduleType (optional param), setting  moduleType = 0, will ignore moduleTypes in attestations
      */
     function _check(address smartAccount, address module, ModuleType moduleType) internal view {
-        TrustedAttesterRecord storage trustedAttesters = _accountToAttester[smartAccount];
+        TrustedAttesterRecord storage $trustedAttesters = _accountToAttester[smartAccount];
         // SLOAD from one slot
-        uint256 attesterCount = trustedAttesters.attesterCount;
-        uint256 threshold = trustedAttesters.threshold;
-        address attester = trustedAttesters.attester;
+        uint256 attesterCount = $trustedAttesters.attesterCount;
+        uint256 threshold = $trustedAttesters.threshold;
+        address attester = $trustedAttesters.attester;
 
         // smart account has no trusted attesters set
         if (attester == ZERO_ADDRESS && threshold != 0) {
@@ -118,22 +118,22 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         // smart account only has ONE trusted attester
         // use this condition to save gas
         else if (threshold == 1) {
-            AttestationRecord storage record =
+            AttestationRecord storage $attestation =
                 _getAttestation({ module: module, attester: attester });
-            _requireValidAttestation(moduleType, record);
+            _requireValidAttestation(moduleType, $attestation);
         }
         // smart account has more than one trusted attester
         else {
             // loop though list and check if the attestation is valid
-            AttestationRecord storage record =
+            AttestationRecord storage $attestation =
                 _getAttestation({ module: module, attester: attester });
-            _requireValidAttestation(moduleType, record);
+            _requireValidAttestation(moduleType, $attestation);
             for (uint256 i = 1; i < attesterCount; i++) {
                 threshold--;
                 // get next attester from linked List
-                attester = trustedAttesters.linkedAttesters[attester];
-                record = _getAttestation({ module: module, attester: attester });
-                _requireValidAttestation(moduleType, record);
+                attester = $trustedAttesters.linkedAttesters[attester];
+                $attestation = _getAttestation({ module: module, attester: attester });
+                _requireValidAttestation(moduleType, $attestation);
                 // if threshold reached, exit loop
                 if (threshold == 0) return;
             }
@@ -148,7 +148,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
      */
     function _requireValidAttestation(
         ModuleType expectedType,
-        AttestationRecord storage record
+        AttestationRecord storage $attestation
     )
         internal
         view
@@ -170,7 +170,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         // solhint-disable-next-line no-inline-assembly
         assembly {
             let mask := 0xffffffffffff
-            let slot := sload(record.slot)
+            let slot := sload($attestation.slot)
             attestedAt := and(mask, slot)
             slot := shr(48, slot)
             expirationTime := and(mask, slot)
@@ -192,7 +192,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
 
         // check if attestation has been revoked
         if (revocationTime != ZERO_TIMESTAMP) {
-            revert RevokedAttestation(record.attester);
+            revert RevokedAttestation($attestation.attester);
         }
         // if a expectedType is set, check if the attestation is for the correct module type
         // if no expectedType is set, module type is not checked
@@ -209,15 +209,15 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         view
         returns (address[] memory attesters)
     {
-        TrustedAttesterRecord storage trustedAttesters = _accountToAttester[smartAccount];
-        uint256 count = trustedAttesters.attesterCount;
-        address attester0 = trustedAttesters.attester;
+        TrustedAttesterRecord storage $trustedAttesters = _accountToAttester[smartAccount];
+        uint256 count = $trustedAttesters.attesterCount;
+        address attester0 = $trustedAttesters.attester;
         attesters = new address[](count);
         attesters[0] = attester0;
 
         for (uint256 i = 1; i < count; i++) {
             // get next attester from linked List
-            attesters[i] = trustedAttesters.linkedAttesters[attesters[i - 1]];
+            attesters[i] = $trustedAttesters.linkedAttesters[attesters[i - 1]];
         }
     }
 }

@@ -51,7 +51,7 @@ contract ERC7512SchemaValidator is IExternalSchemaValidator, ERC7512 {
     }
 
     function validateSchema(AttestationRecord calldata attestation)
-        external
+        public
         view
         override
         returns (bool valid)
@@ -73,6 +73,13 @@ contract ERC7512SchemaValidator is IExternalSchemaValidator, ERC7512 {
         external
         view
         override
-        returns (bool)
-    { }
+        returns (bool valid)
+    {
+        uint256 length = attestations.length;
+        for (uint256 i = 0; i < length; i++) {
+            if (!validateSchema(attestations[i])) {
+                return false;
+            }
+        }
+    }
 }

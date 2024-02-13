@@ -57,8 +57,8 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         (AttestationRecord memory record, ResolverUID resolverUID) =
             _storeAttestation({ schemaUID: schemaUID, attester: attester, request: request });
 
-        record.requireExternalSchemaValidation({ schema: schemas[schemaUID] });
-        record.requireExternalResolverOnAttestation({ resolver: resolvers[resolverUID] });
+        record.requireExternalSchemaValidation({ $schema: schemas[schemaUID] });
+        record.requireExternalResolverOnAttestation({ $resolver: resolvers[resolverUID] });
     }
 
     /**
@@ -96,8 +96,8 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         }
 
         // Use StubLib to call schema Validation and resolver if needed
-        records.requireExternalSchemaValidation({ schema: schemas[schemaUID] });
-        records.requireExternalResolverOnAttestation({ resolver: resolvers[resolverUID] });
+        records.requireExternalSchemaValidation({ $schema: schemas[schemaUID] });
+        records.requireExternalResolverOnAttestation({ $resolver: resolvers[resolverUID] });
     }
 
     /**
@@ -180,7 +180,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
     function _revoke(address attester, RevocationRequest calldata request) internal {
         (AttestationRecord memory record, ResolverUID resolverUID) =
             _storeRevocation(attester, request);
-        record.tryExternalResolverOnRevocation({ resolver: resolvers[resolverUID] });
+        record.tryExternalResolverOnRevocation({ $resolver: resolvers[resolverUID] });
     }
 
     /**
@@ -203,7 +203,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         }
 
         // No schema validation required during revocation. the attestation data was already checked against
-        records.tryExternalResolverOnRevocation({ resolver: resolvers[resolverUID] });
+        records.tryExternalResolverOnRevocation({ $resolver: resolvers[resolverUID] });
     }
 
     /**
@@ -220,11 +220,11 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         internal
         returns (AttestationRecord memory record, ResolverUID resolverUID)
     {
-        AttestationRecord storage attestationStorage =
+        AttestationRecord storage $attestation =
             _moduleToAttesterToAttestations[request.moduleAddr][revoker];
 
         // SLOAD entire record. This will later be passed to the resolver
-        record = attestationStorage;
+        record = $attestation;
         resolverUID = _moduleAddrToRecords[request.moduleAddr].resolverUID;
 
         // Ensure that we aren't attempting to revoke a non-existing attestation.
@@ -243,7 +243,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         }
 
         // SSTORE revocation time to registry storage
-        attestationStorage.revocationTime = _time();
+        $attestation.revocationTime = _time();
         // set revocation time to NOW
         emit Revoked({ moduleAddr: request.moduleAddr, revoker: revoker, schema: record.schemaUID });
     }
@@ -259,8 +259,8 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         internal
         view
         override
-        returns (AttestationRecord storage)
+        returns (AttestationRecord storage $attestation)
     {
-        return _moduleToAttesterToAttestations[module][attester];
+        $attestation = _moduleToAttesterToAttestations[module][attester];
     }
 }

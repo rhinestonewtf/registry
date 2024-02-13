@@ -48,8 +48,8 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         payable
         returns (address moduleAddress)
     {
-        ResolverRecord storage resolver = resolvers[resolverUID];
-        if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver(resolver.resolver);
+        ResolverRecord storage $resolver = resolvers[resolverUID];
+        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver($resolver.resolver);
 
         // address predictedModuleAddress = code.calculateAddress(deployParams, salt);
 
@@ -64,7 +64,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         });
         record.requireExternalResolverOnModuleRegistration({
             moduleAddress: moduleAddress,
-            resolver: resolver
+            $resolver: $resolver
         });
     }
 
@@ -92,10 +92,10 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
     )
         external
     {
-        ResolverRecord storage resolver = resolvers[resolverUID];
+        ResolverRecord storage $resolver = resolvers[resolverUID];
 
         // ensure that non-zero resolverUID was provided
-        if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver(resolver.resolver);
+        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver($resolver.resolver);
 
         ModuleRecord memory record = _storeModuleRecord({
             moduleAddress: moduleAddress,
@@ -103,9 +103,11 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             resolverUID: resolverUID,
             metadata: metadata
         });
+
+        // resolve module registration
         record.requireExternalResolverOnModuleRegistration({
             moduleAddress: moduleAddress,
-            resolver: resolver
+            $resolver: $resolver
         });
     }
 
@@ -122,8 +124,8 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         payable
         returns (address moduleAddress)
     {
-        ResolverRecord memory resolver = resolvers[resolverUID];
-        if (resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
+        ResolverRecord storage $resolver = resolvers[resolverUID];
+        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
         // prevent someone from calling a registry function pretending its a factory
         if (factory == address(this)) revert FactoryCallFailed(factory);
         // call external factory to deploy module
@@ -145,7 +147,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
 
         record.requireExternalResolverOnModuleRegistration({
             moduleAddress: moduleAddress,
-            resolver: resolver
+            $resolver: $resolver
         });
     }
 

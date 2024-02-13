@@ -19,15 +19,15 @@ library StubLib {
      */
     function requireExternalSchemaValidation(
         AttestationRecord memory attestationRecord,
-        SchemaRecord storage schema
+        SchemaRecord storage $schema
     )
         internal
         view
     {
         // only run this function if the selected schemaUID exists
-        if (schema.registeredAt == ZERO_TIMESTAMP) revert IRegistry.InvalidSchema();
+        if ($schema.registeredAt == ZERO_TIMESTAMP) revert IRegistry.InvalidSchema();
         // validate Schema
-        IExternalSchemaValidator validator = schema.validator;
+        IExternalSchemaValidator validator = $schema.validator;
         // if validator is set, call the validator
         if (
             address(validator) != ZERO_ADDRESS
@@ -39,15 +39,15 @@ library StubLib {
 
     function requireExternalSchemaValidation(
         AttestationRecord[] memory attestationRecords,
-        SchemaRecord storage schema
+        SchemaRecord storage $schema
     )
         internal
         view
     {
         // only run this function if the selected schemaUID exists
-        if (schema.registeredAt == ZERO_TIMESTAMP) revert IRegistry.InvalidSchema();
+        if ($schema.registeredAt == ZERO_TIMESTAMP) revert IRegistry.InvalidSchema();
         // validate Schema
-        IExternalSchemaValidator validator = schema.validator;
+        IExternalSchemaValidator validator = $schema.validator;
         // if validator is set, call the validator
         if (
             address(validator) != ZERO_ADDRESS
@@ -59,11 +59,11 @@ library StubLib {
 
     function requireExternalResolverOnAttestation(
         AttestationRecord memory attestationRecord,
-        ResolverRecord storage resolver
+        ResolverRecord storage $resolver
     )
         internal
     {
-        IExternalResolver resolverContract = resolver.resolver;
+        IExternalResolver resolverContract = $resolver.resolver;
 
         if (address(resolverContract) == ZERO_ADDRESS) return;
         if (resolverContract.resolveAttestation(attestationRecord) == false) {
@@ -73,11 +73,11 @@ library StubLib {
 
     function requireExternalResolverOnAttestation(
         AttestationRecord[] memory attestationRecords,
-        ResolverRecord storage resolver
+        ResolverRecord storage $resolver
     )
         internal
     {
-        IExternalResolver resolverContract = resolver.resolver;
+        IExternalResolver resolverContract = $resolver.resolver;
 
         if (address(resolverContract) == ZERO_ADDRESS) return;
 
@@ -88,12 +88,12 @@ library StubLib {
 
     function tryExternalResolverOnRevocation(
         AttestationRecord memory attestationRecord,
-        ResolverRecord storage resolver
+        ResolverRecord storage $resolver
     )
         internal
         returns (bool resolved)
     {
-        IExternalResolver resolverContract = resolver.resolver;
+        IExternalResolver resolverContract = $resolver.resolver;
 
         if (address(resolverContract) == ZERO_ADDRESS) return true;
         try resolverContract.resolveRevocation(attestationRecord) returns (bool _resolved) {
@@ -106,12 +106,12 @@ library StubLib {
 
     function tryExternalResolverOnRevocation(
         AttestationRecord[] memory attestationRecords,
-        ResolverRecord storage resolver
+        ResolverRecord storage $resolver
     )
         internal
         returns (bool resolved)
     {
-        IExternalResolver resolverContract = resolver.resolver;
+        IExternalResolver resolverContract = $resolver.resolver;
 
         if (address(resolverContract) == ZERO_ADDRESS) return true;
         try resolverContract.resolveRevocation(attestationRecords) returns (bool _resolved) {
@@ -125,11 +125,11 @@ library StubLib {
     function requireExternalResolverOnModuleRegistration(
         ModuleRecord memory moduleRecord,
         address moduleAddress,
-        ResolverRecord memory resolver
+        ResolverRecord storage $resolver
     )
         internal
     {
-        IExternalResolver resolverContract = resolver.resolver;
+        IExternalResolver resolverContract = $resolver.resolver;
 
         if (address(resolverContract) != ZERO_ADDRESS) return;
 
