@@ -28,7 +28,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
     using ModuleTypeLib for PackedModuleTypes;
     using LibSort for address[];
 
-    mapping(address account => TrustedAttesterRecord attesters) internal _accountToAttester;
+    mapping(address account => TrustedAttesterRecord attesters) internal $accountToAttester;
 
     /**
      * @inheritdoc IRegistry
@@ -42,7 +42,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         if (attestersLength == 0) revert InvalidTrustedAttesterInput();
         if (attesters.length != attestersLength) revert InvalidTrustedAttesterInput();
 
-        TrustedAttesterRecord storage $trustedAttester = _accountToAttester[msg.sender];
+        TrustedAttesterRecord storage $trustedAttester = $accountToAttester[msg.sender];
         // threshold cannot be greater than the number of attesters
         if (threshold > attestersLength) {
             threshold = uint8(attestersLength);
@@ -104,7 +104,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
      * @param moduleType (optional param), setting  moduleType = 0, will ignore moduleTypes in attestations
      */
     function _check(address smartAccount, address module, ModuleType moduleType) internal view {
-        TrustedAttesterRecord storage $trustedAttesters = _accountToAttester[smartAccount];
+        TrustedAttesterRecord storage $trustedAttesters = $accountToAttester[smartAccount];
         // SLOAD from one slot
         uint256 attesterCount = $trustedAttesters.attesterCount;
         uint256 threshold = $trustedAttesters.threshold;
@@ -208,7 +208,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         view
         returns (address[] memory attesters)
     {
-        TrustedAttesterRecord storage $trustedAttesters = _accountToAttester[smartAccount];
+        TrustedAttesterRecord storage $trustedAttesters = $accountToAttester[smartAccount];
         uint256 count = $trustedAttesters.attesterCount;
         address attester0 = $trustedAttesters.attester;
         attesters = new address[](count);

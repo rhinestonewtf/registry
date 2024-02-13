@@ -10,7 +10,7 @@ import { IRegistry } from "../IRegistry.sol";
 abstract contract ResolverManager is IRegistry {
     using UIDLib for ResolverRecord;
 
-    mapping(ResolverUID uid => ResolverRecord resolver) internal resolvers;
+    mapping(ResolverUID uid => ResolverRecord resolver) internal $resolvers;
 
     /**
      * @dev Modifier to require that the caller is the owner of a resolver
@@ -18,7 +18,7 @@ abstract contract ResolverManager is IRegistry {
      * @param uid The UID of the resolver.
      */
     modifier onlyResolverOwner(ResolverUID uid) {
-        if (resolvers[uid].resolverOwner != msg.sender) {
+        if ($resolvers[uid].resolverOwner != msg.sender) {
             revert AccessDenied();
         }
         _;
@@ -53,12 +53,12 @@ abstract contract ResolverManager is IRegistry {
         uid = resolverRecord.getUID();
 
         // Checking if a schema with this UID already exists -> resolver can never be ZERO_ADDRESS
-        if (address(resolvers[uid].resolver) != ZERO_ADDRESS) {
+        if (address($resolvers[uid].resolver) != ZERO_ADDRESS) {
             revert ResolverAlreadyExists();
         }
 
         // SSTORE schema in the resolvers mapping
-        resolvers[uid] = resolverRecord;
+        $resolvers[uid] = resolverRecord;
 
         emit NewResolver(uid, address(resolver));
     }
@@ -74,7 +74,7 @@ abstract contract ResolverManager is IRegistry {
         onlyResolver(resolver)
         onlyResolverOwner(uid) // authorization control
     {
-        ResolverRecord storage referrer = resolvers[uid];
+        ResolverRecord storage referrer = $resolvers[uid];
         referrer.resolver = resolver;
         emit NewResolver(uid, address(resolver));
     }
@@ -83,6 +83,6 @@ abstract contract ResolverManager is IRegistry {
      * @inheritdoc IRegistry
      */
     function findResolver(ResolverUID uid) external view returns (ResolverRecord memory) {
-        return resolvers[uid];
+        return $resolvers[uid];
     }
 }

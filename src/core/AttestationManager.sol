@@ -33,7 +33,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
     using ModuleTypeLib for ModuleType[];
 
     mapping(address module => mapping(address attester => AttestationRecord attestation)) internal
-        _moduleToAttesterToAttestations;
+        $moduleToAttesterToAttestations;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                      Attestation                           */
@@ -58,7 +58,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
             _storeAttestation({ schemaUID: schemaUID, attester: attester, request: request });
 
         record.requireExternalSchemaValidation({ $schema: schemas[schemaUID] });
-        record.requireExternalResolverOnAttestation({ $resolver: resolvers[resolverUID] });
+        record.requireExternalResolverOnAttestation({ $resolver: $resolvers[resolverUID] });
     }
 
     /**
@@ -97,7 +97,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
 
         // Use StubLib to call schema Validation and resolver if needed
         records.requireExternalSchemaValidation({ $schema: schemas[schemaUID] });
-        records.requireExternalResolverOnAttestation({ $resolver: resolvers[resolverUID] });
+        records.requireExternalResolverOnAttestation({ $resolver: $resolvers[resolverUID] });
     }
 
     /**
@@ -135,7 +135,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         // caching module address.
         address module = request.moduleAddr;
         // SLOAD the resolverUID from the moduleRecord
-        resolverUID = _moduleAddrToRecords[module].resolverUID;
+        resolverUID = $moduleAddrToRecords[module].resolverUID;
         // Ensure that attestation is for module that was registered.
         if (resolverUID == EMPTY_RESOLVER_UID) {
             revert ModuleNotFoundInRegistry(module);
@@ -158,7 +158,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
             dataPointer: sstore2Pointer
         });
         // SSTORE attestation to registry storage
-        _moduleToAttesterToAttestations[request.moduleAddr][attester] = record;
+        $moduleToAttesterToAttestations[request.moduleAddr][attester] = record;
 
         emit Attested({
             moduleAddr: module,
@@ -180,7 +180,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
     function _revoke(address attester, RevocationRequest calldata request) internal {
         (AttestationRecord memory record, ResolverUID resolverUID) =
             _storeRevocation(attester, request);
-        record.tryExternalResolverOnRevocation({ $resolver: resolvers[resolverUID] });
+        record.tryExternalResolverOnRevocation({ $resolver: $resolvers[resolverUID] });
     }
 
     /**
@@ -203,7 +203,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         }
 
         // No schema validation required during revocation. the attestation data was already checked against
-        records.tryExternalResolverOnRevocation({ $resolver: resolvers[resolverUID] });
+        records.tryExternalResolverOnRevocation({ $resolver: $resolvers[resolverUID] });
     }
 
     /**
@@ -221,11 +221,11 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         returns (AttestationRecord memory record, ResolverUID resolverUID)
     {
         AttestationRecord storage $attestation =
-            _moduleToAttesterToAttestations[request.moduleAddr][revoker];
+            $moduleToAttesterToAttestations[request.moduleAddr][revoker];
 
         // SLOAD entire record. This will later be passed to the resolver
         record = $attestation;
-        resolverUID = _moduleAddrToRecords[request.moduleAddr].resolverUID;
+        resolverUID = $moduleAddrToRecords[request.moduleAddr].resolverUID;
 
         // Ensure that we aren't attempting to revoke a non-existing attestation.
         if (record.dataPointer == EMPTY_ATTESTATION_REF) {
@@ -261,6 +261,6 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         override
         returns (AttestationRecord storage $attestation)
     {
-        $attestation = _moduleToAttesterToAttestations[module][attester];
+        $attestation = $moduleToAttesterToAttestations[module][attester];
     }
 }

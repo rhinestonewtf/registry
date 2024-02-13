@@ -33,7 +33,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
     using ModuleDeploymentLib for address;
     using StubLib for *;
 
-    mapping(address moduleAddress => ModuleRecord moduleRecord) internal _moduleAddrToRecords;
+    mapping(address moduleAddress => ModuleRecord moduleRecord) internal $moduleAddrToRecords;
 
     /**
      * @inheritdoc IRegistry
@@ -48,7 +48,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         payable
         returns (address moduleAddress)
     {
-        ResolverRecord storage $resolver = resolvers[resolverUID];
+        ResolverRecord storage $resolver = $resolvers[resolverUID];
         if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver($resolver.resolver);
 
         moduleAddress = initCode.deploy(salt);
@@ -91,7 +91,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
     )
         external
     {
-        ResolverRecord storage $resolver = resolvers[resolverUID];
+        ResolverRecord storage $resolver = $resolvers[resolverUID];
 
         // ensure that non-zero resolverUID was provided
         if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver($resolver.resolver);
@@ -123,7 +123,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         payable
         returns (address moduleAddress)
     {
-        ResolverRecord storage $resolver = resolvers[resolverUID];
+        ResolverRecord storage $resolver = $resolvers[resolverUID];
         if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
         // prevent someone from calling a registry function pretending its a factory
         if (factory == address(this)) revert FactoryCallFailed(factory);
@@ -162,7 +162,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         // ensure that non-zero resolverUID was provided
         if (resolverUID == EMPTY_RESOLVER_UID) revert InvalidDeployment();
         // ensure moduleAddress is not already registered
-        if (_moduleAddrToRecords[moduleAddress].resolverUID != EMPTY_RESOLVER_UID) {
+        if ($moduleAddrToRecords[moduleAddress].resolverUID != EMPTY_RESOLVER_UID) {
             revert AlreadyRegistered(moduleAddress);
         }
         // revert if moduleAddress is NOT a contract
@@ -174,7 +174,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             ModuleRecord({ resolverUID: resolverUID, sender: sender, metadata: metadata });
 
         // Store module record in _modules mapping
-        _moduleAddrToRecords[moduleAddress] = moduleRegistration;
+        $moduleAddrToRecords[moduleAddress] = moduleRegistration;
 
         // Emit ModuleRegistration event
         emit ModuleRegistration({
@@ -192,6 +192,6 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         view
         returns (ModuleRecord memory moduleRecord)
     {
-        return _moduleAddrToRecords[moduleAddress];
+        return $moduleAddrToRecords[moduleAddress];
     }
 }
