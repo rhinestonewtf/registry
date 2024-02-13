@@ -8,6 +8,8 @@ import { ZERO_ADDRESS, ZERO_TIMESTAMP } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 library StubLib {
+    event ResolverRevocationError(IExternalResolver resolver);
+
     function requireExternalSchemaValidation(
         AttestationRecord memory attestationRecord,
         SchemaRecord storage schema
@@ -82,12 +84,16 @@ library StubLib {
         ResolverRecord storage resolver
     )
         internal
+        returns (bool resolved)
     {
         IExternalResolver resolverContract = resolver.resolver;
 
-        if (address(resolverContract) == ZERO_ADDRESS) return;
-        if (resolverContract.resolveRevocation(attestationRecord) == false) {
-            revert IRegistry.ExternalError_ResolveAtteststation();
+        if (address(resolverContract) == ZERO_ADDRESS) return true;
+        try resolverContract.resolveRevocation(attestationRecord) returns (bool _resolved) {
+            if (_resolved) return true;
+        } catch {
+            emit ResolverRevocationError(resolverContract);
+            return false;
         }
     }
 
@@ -96,13 +102,16 @@ library StubLib {
         ResolverRecord storage resolver
     )
         internal
+        returns (bool resolved)
     {
         IExternalResolver resolverContract = resolver.resolver;
 
-        if (address(resolverContract) == ZERO_ADDRESS) return;
-
-        if (resolverContract.resolveAttestation(attestationRecords) == false) {
-            revert IRegistry.ExternalError_ResolveAtteststation();
+        if (address(resolverContract) == ZERO_ADDRESS) return true;
+        try resolverContract.resolveRevocation(attestationRecords) returns (bool _resolved) {
+            if (_resolved) return true;
+        } catch {
+            emit ResolverRevocationError(resolverContract);
+            return false;
         }
     }
 

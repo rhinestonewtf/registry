@@ -50,6 +50,7 @@ contract MockResolver is IExternalResolver {
         override
         returns (bool)
     {
+        revert();
         onRevokeCalled = true;
         return returnVal;
     }
@@ -60,6 +61,7 @@ contract MockResolver is IExternalResolver {
         override
         returns (bool)
     {
+        revert();
         onRevokeCalled = true;
         return returnVal;
     }
