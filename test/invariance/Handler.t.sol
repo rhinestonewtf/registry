@@ -102,6 +102,26 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         REGISTRY.attest(uid, request);
     }
 
+    function handle_attests(
+        uint256 randResolv,
+        bytes calldata bytecode,
+        bytes calldata metadata,
+        uint256 randomSchemaUID,
+        AttestationRequest[] memory requests
+    )
+        public
+    {
+        // for (uint256 i = 0; i < requests.length; i++) {
+        //     bound(requests[i].expirationTime, block.timestamp + 1, type(uint48).max);
+        //     requests[i].moduleTypes = _pickTypes();
+        //     handle_registerModule(randResolv, requests[i].moduleAddr, bytecode, metadata);
+        // }
+        //
+        SchemaUID uid = _pickRandomSchemaUID(randomSchemaUID);
+
+        REGISTRY.attest(uid, requests);
+    }
+
     function handle_registerModuleWithFactory(
         uint256 randomResolverNr,
         bytes calldata bytecode,

@@ -10,7 +10,7 @@ import { IRegistry } from "../IRegistry.sol";
 abstract contract ResolverManager is IRegistry {
     using UIDLib for ResolverRecord;
 
-    mapping(ResolverUID uid => ResolverRecord resolver) public resolvers;
+    mapping(ResolverUID uid => ResolverRecord resolver) internal resolvers;
 
     /**
      * @dev Modifier to require that the caller is the owner of a resolver
@@ -44,6 +44,9 @@ abstract contract ResolverManager is IRegistry {
         _;
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function registerResolver(IExternalResolver resolver)
         external
         onlyResolver(resolver)
@@ -67,6 +70,9 @@ abstract contract ResolverManager is IRegistry {
         emit NewResolver(uid, address(resolver));
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function setResolver(
         ResolverUID uid,
         IExternalResolver resolver
@@ -78,5 +84,12 @@ abstract contract ResolverManager is IRegistry {
         ResolverRecord storage referrer = resolvers[uid];
         referrer.resolver = resolver;
         emit NewResolver(uid, address(resolver));
+    }
+
+    /**
+     * @inheritdoc IRegistry
+     */
+    function findResolver(ResolverUID uid) external view returns (ResolverRecord memory) {
+        return resolvers[uid];
     }
 }

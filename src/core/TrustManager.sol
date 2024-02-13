@@ -8,7 +8,8 @@ import {
     TrustedAttesterRecord
 } from "../DataTypes.sol";
 import { ZERO_TIMESTAMP, ZERO_MODULE_TYPE, ZERO_ADDRESS } from "../Common.sol";
-import { IRegistry } from "../IRegistry.sol";
+// solhint-disable-next-line no-unused-import
+import { IRegistry, IERC7484 } from "../IRegistry.sol";
 import { TrustManagerExternalAttesterList } from "./TrustManagerExternalAttesterList.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
@@ -29,7 +30,10 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
 
     mapping(address account => TrustedAttesterRecord attesters) internal _accountToAttester;
 
-    // Deliberately using memory here, so we can sort the array
+    /**
+     * @inheritdoc IRegistry
+     * @dev delibrately using memory here, so we can sort the array
+     */
     function trustAttesters(uint8 threshold, address[] memory attesters) external {
         uint256 attestersLength = attesters.length;
         attesters.sort();
@@ -58,18 +62,30 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         emit NewTrustedAttesters();
     }
 
+    /**
+     * @inheritdoc IERC7484
+     */
     function check(address module) external view {
         _check(msg.sender, module, ZERO_MODULE_TYPE);
     }
 
+    /**
+     * @inheritdoc IERC7484
+     */
     function checkForAccount(address smartAccount, address module) external view {
         _check(smartAccount, module, ZERO_MODULE_TYPE);
     }
 
+    /**
+     * @inheritdoc IERC7484
+     */
     function check(address module, ModuleType moduleType) external view {
         _check(msg.sender, module, moduleType);
     }
 
+    /**
+     * @inheritdoc IERC7484
+     */
     function checkForAccount(
         address smartAccount,
         address module,
@@ -81,6 +97,13 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         _check(smartAccount, module, moduleType);
     }
 
+    /**
+     * Internal helper function to check for module's security attestations on behalf of a SmartAccount
+     * will use registy's storage to get the trusted attester(s) of a smart account, and check if the module was attested
+     * @param smartAccount the smart account to check for
+     * @param module address of the module to check
+     * @param moduleType (optional param), setting  moduleType = 0, will ignore moduleTypes in attestations
+     */
     function _check(address smartAccount, address module, ModuleType moduleType) internal view {
         TrustedAttesterRecord storage trustedAttesters = _accountToAttester[smartAccount];
         // SLOAD from one slot
@@ -178,7 +201,10 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         }
     }
 
-    function getTrustedAttesters(address smartAccount)
+    /**
+     * @inheritdoc IRegistry
+     */
+    function findTrustedAttesters(address smartAccount)
         public
         view
         returns (address[] memory attesters)

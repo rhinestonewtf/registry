@@ -7,9 +7,16 @@ import { IExternalResolver } from "../external/IExternalResolver.sol";
 import { ZERO_ADDRESS, ZERO_TIMESTAMP } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 
+/**
+ * @title StubLib
+ * @dev A library that interacts with IExternalResolver and IExternalSchemaValidator
+ */
 library StubLib {
     event ResolverRevocationError(IExternalResolver resolver);
 
+    /**
+     * @notice if Schema Validator is set, it will call validateSchema() on the validator
+     */
     function requireExternalSchemaValidation(
         AttestationRecord memory attestationRecord,
         SchemaRecord storage schema
@@ -79,7 +86,7 @@ library StubLib {
         }
     }
 
-    function requireExternalResolverOnRevocation(
+    function tryExternalResolverOnRevocation(
         AttestationRecord memory attestationRecord,
         ResolverRecord storage resolver
     )
@@ -97,7 +104,7 @@ library StubLib {
         }
     }
 
-    function requireExternalResolverOnRevocation(
+    function tryExternalResolverOnRevocation(
         AttestationRecord[] memory attestationRecords,
         ResolverRecord storage resolver
     )

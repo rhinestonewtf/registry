@@ -8,6 +8,7 @@ import {
     ModuleType,
     ModuleRecord,
     ResolverUID,
+    ResolverRecord,
     RevocationRequest,
     SchemaUID,
     SchemaRecord
@@ -81,7 +82,7 @@ interface IRegistry is IERC7484 {
      * Get trusted attester for a specific smartAccount
      * @param smartAccount The address of the smartAccount
      */
-    function getTrustedAttesters(address smartAccount)
+    function findTrustedAttesters(address smartAccount)
         external
         view
         returns (address[] memory attesters);
@@ -286,6 +287,27 @@ interface IRegistry is IERC7484 {
         payable
         returns (address moduleAddr);
 
+    /**
+     * Registry can use other factories to deploy the module
+     */
+    function deployViaFactory(
+        address factory,
+        bytes calldata callOnFactory,
+        bytes calldata metadata,
+        ResolverUID resolverUID
+    )
+        external
+        payable
+        returns (address moduleAddress);
+
+    /**
+     * Already deployed module addresses can be registered on the registry
+     * @param resolverUID The resolverUID to be used for the module
+     * @param moduleAddress The address of the module to be registered
+     * @param metadata The metadata to be stored on the registry.
+     *            This field is optional, and might be used by the module developer to store additional
+     *            information about the module or facilitate business logic with the Resolver stub
+     */
     function registerModule(
         ResolverUID resolverUID,
         address moduleAddress,
@@ -293,6 +315,13 @@ interface IRegistry is IERC7484 {
     )
         external;
 
+    /**
+     * in conjunction with the deployModule() function, this function let's you
+     * predict the address of a CREATE2 module deployment
+     * @param salt CREATE2 salt
+     * @param initCode module initcode
+     * @return moduleAddress counterfactual address of the module deployment
+     */
     function calcModuleAddress(
         bytes32 salt,
         bytes calldata initCode
@@ -301,7 +330,11 @@ interface IRegistry is IERC7484 {
         view
         returns (address);
 
-    function getRegisteredModule(address moduleAddress)
+    /**
+     * Getter function to get the stored ModuleRecord for a specific module address.
+     * @param moduleAddress The address of the module
+     */
+    function findModule(address moduleAddress)
         external
         view
         returns (ModuleRecord memory moduleRecord);
@@ -317,6 +350,16 @@ interface IRegistry is IERC7484 {
     error InvalidSchema();
     error InvalidSchemaValidator(IExternalSchemaValidator validator);
 
+    /**
+     * Register Schema and (optional) external IExternalSchemaValidator
+     * Schemas describe the structure of the data of attestations
+     * every attestation made on this registry, will reference a SchemaUID to
+     *  make it possible to decode attestation data in human readable form
+     * @param schema ABI schema used to encode attestations that are made with this schema
+     * @param validator (optional) external schema validator that will be used to validate attestations.
+     *                  use address(0), if you dont need an external validator
+     * @return uid SchemaUID of the registered schema
+     */
     function registerSchema(
         string calldata schema,
         IExternalSchemaValidator validator // OPTIONAL
@@ -324,7 +367,10 @@ interface IRegistry is IERC7484 {
         external
         returns (SchemaUID uid);
 
-    function findSchema(SchemaUID uid) external returns (SchemaRecord memory record);
+    /**
+     * getter function to retrieve SchemaRecord
+     */
+    function findSchema(SchemaUID uid) external view returns (SchemaRecord memory record);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                     Manage Resolvers                       */
@@ -337,6 +383,8 @@ interface IRegistry is IERC7484 {
     function registerResolver(IExternalResolver _resolver) external returns (ResolverUID uid);
 
     function setResolver(ResolverUID uid, IExternalResolver resolver) external;
+
+    function findResolver(ResolverUID uid) external view returns (ResolverRecord memory record);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                       Stub Errors                          */

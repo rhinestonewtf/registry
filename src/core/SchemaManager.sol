@@ -23,6 +23,9 @@ abstract contract SchemaManager is IRegistry {
 
     mapping(SchemaUID uid => SchemaRecord schemaRecord) internal schemas;
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function registerSchema(
         string calldata schema,
         IExternalSchemaValidator validator // OPTIONAL
@@ -58,6 +61,9 @@ abstract contract SchemaManager is IRegistry {
         _;
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function findSchema(SchemaUID uid) external view override returns (SchemaRecord memory) {
         return schemas[uid];
     }

@@ -180,8 +180,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
     function _revoke(address attester, RevocationRequest calldata request) internal {
         (AttestationRecord memory record, ResolverUID resolverUID) =
             _storeRevocation(attester, request);
-        // TODO: what if this fails? it would stop attesters from revoking. Is this wanted behavior?
-        record.requireExternalResolverOnRevocation({ resolver: resolvers[resolverUID] });
+        record.tryExternalResolverOnRevocation({ resolver: resolvers[resolverUID] });
     }
 
     /**
@@ -204,9 +203,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         }
 
         // No schema validation required during revocation. the attestation data was already checked against
-
-        // TODO: what if this fails? it would stop attesters from revoking. Is this wanted behavior?
-        records.requireExternalResolverOnRevocation({ resolver: resolvers[resolverUID] });
+        records.tryExternalResolverOnRevocation({ resolver: resolvers[resolverUID] });
     }
 
     /**

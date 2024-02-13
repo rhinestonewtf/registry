@@ -8,22 +8,37 @@ import { AttestationManager } from "./AttestationManager.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 abstract contract Attestation is IRegistry, AttestationManager {
+    /**
+     * @inheritdoc IRegistry
+     */
     function attest(SchemaUID schemaUID, AttestationRequest calldata request) external {
         _attest(msg.sender, schemaUID, request);
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function attest(SchemaUID schemaUID, AttestationRequest[] calldata requests) external {
         _attest(msg.sender, schemaUID, requests);
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function revoke(RevocationRequest calldata request) external {
         _revoke(msg.sender, request);
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function revoke(RevocationRequest[] calldata requests) external {
         _revoke(msg.sender, requests);
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function findAttestation(
         address module,
         address attester
@@ -35,6 +50,9 @@ abstract contract Attestation is IRegistry, AttestationManager {
         attestation = _getAttestation(module, attester);
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function findAttestations(
         address module,
         address[] calldata attesters

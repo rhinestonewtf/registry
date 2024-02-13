@@ -17,10 +17,7 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
     mapping(address attester => uint256 nonce) public attesterNonce;
 
     /**
-     * Attestation can be made on any SchemaUID.
-     * @dev the registry, will forward your AttestationRequest.Data to the SchemaManager to
-     * check if the schema exists.
-     * @param schemaUID The SchemaUID of the schema to be attested.
+     * @inheritdoc IRegistry
      */
     function attest(
         SchemaUID schemaUID,
@@ -38,6 +35,9 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
         _attest({ attester: attester, schemaUID: schemaUID, request: request });
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function attest(
         SchemaUID schemaUID,
         address attester,
@@ -54,6 +54,9 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
         _attest({ attester: attester, schemaUID: schemaUID, requests: requests });
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function revoke(
         address attester,
         RevocationRequest calldata request,
@@ -69,6 +72,9 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
         _revoke({ attester: attester, request: request });
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function revoke(
         address attester,
         RevocationRequest[] calldata requests,
@@ -84,6 +90,13 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
         _revoke({ attester: attester, requests: requests });
     }
 
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                  EIP712 Digest Helpers                     */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    /**
+     * override thats used by Solady's EIP712 cache (constructor)
+     */
     function _domainNameAndVersion()
         internal
         view

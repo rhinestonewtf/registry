@@ -26,7 +26,7 @@ contract TrustTest is AttestationTest {
         address[] memory trustedAttesters = new address[](1);
         trustedAttesters[0] = address(attester1.addr);
         registry.trustAttesters(1, trustedAttesters);
-        address[] memory result = registry.getTrustedAttesters(smartAccount1.addr);
+        address[] memory result = registry.findTrustedAttesters(smartAccount1.addr);
         assertEq(result.length, 1);
         assertEq(result[0], address(attester1.addr));
     }
@@ -46,7 +46,7 @@ contract TrustTest is AttestationTest {
         registry.trustAttesters(uint8(attesters.length), attesters);
         // It should set.
         // It should emit event.
-        address[] memory result = registry.getTrustedAttesters(smartAccount1.addr);
+        address[] memory result = registry.findTrustedAttesters(smartAccount1.addr);
 
         assertEq(result.length, attesters.length);
         for (uint256 i; i < attesters.length; i++) {

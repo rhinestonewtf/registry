@@ -2,7 +2,6 @@
 pragma solidity ^0.8.21;
 
 import { PackedModuleTypes, ModuleType } from "../DataTypes.sol";
-import { LibSort } from "solady/utils/LibSort.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 library ModuleTypeLib {

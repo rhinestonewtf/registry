@@ -20,6 +20,7 @@ contract ImmutableData is BaseTest {
         targetSelectors[2] = Handler.handle_setResolver.selector;
         targetSelectors[3] = Handler.handle_registerModule.selector;
         targetSelectors[4] = Handler.handle_attest.selector;
+        // targetSelectors[5] = Handler.handle_attests.selector;
         targetSelectors[5] = Handler.handle_registerModuleWithFactory.selector;
         // targetSelectors[3] = Handler.handle_revoke.selector;
 

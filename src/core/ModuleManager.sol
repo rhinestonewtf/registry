@@ -12,7 +12,9 @@ import { IRegistry } from "../IRegistry.sol";
 /**
  * @title Module
  *
- * @dev The Module contract is responsible for handling the registration, storage and retrieval of modules on the Registry. This contract inherits from the IModule interface
+ * @dev The Module contract is responsible for handling the registration,
+ *           storage and retrieval of modules on the Registry.
+ *           This contract inherits from the IModule interface
  *
  * @dev The primary responsibility of the Module is to deploy and manage modules. A module is a smart contract
  * that has been deployed through the Module. The details of each module, such as its address, code hash, schema ID,
@@ -33,6 +35,9 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
 
     mapping(address moduleAddress => ModuleRecord moduleRecord) internal _moduleAddrToRecords;
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function deployModule(
         bytes32 salt,
         ResolverUID resolverUID,
@@ -63,6 +68,9 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         });
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function calcModuleAddress(
         bytes32 salt,
         bytes calldata initCode
@@ -74,6 +82,9 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         return initCode.calcAddress(salt);
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function registerModule(
         ResolverUID resolverUID,
         address moduleAddress,
@@ -98,6 +109,9 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         });
     }
 
+    /**
+     * @inheritdoc IRegistry
+     */
     function deployViaFactory(
         address factory,
         bytes calldata callOnFactory,
@@ -165,7 +179,10 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         emit ModuleRegistration(moduleAddress, sender, ResolverUID.unwrap(resolverUID));
     }
 
-    function getRegisteredModule(address moduleAddress)
+    /**
+     * @inheritdoc IRegistry
+     */
+    function findModule(address moduleAddress)
         external
         view
         returns (ModuleRecord memory moduleRecord)
