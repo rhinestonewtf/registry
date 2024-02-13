@@ -7,7 +7,7 @@ import { IRegistry } from "../IRegistry.sol";
 
 abstract contract TrustManagerExternalAttesterList is IRegistry {
     function check(address module, address attester) external view returns (uint256 attestedAt) {
-        AttestationRecord storage attestation = _getAttestation(module, attester);
+        AttestationRecord storage $attestation = _getAttestation(module, attester);
 
         // attestedAt = attestation.time;
         uint256 expirationTime; // = attestation.expirationTime;
@@ -18,7 +18,7 @@ abstract contract TrustManagerExternalAttesterList is IRegistry {
         // solhint-disable-next-line no-inline-assembly
         assembly {
             let mask := 0xffffffffffff
-            let times := sload(attestation.slot)
+            let times := sload($attestation.slot)
             attestedAt := and(mask, times)
             times := shr(48, times)
             expirationTime := and(mask, times)
@@ -37,7 +37,7 @@ abstract contract TrustManagerExternalAttesterList is IRegistry {
         }
 
         if (revocationTime != ZERO_TIMESTAMP) {
-            revert RevokedAttestation(attestation.attester);
+            revert RevokedAttestation($attestation.attester);
         }
     }
 
@@ -59,7 +59,7 @@ abstract contract TrustManagerExternalAttesterList is IRegistry {
         attestedAtArray = new uint256[](attestersLength);
 
         for (uint256 i; i < attestersLength; ++i) {
-            AttestationRecord storage attestation = _getAttestation(module, attesters[i]);
+            AttestationRecord storage $attestation = _getAttestation(module, attesters[i]);
 
             uint256 attestationTime; // = attestation.time;
             uint256 expirationTime; // = attestation.expirationTime;
@@ -70,7 +70,7 @@ abstract contract TrustManagerExternalAttesterList is IRegistry {
             // solhint-disable-next-line no-inline-assembly
             assembly {
                 let mask := 0xffffffffffff
-                let times := sload(attestation.slot)
+                let times := sload($attestation.slot)
                 attestationTime := and(mask, times)
                 times := shr(48, times)
                 expirationTime := and(mask, times)
@@ -79,7 +79,7 @@ abstract contract TrustManagerExternalAttesterList is IRegistry {
             }
 
             if (revocationTime != ZERO_TIMESTAMP) {
-                revert RevokedAttestation(attestation.attester);
+                revert RevokedAttestation($attestation.attester);
             }
 
             if (expirationTime != ZERO_TIMESTAMP) {
@@ -115,7 +115,7 @@ abstract contract TrustManagerExternalAttesterList is IRegistry {
         attestedAtArray = new uint256[](attestersLength);
 
         for (uint256 i; i < attestersLength; ++i) {
-            AttestationRecord storage attestation = _getAttestation(module, attesters[i]);
+            AttestationRecord storage $attestation = _getAttestation(module, attesters[i]);
 
             uint256 attestationTime; // = attestation.time;
             uint256 expirationTime; // = attestation.expirationTime;
@@ -126,7 +126,7 @@ abstract contract TrustManagerExternalAttesterList is IRegistry {
             // solhint-disable-next-line no-inline-assembly
             assembly {
                 let mask := 0xffffffffffff
-                let times := sload(attestation.slot)
+                let times := sload($attestation.slot)
                 attestationTime := and(mask, times)
                 times := shr(48, times)
                 expirationTime := and(mask, times)
@@ -162,5 +162,5 @@ abstract contract TrustManagerExternalAttesterList is IRegistry {
         internal
         view
         virtual
-        returns (AttestationRecord storage attestation);
+        returns (AttestationRecord storage $attestation);
 }

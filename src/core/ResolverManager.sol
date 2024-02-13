@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import { ResolverRecord, ResolverUID } from "../DataTypes.sol";
-import { EMPTY_RESOLVER_UID, ZERO_ADDRESS } from "../Common.sol";
+import { ZERO_ADDRESS } from "../Common.sol";
 import { IExternalResolver } from "../external/IExternalResolver.sol";
 import { UIDLib } from "../lib/Helpers.sol";
 import { IRegistry } from "../IRegistry.sol";
@@ -20,13 +20,6 @@ abstract contract ResolverManager is IRegistry {
     modifier onlyResolverOwner(ResolverUID uid) {
         if (resolvers[uid].resolverOwner != msg.sender) {
             revert AccessDenied();
-        }
-        _;
-    }
-
-    modifier notZero(ResolverUID uid) {
-        if (uid == EMPTY_RESOLVER_UID) {
-            revert InvalidResolverUID(uid);
         }
         _;
     }
