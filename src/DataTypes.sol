@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.24;
 
 import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.sol";
 import { IExternalResolver } from "./external/IExternalResolver.sol";
@@ -59,10 +59,10 @@ struct AttestationRequest {
     bytes data; // Custom attestation data.
     ModuleType[] moduleTypes; // optional: The type(s) of the module.
 }
+
 /**
  * @dev A struct representing the arguments of the revocation request.
  */
-
 struct RevocationRequest {
     address moduleAddr; // The module address.
 }

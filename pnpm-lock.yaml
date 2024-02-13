@@ -11,22 +11,22 @@ dependencies:
 
 devDependencies:
   ds-test:
-    specifier: github:dapphub/ds-test
+    specifier: github:dapphub/ds-test#e282159d5170298eb2455a6c05280ab5a73a4ef0
     version: github.com/dapphub/ds-test/e282159d5170298eb2455a6c05280ab5a73a4ef0
   forge-std:
-    specifier: github:foundry-rs/forge-std
-    version: github.com/foundry-rs/forge-std/4513bc2063f23c57bee6558799584b518d387a39
+    specifier: github:foundry-rs/forge-std#v1.7.6
+    version: github.com/foundry-rs/forge-std/ae570fec082bfe1c1f45b0acca4a2b4f84d345ce
   prettier:
     specifier: ^2.8.8
     version: 2.8.8
   solady:
-    specifier: github:vectorized/solady
-    version: github.com/vectorized/solady/330d9aceb8086f2ac85bb5dbfb9991642ae944e6
+    specifier: github:vectorized/solady#9deb9ed36a27261a8745db5b7cd7f4cdc3b1cd4e
+    version: github.com/vectorized/solady/9deb9ed36a27261a8745db5b7cd7f4cdc3b1cd4e
   solhint:
     specifier: ^4.1.1
     version: 4.1.1
   solmate:
-    specifier: github:transmissions11/solmate
+    specifier: github:transmissions11/solmate#c892309933b25c03d32b1b0d674df7ae292ba925
     version: github.com/transmissions11/solmate/c892309933b25c03d32b1b0d674df7ae292ba925
 
 packages:
@@ -724,8 +724,8 @@ packages:
     version: 1.0.0
     dev: true
 
-  github.com/foundry-rs/forge-std/4513bc2063f23c57bee6558799584b518d387a39:
-    resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/4513bc2063f23c57bee6558799584b518d387a39}
+  github.com/foundry-rs/forge-std/ae570fec082bfe1c1f45b0acca4a2b4f84d345ce:
+    resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/ae570fec082bfe1c1f45b0acca4a2b4f84d345ce}
     name: forge-std
     version: 1.7.6
     dev: true
@@ -736,8 +736,8 @@ packages:
     version: 6.2.0
     dev: true
 
-  github.com/vectorized/solady/330d9aceb8086f2ac85bb5dbfb9991642ae944e6:
-    resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/330d9aceb8086f2ac85bb5dbfb9991642ae944e6}
+  github.com/vectorized/solady/9deb9ed36a27261a8745db5b7cd7f4cdc3b1cd4e:
+    resolution: {tarball: https://codeload.github.com/vectorized/solady/tar.gz/9deb9ed36a27261a8745db5b7cd7f4cdc3b1cd4e}
     name: solady
-    version: 0.0.167
+    version: 0.0.168
     dev: true

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.24;
 
 import { ModuleDeploymentLib } from "../lib/ModuleDeploymentLib.sol";
 import { StubLib } from "../lib/StubLib.sol";

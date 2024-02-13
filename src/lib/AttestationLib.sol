@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.24;
 
 import { AttestationRequest, RevocationRequest, AttestationDataRef } from "../DataTypes.sol";
 import { SSTORE2 } from "solady/utils/SSTORE2.sol";
