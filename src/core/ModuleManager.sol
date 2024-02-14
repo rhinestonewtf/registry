@@ -49,6 +49,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         returns (address moduleAddress)
     {
         ResolverRecord storage $resolver = $resolvers[resolverUID];
+        // ensure that existing resolverUID was provided
         if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver($resolver.resolver);
 
         moduleAddress = initCode.deploy(salt);
@@ -72,8 +73,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
      */
     function registerModule(ResolverUID resolverUID, address moduleAddress, bytes calldata metadata) external {
         ResolverRecord storage $resolver = $resolvers[resolverUID];
-
-        // ensure that non-zero resolverUID was provided
+        // ensure that existing resolverUID was provided
         if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver($resolver.resolver);
 
         ModuleRecord memory record = _storeModuleRecord({
@@ -101,7 +101,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         returns (address moduleAddress)
     {
         ResolverRecord storage $resolver = $resolvers[resolverUID];
-        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
+        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver($resolver.resolver);
         // prevent someone from calling a registry function pretending its a factory
         if (factory == address(this)) revert FactoryCallFailed(factory);
         // call external factory to deploy module
