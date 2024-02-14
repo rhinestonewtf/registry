@@ -24,43 +24,23 @@ contract MockResolver is IExternalResolver {
         if (interfaceId == type(IExternalResolver).interfaceId) return true;
     }
 
-    function resolveAttestation(AttestationRecord calldata attestation)
-        external
-        payable
-        override
-        returns (bool)
-    {
+    function resolveAttestation(AttestationRecord calldata attestation) external payable override returns (bool) {
         onAttestCalled = true;
         return returnVal;
     }
 
-    function resolveAttestation(AttestationRecord[] calldata attestation)
-        external
-        payable
-        override
-        returns (bool)
-    {
+    function resolveAttestation(AttestationRecord[] calldata attestation) external payable override returns (bool) {
         onAttestCalled = true;
         return returnVal;
     }
 
-    function resolveRevocation(AttestationRecord calldata attestation)
-        external
-        payable
-        override
-        returns (bool)
-    {
+    function resolveRevocation(AttestationRecord calldata attestation) external payable override returns (bool) {
         revert();
         onRevokeCalled = true;
         return returnVal;
     }
 
-    function resolveRevocation(AttestationRecord[] calldata attestation)
-        external
-        payable
-        override
-        returns (bool)
-    {
+    function resolveRevocation(AttestationRecord[] calldata attestation) external payable override returns (bool) {
         revert();
         onRevokeCalled = true;
         return returnVal;

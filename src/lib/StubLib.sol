@@ -17,52 +17,29 @@ library StubLib {
     /**
      * @notice if Schema Validator is set, it will call validateSchema() on the validator
      */
-    function requireExternalSchemaValidation(
-        AttestationRecord memory attestationRecord,
-        SchemaRecord storage $schema
-    )
-        internal
-        view
-    {
+    function requireExternalSchemaValidation(AttestationRecord memory attestationRecord, SchemaRecord storage $schema) internal {
         // only run this function if the selected schemaUID exists
         if ($schema.registeredAt == ZERO_TIMESTAMP) revert IRegistry.InvalidSchema();
         // validate Schema
         IExternalSchemaValidator validator = $schema.validator;
         // if validator is set, call the validator
-        if (
-            address(validator) != ZERO_ADDRESS
-                && validator.validateSchema(attestationRecord) == false
-        ) {
+        if (address(validator) != ZERO_ADDRESS && validator.validateSchema(attestationRecord) == false) {
             revert IRegistry.ExternalError_SchemaValidation();
         }
     }
 
-    function requireExternalSchemaValidation(
-        AttestationRecord[] memory attestationRecords,
-        SchemaRecord storage $schema
-    )
-        internal
-        view
-    {
+    function requireExternalSchemaValidation(AttestationRecord[] memory attestationRecords, SchemaRecord storage $schema) internal {
         // only run this function if the selected schemaUID exists
         if ($schema.registeredAt == ZERO_TIMESTAMP) revert IRegistry.InvalidSchema();
         // validate Schema
         IExternalSchemaValidator validator = $schema.validator;
         // if validator is set, call the validator
-        if (
-            address(validator) != ZERO_ADDRESS
-                && validator.validateSchema(attestationRecords) == false
-        ) {
+        if (address(validator) != ZERO_ADDRESS && validator.validateSchema(attestationRecords) == false) {
             revert IRegistry.ExternalError_SchemaValidation();
         }
     }
 
-    function requireExternalResolverOnAttestation(
-        AttestationRecord memory attestationRecord,
-        ResolverRecord storage $resolver
-    )
-        internal
-    {
+    function requireExternalResolverOnAttestation(AttestationRecord memory attestationRecord, ResolverRecord storage $resolver) internal {
         IExternalResolver resolverContract = $resolver.resolver;
 
         if (address(resolverContract) == ZERO_ADDRESS) return;
@@ -133,13 +110,8 @@ library StubLib {
 
         if (address(resolverContract) != ZERO_ADDRESS) return;
 
-        if (
-            resolverContract.resolveModuleRegistration({
-                sender: msg.sender,
-                moduleAddress: moduleAddress,
-                record: moduleRecord
-            }) == false
-        ) {
+        if (resolverContract.resolveModuleRegistration({ sender: msg.sender, moduleAddress: moduleAddress, record: moduleRecord }) == false)
+        {
             revert IRegistry.ExternalError_ModuleRegistration();
         }
     }

@@ -18,15 +18,9 @@ interface IExternalResolver is IERC165 {
      *
      * @return Whether the attestation is valid.
      */
-    function resolveAttestation(AttestationRecord calldata attestation)
-        external
-        payable
-        returns (bool);
+    function resolveAttestation(AttestationRecord calldata attestation) external payable returns (bool);
 
-    function resolveAttestation(AttestationRecord[] calldata attestation)
-        external
-        payable
-        returns (bool);
+    function resolveAttestation(AttestationRecord[] calldata attestation) external payable returns (bool);
 
     /**
      * @dev Processes an attestation revocation and verifies if it can be revoked.
@@ -35,14 +29,8 @@ interface IExternalResolver is IERC165 {
      *
      * @return Whether the attestation can be revoked.
      */
-    function resolveRevocation(AttestationRecord calldata attestation)
-        external
-        payable
-        returns (bool);
-    function resolveRevocation(AttestationRecord[] calldata attestation)
-        external
-        payable
-        returns (bool);
+    function resolveRevocation(AttestationRecord calldata attestation) external payable returns (bool);
+    function resolveRevocation(AttestationRecord[] calldata attestation) external payable returns (bool);
 
     /**
      * @dev Processes a Module Registration

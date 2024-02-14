@@ -28,10 +28,7 @@ abstract contract ResolverManager is IRegistry {
      * If a resolver is not address(0), we check if it supports the IExternalResolver interface
      */
     modifier onlyResolver(IExternalResolver resolver) {
-        if (
-            address(resolver) == address(0)
-                || !resolver.supportsInterface(type(IExternalResolver).interfaceId)
-        ) {
+        if (address(resolver) == address(0) || !resolver.supportsInterface(type(IExternalResolver).interfaceId)) {
             revert InvalidResolver(resolver);
         }
         _;
@@ -40,14 +37,9 @@ abstract contract ResolverManager is IRegistry {
     /**
      * @inheritdoc IRegistry
      */
-    function registerResolver(IExternalResolver resolver)
-        external
-        onlyResolver(resolver)
-        returns (ResolverUID uid)
-    {
+    function registerResolver(IExternalResolver resolver) external onlyResolver(resolver) returns (ResolverUID uid) {
         // build a ResolverRecord from the input
-        ResolverRecord memory resolverRecord =
-            ResolverRecord({ resolver: resolver, resolverOwner: msg.sender });
+        ResolverRecord memory resolverRecord = ResolverRecord({ resolver: resolver, resolverOwner: msg.sender });
 
         // Computing a unique ID for the schema using its properties
         uid = resolverRecord.getUID();
@@ -77,6 +69,14 @@ abstract contract ResolverManager is IRegistry {
         ResolverRecord storage referrer = $resolvers[uid];
         referrer.resolver = resolver;
         emit NewResolver(uid, address(resolver));
+    }
+
+    /**
+     * @inheritdoc IRegistry
+     */
+    function transferResolverOwnership(ResolverUID uid, address newOwner) external onlyResolverOwner(uid) {
+        $resolvers[uid].resolverOwner = newOwner;
+        emit NewResolverOwner(uid, newOwner);
     }
 
     /**

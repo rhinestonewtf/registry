@@ -85,9 +85,7 @@ contract BaseTest is Test {
         vm.prank(opsEntity1.addr);
         defaultResolverUID = registry.registerResolver(IExternalResolver(address(resolverTrue)));
         vm.prank(opsEntity1.addr);
-        defaultSchemaUID = registry.registerSchema(
-            defaultSchema, IExternalSchemaValidator(address(schemaValidatorTrue))
-        );
+        defaultSchemaUID = registry.registerSchema(defaultSchema, IExternalSchemaValidator(address(schemaValidatorTrue)));
 
         vm.prank(moduleDev1.addr);
         registry.registerModule(defaultResolverUID, address(module1), "");

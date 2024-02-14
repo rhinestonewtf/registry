@@ -11,13 +11,10 @@ interface IExternalSchemaValidator is IERC165 {
     /**
      * @notice Validates an attestation request.
      */
-    function validateSchema(AttestationRecord calldata attestation) external view returns (bool);
+    function validateSchema(AttestationRecord calldata attestation) external returns (bool);
 
     /**
      * @notice Validates an array of attestation requests.
      */
-    function validateSchema(AttestationRecord[] calldata attestations)
-        external
-        view
-        returns (bool);
+    function validateSchema(AttestationRecord[] calldata attestations) external returns (bool);
 }

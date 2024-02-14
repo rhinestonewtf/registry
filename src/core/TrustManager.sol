@@ -1,12 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.24;
 
-import {
-    AttestationRecord,
-    PackedModuleTypes,
-    ModuleType,
-    TrustedAttesterRecord
-} from "../DataTypes.sol";
+import { AttestationRecord, PackedModuleTypes, ModuleType, TrustedAttesterRecord } from "../DataTypes.sol";
 import { ZERO_TIMESTAMP, ZERO_MODULE_TYPE, ZERO_ADDRESS } from "../Common.sol";
 // solhint-disable-next-line no-unused-import
 import { IRegistry, IERC7484 } from "../IRegistry.sol";
@@ -85,14 +80,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
     /**
      * @inheritdoc IERC7484
      */
-    function checkForAccount(
-        address smartAccount,
-        address module,
-        ModuleType moduleType
-    )
-        external
-        view
-    {
+    function checkForAccount(address smartAccount, address module, ModuleType moduleType) external view {
         _check(smartAccount, module, moduleType);
     }
 
@@ -117,15 +105,13 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         // smart account only has ONE trusted attester
         // use this condition to save gas
         else if (threshold == 1) {
-            AttestationRecord storage $attestation =
-                _getAttestation({ module: module, attester: attester });
+            AttestationRecord storage $attestation = _getAttestation({ module: module, attester: attester });
             _requireValidAttestation(moduleType, $attestation);
         }
         // smart account has more than one trusted attester
         else {
             // loop though list and check if the attestation is valid
-            AttestationRecord storage $attestation =
-                _getAttestation({ module: module, attester: attester });
+            AttestationRecord storage $attestation = _getAttestation({ module: module, attester: attester });
             _requireValidAttestation(moduleType, $attestation);
             for (uint256 i = 1; i < attesterCount; i++) {
                 threshold--;
@@ -145,13 +131,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
      *                 - not expired
      *                 - correct module type (if not ZERO_MODULE_TYPE)
      */
-    function _requireValidAttestation(
-        ModuleType expectedType,
-        AttestationRecord storage $attestation
-    )
-        internal
-        view
-    {
+    function _requireValidAttestation(ModuleType expectedType, AttestationRecord storage $attestation) internal view {
         uint256 attestedAt;
         uint256 expirationTime;
         uint256 revocationTime;
@@ -203,11 +183,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
     /**
      * @inheritdoc IRegistry
      */
-    function findTrustedAttesters(address smartAccount)
-        public
-        view
-        returns (address[] memory attesters)
-    {
+    function findTrustedAttesters(address smartAccount) public view returns (address[] memory attesters) {
         TrustedAttesterRecord storage $trustedAttesters = $accountToAttester[smartAccount];
         uint256 count = $trustedAttesters.attesterCount;
         address attester0 = $trustedAttesters.attester;

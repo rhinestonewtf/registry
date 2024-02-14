@@ -39,10 +39,7 @@ contract ModuleRegistrationTest is BaseTest {
         assertTrue(moduleAddr == moduleAddrCalc);
     }
 
-    function test_WhenRegisteringAModuleOnAnInvalidResolverUID()
-        external
-        prankWithAccount(moduleDev1)
-    {
+    function test_WhenRegisteringAModuleOnAnInvalidResolverUID() external prankWithAccount(moduleDev1) {
         MockModule newModule = new MockModule();
         // It should revert.
         ResolverUID invalidUID = ResolverUID.wrap(hex"00");
@@ -54,20 +51,14 @@ contract ModuleRegistrationTest is BaseTest {
         registry.registerModule(invalidUID, address(newModule), "");
     }
 
-    function test_WhenRegisteringAModuleOnAValidResolverUID()
-        external
-        prankWithAccount(moduleDev1)
-    {
+    function test_WhenRegisteringAModuleOnAValidResolverUID() external prankWithAccount(moduleDev1) {
         // It should register.
 
         MockModule newModule = new MockModule();
         registry.registerModule(defaultResolverUID, address(newModule), "");
     }
 
-    function test_WhenRegisteringAModuleOnAInValidResolverUID()
-        external
-        prankWithAccount(moduleDev1)
-    {
+    function test_WhenRegisteringAModuleOnAInValidResolverUID() external prankWithAccount(moduleDev1) {
         // It should revert
 
         MockModule newModule = new MockModule();
@@ -75,17 +66,12 @@ contract ModuleRegistrationTest is BaseTest {
         registry.registerModule(ResolverUID.wrap(bytes32("foobar")), address(newModule), "");
     }
 
-    function test_WhenRegisteringTwoModulesWithTheSameBytecode()
-        external
-        prankWithAccount(moduleDev1)
-    {
+    function test_WhenRegisteringTwoModulesWithTheSameBytecode() external prankWithAccount(moduleDev1) {
         MockModule newModule = new MockModule();
         // It should revert.
         registry.registerModule(defaultResolverUID, address(newModule), "");
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IRegistry.AlreadyRegistered.selector, address(newModule))
-        );
+        vm.expectRevert(abi.encodeWithSelector(IRegistry.AlreadyRegistered.selector, address(newModule)));
         registry.registerModule(defaultResolverUID, address(newModule), "");
     }
 
@@ -96,22 +82,16 @@ contract ModuleRegistrationTest is BaseTest {
 
         factory.setReturnAddress(address(0));
         vm.expectRevert();
-        registry.deployViaFactory(
-            address(factory), abi.encodeCall(factory.deployFn, ()), "", defaultResolverUID
-        );
+        registry.deployViaFactory(address(factory), abi.encodeCall(factory.deployFn, ()), "", defaultResolverUID);
 
         factory.setReturnAddress(address(1));
         vm.expectRevert();
 
-        registry.deployViaFactory(
-            address(factory), abi.encodeCall(factory.deployFn, ()), "", defaultResolverUID
-        );
+        registry.deployViaFactory(address(factory), abi.encodeCall(factory.deployFn, ()), "", defaultResolverUID);
 
         MockModule newModule = new MockModule();
         factory.setReturnAddress(address(newModule));
-        registry.deployViaFactory(
-            address(factory), abi.encodeCall(factory.deployFn, ()), "", defaultResolverUID
-        );
+        registry.deployViaFactory(address(factory), abi.encodeCall(factory.deployFn, ()), "", defaultResolverUID);
     }
 
     function test_WhenUsingInvalidFactory() public {

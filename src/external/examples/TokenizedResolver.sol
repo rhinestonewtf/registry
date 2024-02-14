@@ -14,37 +14,13 @@ contract TokenizedResolver is ResolverBase {
 
     function supportsInterface(bytes4 interfaceID) external view override returns (bool) { }
 
-    function resolveAttestation(AttestationRecord calldata attestation)
-        external
-        payable
-        override
-        onlyRegistry
-        returns (bool)
-    { }
+    function resolveAttestation(AttestationRecord calldata attestation) external payable override onlyRegistry returns (bool) { }
 
-    function resolveAttestation(AttestationRecord[] calldata attestation)
-        external
-        payable
-        override
-        onlyRegistry
-        returns (bool)
-    { }
+    function resolveAttestation(AttestationRecord[] calldata attestation) external payable override onlyRegistry returns (bool) { }
 
-    function resolveRevocation(AttestationRecord calldata attestation)
-        external
-        payable
-        override
-        onlyRegistry
-        returns (bool)
-    { }
+    function resolveRevocation(AttestationRecord calldata attestation) external payable override onlyRegistry returns (bool) { }
 
-    function resolveRevocation(AttestationRecord[] calldata attestation)
-        external
-        payable
-        override
-        onlyRegistry
-        returns (bool)
-    { }
+    function resolveRevocation(AttestationRecord[] calldata attestation) external payable override onlyRegistry returns (bool) { }
 
     function resolveModuleRegistration(
         address sender,

@@ -17,11 +17,7 @@ contract TrustTest is AttestationTest {
         _;
     }
 
-    function test_WhenSupplyingOneAttester()
-        external
-        whenSettingAttester
-        prankWithAccount(smartAccount1)
-    {
+    function test_WhenSupplyingOneAttester() external whenSettingAttester prankWithAccount(smartAccount1) {
         // It should set.
         address[] memory trustedAttesters = new address[](1);
         trustedAttesters[0] = address(attester1.addr);
@@ -31,11 +27,7 @@ contract TrustTest is AttestationTest {
         assertEq(result[0], address(attester1.addr));
     }
 
-    function test_WhenSupplyingManyAttesters(address[] memory attesters)
-        external
-        whenSettingAttester
-        prankWithAccount(smartAccount1)
-    {
+    function test_WhenSupplyingManyAttesters(address[] memory attesters) external whenSettingAttester prankWithAccount(smartAccount1) {
         vm.assume(attesters.length < 100);
         vm.assume(attesters.length > 0);
         for (uint256 i; i < attesters.length; i++) {

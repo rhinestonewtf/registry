@@ -23,19 +23,10 @@ contract AttestationTest is BaseTest {
         for (uint256 i; i < types.length; i++) {
             typesEnc[i] = ModuleType.wrap(types[i]);
         }
-        request = AttestationRequest({
-            moduleAddr: module,
-            expirationTime: expirationTime,
-            data: data,
-            moduleTypes: typesEnc
-        });
+        request = AttestationRequest({ moduleAddr: module, expirationTime: expirationTime, data: data, moduleTypes: typesEnc });
     }
 
-    function mockRevocation(address module)
-        internal
-        pure
-        returns (RevocationRequest memory request)
-    {
+    function mockRevocation(address module) internal pure returns (RevocationRequest memory request) {
         request = RevocationRequest({ moduleAddr: module });
     }
 
@@ -43,8 +34,7 @@ contract AttestationTest is BaseTest {
         address module = address(new MockModule());
         registry.registerModule(defaultResolverUID, module, "");
         uint32[] memory types = new uint32[](1);
-        AttestationRequest memory request =
-            mockAttestation(module, uint48(block.timestamp + 1), "", types);
+        AttestationRequest memory request = mockAttestation(module, uint48(block.timestamp + 1), "", types);
         // It should store.
         registry.attest(defaultSchemaUID, request);
         AttestationRecord memory record = registry.findAttestation(module, attester1.addr);
@@ -59,8 +49,7 @@ contract AttestationTest is BaseTest {
         address module = address(new MockModule());
         registry.registerModule(defaultResolverUID, module, "");
         uint32[] memory types = new uint32[](1);
-        AttestationRequest memory request =
-            mockAttestation(module, uint48(block.timestamp + 1), "", types);
+        AttestationRequest memory request = mockAttestation(module, uint48(block.timestamp + 1), "", types);
         // It should store.
         registry.attest(defaultSchemaUID, request);
         AttestationRecord memory record = registry.findAttestation(module, attester1.addr);
@@ -91,13 +80,7 @@ contract AttestationTest is BaseTest {
         assertEq(record.attester, attester1.addr);
     }
 
-    function test_WhenAttestingWithExpirationTimeInThePast(
-        address module,
-        bytes memory data,
-        uint32 moduleType
-    )
-        external
-    {
+    function test_WhenAttestingWithExpirationTimeInThePast(address module, bytes memory data, uint32 moduleType) external {
         vm.assume(moduleType > 31);
         uint48 expirationTime = uint48(block.timestamp - 1000);
 
@@ -151,10 +134,7 @@ contract AttestationTest is BaseTest {
         registry.attest(defaultSchemaUID, request);
     }
 
-    function test_WhenRevokingAttestationThatDoesntExist(address module)
-        external
-        prankWithAccount(attester1)
-    {
+    function test_WhenRevokingAttestationThatDoesntExist(address module) external prankWithAccount(attester1) {
         // It should revert.
         vm.expectRevert(abi.encodeWithSelector(IRegistry.AttestationNotFound.selector));
         registry.revoke(mockRevocation(module));
@@ -165,8 +145,7 @@ contract AttestationTest is BaseTest {
         // It should call ExternalResolver.
 
         uint32[] memory types = new uint32[](1);
-        AttestationRequest memory request =
-            mockAttestation(address(module1), uint48(block.timestamp + 1), "", types);
+        AttestationRequest memory request = mockAttestation(address(module1), uint48(block.timestamp + 1), "", types);
         // It should store.
         registry.attest(defaultSchemaUID, request);
 
@@ -199,8 +178,7 @@ contract AttestationTest is BaseTest {
         uint32[] memory types = new uint32[](2);
         types[0] = 1;
         types[1] = 2;
-        AttestationRequest memory request =
-            mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        AttestationRequest memory request = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
 
         bytes32 digest = registry.getDigest(request, attester1.addr);
         bytes memory sig = ecdsaSign(attester1.key, digest);
@@ -262,8 +240,7 @@ contract AttestationTest is BaseTest {
 
     function test_WhenUsingInvalidECDSA() external whenAttestingWithSignature {
         uint32[] memory types = new uint32[](1);
-        AttestationRequest memory request =
-            mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        AttestationRequest memory request = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
 
         bytes32 digest = registry.getDigest(request, attester1.addr);
         bytes memory sig = ecdsaSign(attester1.key, digest);
@@ -289,14 +266,12 @@ contract AttestationTest is BaseTest {
 
     function test_WhenUsingValidERC1271() external whenAttestingWithSignature {
         uint32[] memory types = new uint32[](1);
-        AttestationRequest memory request =
-            mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        AttestationRequest memory request = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
 
         bytes memory sig = "signature";
         registry.attest(defaultSchemaUID, address(erc1271AttesterTrue), request, sig);
 
-        AttestationRecord memory record =
-            registry.findAttestation(address(module1), address(erc1271AttesterTrue));
+        AttestationRecord memory record = registry.findAttestation(address(module1), address(erc1271AttesterTrue));
 
         assertEq(record.time, block.timestamp);
         assertEq(record.expirationTime, request.expirationTime);
@@ -313,8 +288,7 @@ contract AttestationTest is BaseTest {
         bytes memory sig = "signature";
         registry.attest(defaultSchemaUID, address(erc1271AttesterTrue), requests, sig);
 
-        AttestationRecord memory record =
-            registry.findAttestation(address(module1), address(erc1271AttesterTrue));
+        AttestationRecord memory record = registry.findAttestation(address(module1), address(erc1271AttesterTrue));
 
         assertEq(record.time, block.timestamp);
         assertEq(record.expirationTime, requests[0].expirationTime);
@@ -338,22 +312,14 @@ contract AttestationTest is BaseTest {
     function test_WhenUsingInvalidERC1271() external whenAttestingWithSignature {
         // It should revert.
         uint32[] memory types = new uint32[](1);
-        AttestationRequest memory request =
-            mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        AttestationRequest memory request = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
 
         bytes memory sig = "signature";
         vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidSignature.selector));
         registry.attest(defaultSchemaUID, address(erc1271AttesterFalse), request, sig);
     }
 
-    function ecdsaSign(
-        uint256 privKey,
-        bytes32 digest
-    )
-        internal
-        pure
-        returns (bytes memory signature)
-    {
+    function ecdsaSign(uint256 privKey, bytes32 digest) internal pure returns (bytes memory signature) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
         return abi.encodePacked(r, s, v);
     }

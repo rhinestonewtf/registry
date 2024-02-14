@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.24;
 
-import {
-    AttestationRecord, AttestationRequest, RevocationRequest, SchemaUID
-} from "../DataTypes.sol";
+import { AttestationRecord, AttestationRequest, RevocationRequest, SchemaUID } from "../DataTypes.sol";
 import { AttestationManager } from "./AttestationManager.sol";
 import { IRegistry } from "../IRegistry.sol";
 
@@ -39,14 +37,7 @@ abstract contract Attestation is IRegistry, AttestationManager {
     /**
      * @inheritdoc IRegistry
      */
-    function findAttestation(
-        address module,
-        address attester
-    )
-        external
-        view
-        returns (AttestationRecord memory attestation)
-    {
+    function findAttestation(address module, address attester) external view returns (AttestationRecord memory attestation) {
         attestation = _getAttestation(module, attester);
     }
 

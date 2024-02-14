@@ -50,12 +50,7 @@ contract ERC7512SchemaValidator is IExternalSchemaValidator, ERC7512 {
         return (interfaceID == type(IExternalSchemaValidator).interfaceId);
     }
 
-    function validateSchema(AttestationRecord calldata attestation)
-        public
-        view
-        override
-        returns (bool valid)
-    {
+    function validateSchema(AttestationRecord calldata attestation) public view override returns (bool valid) {
         AuditSummary memory summary = abi.decode(attestation.dataPointer.sload2(), (AuditSummary));
         if (summary.auditedContract.deployment != attestation.moduleAddr) {
             return false;
@@ -64,17 +59,10 @@ contract ERC7512SchemaValidator is IExternalSchemaValidator, ERC7512 {
             return false;
         }
 
-        valid = SignatureCheckerLib.isValidSignatureNow(
-            summary.auditorSignature.signer, summary.auditHash, summary.auditorSignature.data
-        );
+        valid = SignatureCheckerLib.isValidSignatureNow(summary.auditorSignature.signer, summary.auditHash, summary.auditorSignature.data);
     }
 
-    function validateSchema(AttestationRecord[] calldata attestations)
-        external
-        view
-        override
-        returns (bool valid)
-    {
+    function validateSchema(AttestationRecord[] calldata attestations) external view override returns (bool valid) {
         uint256 length = attestations.length;
         for (uint256 i = 0; i < length; i++) {
             if (!validateSchema(attestations[i])) {

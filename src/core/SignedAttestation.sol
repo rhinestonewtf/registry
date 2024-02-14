@@ -19,14 +19,7 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
     /**
      * @inheritdoc IRegistry
      */
-    function attest(
-        SchemaUID schemaUID,
-        address attester,
-        AttestationRequest calldata request,
-        bytes calldata signature
-    )
-        external
-    {
+    function attest(SchemaUID schemaUID, address attester, AttestationRequest calldata request, bytes calldata signature) external {
         uint256 nonce = ++attesterNonce[attester];
         bytes32 digest = _hashTypedData(request.hash(nonce));
         bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature);
@@ -38,14 +31,7 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
     /**
      * @inheritdoc IRegistry
      */
-    function attest(
-        SchemaUID schemaUID,
-        address attester,
-        AttestationRequest[] calldata requests,
-        bytes calldata signature
-    )
-        external
-    {
+    function attest(SchemaUID schemaUID, address attester, AttestationRequest[] calldata requests, bytes calldata signature) external {
         uint256 nonce = ++attesterNonce[attester];
         bytes32 digest = _hashTypedData(requests.hash(nonce));
         bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature);
@@ -57,13 +43,7 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
     /**
      * @inheritdoc IRegistry
      */
-    function revoke(
-        address attester,
-        RevocationRequest calldata request,
-        bytes calldata signature
-    )
-        external
-    {
+    function revoke(address attester, RevocationRequest calldata request, bytes calldata signature) external {
         uint256 nonce = ++attesterNonce[attester];
         bytes32 digest = _hashTypedData(request.hash(nonce));
         bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature);
@@ -75,13 +55,7 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
     /**
      * @inheritdoc IRegistry
      */
-    function revoke(
-        address attester,
-        RevocationRequest[] calldata requests,
-        bytes calldata signature
-    )
-        external
-    {
+    function revoke(address attester, RevocationRequest[] calldata requests, bytes calldata signature) external {
         uint256 nonce = ++attesterNonce[attester];
         bytes32 digest = _hashTypedData(requests.hash(nonce));
         bool valid = SignatureCheckerLib.isValidSignatureNow(attester, digest, signature);
@@ -97,58 +71,24 @@ contract SignedAttestation is IRegistry, Attestation, EIP712 {
     /**
      * override thats used by Solady's EIP712 cache (constructor)
      */
-    function _domainNameAndVersion()
-        internal
-        view
-        virtual
-        override
-        returns (string memory name, string memory version)
-    {
+    function _domainNameAndVersion() internal view virtual override returns (string memory name, string memory version) {
         name = "RhinestoneRegistry";
         version = "v1.0";
     }
 
-    function getDigest(
-        AttestationRequest calldata request,
-        address attester
-    )
-        external
-        view
-        returns (bytes32 digest)
-    {
+    function getDigest(AttestationRequest calldata request, address attester) external view returns (bytes32 digest) {
         digest = _hashTypedData(request.hash(attesterNonce[attester] + 1));
     }
 
-    function getDigest(
-        AttestationRequest[] calldata requests,
-        address attester
-    )
-        external
-        view
-        returns (bytes32 digest)
-    {
+    function getDigest(AttestationRequest[] calldata requests, address attester) external view returns (bytes32 digest) {
         digest = _hashTypedData(requests.hash(attesterNonce[attester] + 1));
     }
 
-    function getDigest(
-        RevocationRequest calldata request,
-        address attester
-    )
-        external
-        view
-        returns (bytes32 digest)
-    {
+    function getDigest(RevocationRequest calldata request, address attester) external view returns (bytes32 digest) {
         digest = _hashTypedData(request.hash(attesterNonce[attester] + 1));
     }
 
-    function getDigest(
-        RevocationRequest[] calldata requests,
-        address attester
-    )
-        external
-        view
-        returns (bytes32 digest)
-    {
+    function getDigest(RevocationRequest[] calldata requests, address attester) external view returns (bytes32 digest) {
         digest = _hashTypedData(requests.hash(attesterNonce[attester] + 1));
     }
 }

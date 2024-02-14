@@ -58,19 +58,11 @@ contract Handler is CommonBase, StdCheats, StdUtils {
 
     function handle_registerSchema(string memory schema) public returns (SchemaUID uid) {
         MockSchemaValidator schemaValidatorTrue = new MockSchemaValidator(true);
-        uid =
-            REGISTRY.registerSchema(schema, IExternalSchemaValidator(address(schemaValidatorTrue)));
+        uid = REGISTRY.registerSchema(schema, IExternalSchemaValidator(address(schemaValidatorTrue)));
         SchemaRecord memory record = REGISTRY.findSchema(uid);
     }
 
-    function handle_registerModule(
-        uint256 randomResolverNr,
-        address moduleAddr,
-        bytes calldata bytecode,
-        bytes calldata metadata
-    )
-        public
-    {
+    function handle_registerModule(uint256 randomResolverNr, address moduleAddr, bytes calldata bytecode, bytes calldata metadata) public {
         vm.etch(moduleAddr, bytecode);
         ResolverUID uid = _pickRandomResolverUID(randomResolverNr);
 
@@ -122,17 +114,9 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         REGISTRY.attest(uid, requests);
     }
 
-    function handle_registerModuleWithFactory(
-        uint256 randomResolverNr,
-        bytes calldata bytecode,
-        uint256 value
-    )
-        external
-    {
+    function handle_registerModuleWithFactory(uint256 randomResolverNr, bytes calldata bytecode, uint256 value) external {
         vm.deal(address(this), value);
         ResolverUID uid = _pickRandomResolverUID(randomResolverNr);
-        REGISTRY.deployViaFactory{ value: value }(
-            address(FACTORY), abi.encodeCall(MockFactory.deploy, (bytecode)), "", uid
-        );
+        REGISTRY.deployViaFactory{ value: value }(address(FACTORY), abi.encodeCall(MockFactory.deploy, (bytecode)), "", uid);
     }
 }

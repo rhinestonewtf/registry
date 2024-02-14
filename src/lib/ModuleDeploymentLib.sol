@@ -11,20 +11,11 @@ library ModuleDeploymentLib {
     modifier containsCaller(bytes32 salt) {
         // prevent contract submissions from being stolen from tx.pool by requiring
         // that the first 20 bytes of the submitted salt match msg.sender.
-        require(
-            (address(bytes20(salt)) == msg.sender) || (bytes20(salt) == bytes20(0)), "Invalid salt"
-        );
+        require((address(bytes20(salt)) == msg.sender) || (bytes20(salt) == bytes20(0)), "Invalid salt");
         _;
     }
 
-    function deploy(
-        bytes calldata _initCode,
-        bytes32 salt
-    )
-        internal
-        containsCaller(salt)
-        returns (address deploymentAddress)
-    {
+    function deploy(bytes calldata _initCode, bytes32 salt) internal containsCaller(salt) returns (address deploymentAddress) {
         // move the initialization code from calldata to memory.
         bytes memory initCode = _initCode;
 
@@ -60,14 +51,7 @@ library ModuleDeploymentLib {
      * @return targetDeploymentAddress The address that the contract would be deployed
      *            at if the CREATE2 opcode was called with the specified _code and _salt.
      */
-    function calcAddress(
-        bytes calldata initCode,
-        bytes32 salt
-    )
-        internal
-        view
-        returns (address targetDeploymentAddress)
-    {
+    function calcAddress(bytes calldata initCode, bytes32 salt) internal view returns (address targetDeploymentAddress) {
         targetDeploymentAddress = address(
             uint160( // downcast to match the address type.
                 uint256( // convert to uint to truncate upper digits.

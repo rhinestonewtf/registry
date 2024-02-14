@@ -11,8 +11,7 @@ contract SchemaValidationTest is BaseTest {
     function test_WhenSchemaAlreadyRegistered() external whenRegisteringNewSchema {
         string memory schema = "schema";
         SchemaUID uid = registry.registerSchema(schema, IExternalSchemaValidator(address(0)));
-        SchemaUID uid1 =
-            registry.registerSchema(schema, IExternalSchemaValidator(address(schemaValidatorFalse)));
+        SchemaUID uid1 = registry.registerSchema(schema, IExternalSchemaValidator(address(schemaValidatorFalse)));
 
         assertTrue(uid != uid1);
     }

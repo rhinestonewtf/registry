@@ -10,8 +10,7 @@ contract ImmutableData is BaseTest {
         super.setUp();
         handler = new Handler(registry);
 
-        AttestationRecord memory attRecord =
-            registry.findAttestation(address(module1), invarAttester.addr);
+        AttestationRecord memory attRecord = registry.findAttestation(address(module1), invarAttester.addr);
         defaultDataRef = attRecord.dataPointer;
 
         bytes4[] memory targetSelectors = new bytes4[](6);
@@ -36,8 +35,7 @@ contract ImmutableData is BaseTest {
     }
 
     function invariant_attestation_immutable() public {
-        AttestationRecord memory record =
-            registry.findAttestation(address(module1), invarAttester.addr);
+        AttestationRecord memory record = registry.findAttestation(address(module1), invarAttester.addr);
         assertTrue(record.dataPointer == defaultDataRef);
         assertEq(record.moduleAddr, address(module1));
         assertEq(record.attester, invarAttester.addr);

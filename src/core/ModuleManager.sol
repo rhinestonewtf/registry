@@ -61,36 +61,20 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             metadata: metadata
         });
 
-        record.requireExternalResolverOnModuleRegistration({
-            moduleAddress: moduleAddress,
-            $resolver: $resolver
-        });
+        record.requireExternalResolverOnModuleRegistration({ moduleAddress: moduleAddress, $resolver: $resolver });
     }
 
     /**
      * @inheritdoc IRegistry
      */
-    function calcModuleAddress(
-        bytes32 salt,
-        bytes calldata initCode
-    )
-        external
-        view
-        returns (address)
-    {
+    function calcModuleAddress(bytes32 salt, bytes calldata initCode) external view returns (address) {
         return initCode.calcAddress(salt);
     }
 
     /**
      * @inheritdoc IRegistry
      */
-    function registerModule(
-        ResolverUID resolverUID,
-        address moduleAddress,
-        bytes calldata metadata
-    )
-        external
-    {
+    function registerModule(ResolverUID resolverUID, address moduleAddress, bytes calldata metadata) external {
         ResolverRecord storage $resolver = $resolvers[resolverUID];
 
         // ensure that non-zero resolverUID was provided
@@ -104,10 +88,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         });
 
         // resolve module registration
-        record.requireExternalResolverOnModuleRegistration({
-            moduleAddress: moduleAddress,
-            $resolver: $resolver
-        });
+        record.requireExternalResolverOnModuleRegistration({ moduleAddress: moduleAddress, $resolver: $resolver });
     }
 
     /**
@@ -144,10 +125,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             metadata: metadata
         });
 
-        record.requireExternalResolverOnModuleRegistration({
-            moduleAddress: moduleAddress,
-            $resolver: $resolver
-        });
+        record.requireExternalResolverOnModuleRegistration({ moduleAddress: moduleAddress, $resolver: $resolver });
     }
 
     function _storeModuleRecord(
@@ -170,28 +148,20 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         if (!_isContract(moduleAddress)) revert InvalidDeployment();
 
         // Store module metadata in _modules mapping
-        moduleRegistration =
-            ModuleRecord({ resolverUID: resolverUID, sender: sender, metadata: metadata });
+        moduleRegistration = ModuleRecord({ resolverUID: resolverUID, sender: sender, metadata: metadata });
 
         // Store module record in _modules mapping
         $moduleAddrToRecords[moduleAddress] = moduleRegistration;
 
         // Emit ModuleRegistration event
-        emit ModuleRegistration({
-            implementation: moduleAddress,
-            sender: sender,
-            resolverUID: resolverUID
-        });
+        // TODO: add flag to event to indicate if module was deployed or registered
+        emit ModuleRegistration({ implementation: moduleAddress, sender: sender, resolverUID: resolverUID });
     }
 
     /**
      * @inheritdoc IRegistry
      */
-    function findModule(address moduleAddress)
-        external
-        view
-        returns (ModuleRecord memory moduleRecord)
-    {
+    function findModule(address moduleAddress) external view returns (ModuleRecord memory moduleRecord) {
         return $moduleAddrToRecords[moduleAddress];
     }
 }

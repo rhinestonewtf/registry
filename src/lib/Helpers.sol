@@ -12,11 +12,7 @@ library UIDLib {
      * @return schema UID.
      */
     function getUID(SchemaRecord memory schemaRecord) internal view returns (SchemaUID) {
-        return SchemaUID.wrap(
-            keccak256(
-                abi.encodePacked(msg.sender, schemaRecord.schema, address(schemaRecord.validator))
-            )
-        );
+        return SchemaUID.wrap(keccak256(abi.encodePacked(msg.sender, schemaRecord.schema, address(schemaRecord.validator))));
     }
 
     /**

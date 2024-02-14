@@ -14,21 +14,11 @@ contract MockSchemaValidator is IExternalSchemaValidator {
         if (interfaceId == type(IExternalSchemaValidator).interfaceId) return true;
     }
 
-    function validateSchema(AttestationRecord calldata attestation)
-        external
-        view
-        override
-        returns (bool)
-    {
+    function validateSchema(AttestationRecord calldata attestation) external view override returns (bool) {
         return returnVal;
     }
 
-    function validateSchema(AttestationRecord[] calldata attestations)
-        external
-        view
-        override
-        returns (bool)
-    {
+    function validateSchema(AttestationRecord[] calldata attestations) external view override returns (bool) {
         return returnVal;
     }
 }

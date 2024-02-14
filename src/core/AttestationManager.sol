@@ -32,8 +32,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
     using AttestationLib for address;
     using ModuleTypeLib for ModuleType[];
 
-    mapping(address module => mapping(address attester => AttestationRecord attestation)) internal
-        $moduleToAttesterToAttestations;
+    mapping(address module => mapping(address attester => AttestationRecord attestation)) internal $moduleToAttesterToAttestations;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                      Attestation                           */
@@ -47,13 +46,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
      * function will get the external IExternalResolver for the module - that the attestation is for
      *        and call it, if an external Resolver was set
      */
-    function _attest(
-        address attester,
-        SchemaUID schemaUID,
-        AttestationRequest calldata request
-    )
-        internal
-    {
+    function _attest(address attester, SchemaUID schemaUID, AttestationRequest calldata request) internal {
         (AttestationRecord memory record, ResolverUID resolverUID) =
             _storeAttestation({ schemaUID: schemaUID, attester: attester, request: request });
 
@@ -69,13 +62,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
      * function will get the external IExternalResolver for the module - that the attestation is for
      *        and call it, if an external Resolver was set
      */
-    function _attest(
-        address attester,
-        SchemaUID schemaUID,
-        AttestationRequest[] calldata requests
-    )
-        internal
-    {
+    function _attest(address attester, SchemaUID schemaUID, AttestationRequest[] calldata requests) internal {
         uint256 length = requests.length;
         AttestationRecord[] memory records = new AttestationRecord[](length);
         // loop will check that the batched attestation is made ONLY for the same resolver
@@ -83,11 +70,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         for (uint256 i; i < length; i++) {
             ResolverUID resolverUID_cache;
             // save the attestation record into records array.
-            (records[i], resolverUID_cache) = _storeAttestation({
-                schemaUID: schemaUID,
-                attester: attester,
-                request: requests[i]
-            });
+            (records[i], resolverUID_cache) = _storeAttestation({ schemaUID: schemaUID, attester: attester, request: requests[i] });
             // cache the first resolverUID and compare it to the rest
             // If the resolverUID is different, revert
             // @dev if you want to use different resolvers, make different attestation calls
@@ -160,12 +143,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         // SSTORE attestation to registry storage
         $moduleToAttesterToAttestations[request.moduleAddr][attester] = record;
 
-        emit Attested({
-            moduleAddr: module,
-            attester: attester,
-            schemaUID: schemaUID,
-            sstore2Pointer: sstore2Pointer
-        });
+        emit Attested({ moduleAddr: module, attester: attester, schemaUID: schemaUID, sstore2Pointer: sstore2Pointer });
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -178,8 +156,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
      * and pass the RevocationRecord to the resolver to check if the revocation is valid
      */
     function _revoke(address attester, RevocationRequest calldata request) internal {
-        (AttestationRecord memory record, ResolverUID resolverUID) =
-            _storeRevocation(attester, request);
+        (AttestationRecord memory record, ResolverUID resolverUID) = _storeRevocation(attester, request);
         record.tryExternalResolverOnRevocation({ $resolver: $resolvers[resolverUID] });
     }
 
@@ -220,8 +197,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         internal
         returns (AttestationRecord memory record, ResolverUID resolverUID)
     {
-        AttestationRecord storage $attestation =
-            $moduleToAttesterToAttestations[request.moduleAddr][revoker];
+        AttestationRecord storage $attestation = $moduleToAttesterToAttestations[request.moduleAddr][revoker];
 
         // SLOAD entire record. This will later be passed to the resolver
         record = $attestation;
@@ -252,15 +228,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
      * Returns the attestation records for the given module and attesters.
      * This function is expected to be used by TrustManager and TrustManagerExternalAttesterList
      */
-    function _getAttestation(
-        address module,
-        address attester
-    )
-        internal
-        view
-        override
-        returns (AttestationRecord storage $attestation)
-    {
+    function _getAttestation(address module, address attester) internal view override returns (AttestationRecord storage $attestation) {
         $attestation = $moduleToAttesterToAttestations[module][attester];
     }
 }

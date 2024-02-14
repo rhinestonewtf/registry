@@ -155,12 +155,5 @@ abstract contract TrustManagerExternalAttesterList is IRegistry {
         revert InsufficientAttestations();
     }
 
-    function _getAttestation(
-        address module,
-        address attester
-    )
-        internal
-        view
-        virtual
-        returns (AttestationRecord storage $attestation);
+    function _getAttestation(address module, address attester) internal view virtual returns (AttestationRecord storage $attestation);
 }

@@ -27,13 +27,7 @@ interface IERC7484 {
 
     function check(address module, ModuleType moduleType) external view;
 
-    function checkForAccount(
-        address smartAccount,
-        address module,
-        ModuleType moduleType
-    )
-        external
-        view;
+    function checkForAccount(address smartAccount, address module, ModuleType moduleType) external view;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*              Check with external attester(s)               */
@@ -82,22 +76,14 @@ interface IRegistry is IERC7484 {
      * Get trusted attester for a specific smartAccount
      * @param smartAccount The address of the smartAccount
      */
-    function findTrustedAttesters(address smartAccount)
-        external
-        view
-        returns (address[] memory attesters);
+    function findTrustedAttesters(address smartAccount) external view returns (address[] memory attesters);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                       Attestations                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     event Revoked(address indexed moduleAddr, address indexed revoker, SchemaUID schema);
-    event Attested(
-        address indexed moduleAddr,
-        address indexed attester,
-        SchemaUID schemaUID,
-        AttestationDataRef indexed sstore2Pointer
-    );
+    event Attested(address indexed moduleAddr, address indexed attester, SchemaUID schemaUID, AttestationDataRef indexed sstore2Pointer);
 
     error AlreadyRevoked();
     error ModuleNotFoundInRegistry(address module);
@@ -147,13 +133,7 @@ interface IRegistry is IERC7484 {
      * @param request An AttestationRequest
      * @param signature The signature of the attester. ECDSA or ERC1271
      */
-    function attest(
-        SchemaUID schemaUID,
-        address attester,
-        AttestationRequest calldata request,
-        bytes calldata signature
-    )
-        external;
+    function attest(SchemaUID schemaUID, address attester, AttestationRequest calldata request, bytes calldata signature) external;
 
     /**
      * Allows attester to attest by signing an AttestationRequest (ECDSA or ERC1271)
@@ -168,24 +148,12 @@ interface IRegistry is IERC7484 {
      * @param requests An array of AttestationRequest
      * @param signature The signature of the attester. ECDSA or ERC1271
      */
-    function attest(
-        SchemaUID schemaUID,
-        address attester,
-        AttestationRequest[] calldata requests,
-        bytes calldata signature
-    )
-        external;
+    function attest(SchemaUID schemaUID, address attester, AttestationRequest[] calldata requests, bytes calldata signature) external;
 
     /**
      * Getter function to get AttestationRequest made by one attester
      */
-    function findAttestation(
-        address module,
-        address attester
-    )
-        external
-        view
-        returns (AttestationRecord memory attestation);
+    function findAttestation(address module, address attester) external view returns (AttestationRecord memory attestation);
 
     /**
      * Getter function to get AttestationRequest made by multiple attesters
@@ -229,12 +197,7 @@ interface IRegistry is IERC7484 {
      * @param request the RevocationRequest
      * @param signature ECDSA or ERC1271 signature
      */
-    function revoke(
-        address attester,
-        RevocationRequest calldata request,
-        bytes calldata signature
-    )
-        external;
+    function revoke(address attester, RevocationRequest calldata request, bytes calldata signature) external;
 
     /**
      * Allows attester to revoke an attestation by signing an RevocationRequest (ECDSA or ERC1271)
@@ -244,20 +207,13 @@ interface IRegistry is IERC7484 {
      * @param requests array of RevocationRequests
      * @param signature ECDSA or ERC1271 signature
      */
-    function revoke(
-        address attester,
-        RevocationRequest[] calldata requests,
-        bytes calldata signature
-    )
-        external;
+    function revoke(address attester, RevocationRequest[] calldata requests, bytes calldata signature) external;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                    Module Registration                     */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     // Event triggered when a module is deployed.
-    event ModuleRegistration(
-        address indexed implementation, address indexed sender, ResolverUID resolverUID
-    );
+    event ModuleRegistration(address indexed implementation, address indexed sender, ResolverUID resolverUID);
 
     error AlreadyRegistered(address module);
     error InvalidDeployment();
@@ -285,6 +241,9 @@ interface IRegistry is IERC7484 {
 
     /**
      * Registry can use other factories to deploy the module
+     * @notice This function is used to deploy and register a module using a factory contract.
+     *           Since one of the parameters of this function is a unique resolverUID and any
+     *           registered module address can only be registered once, using this function is of risk for a frontrun attack
      */
     function deployViaFactory(
         address factory,
@@ -298,18 +257,16 @@ interface IRegistry is IERC7484 {
 
     /**
      * Already deployed module addresses can be registered on the registry
+     * @notice This function is used to deploy and register an already deployed module.
+     *           Since one of the parameters of this function is a unique resolverUID and any
+     *           registered module address can only be registered once, using this function is of risk for a frontrun attack
      * @param resolverUID The resolverUID to be used for the module
      * @param moduleAddress The address of the module to be registered
      * @param metadata The metadata to be stored on the registry.
      *            This field is optional, and might be used by the module developer to store additional
      *            information about the module or facilitate business logic with the Resolver stub
      */
-    function registerModule(
-        ResolverUID resolverUID,
-        address moduleAddress,
-        bytes calldata metadata
-    )
-        external;
+    function registerModule(ResolverUID resolverUID, address moduleAddress, bytes calldata metadata) external;
 
     /**
      * in conjunction with the deployModule() function, this function let's you
@@ -318,22 +275,13 @@ interface IRegistry is IERC7484 {
      * @param initCode module initcode
      * @return moduleAddress counterfactual address of the module deployment
      */
-    function calcModuleAddress(
-        bytes32 salt,
-        bytes calldata initCode
-    )
-        external
-        view
-        returns (address);
+    function calcModuleAddress(bytes32 salt, bytes calldata initCode) external view returns (address);
 
     /**
      * Getter function to get the stored ModuleRecord for a specific module address.
      * @param moduleAddress The address of the module
      */
-    function findModule(address moduleAddress)
-        external
-        view
-        returns (ModuleRecord memory moduleRecord);
+    function findModule(address moduleAddress) external view returns (ModuleRecord memory moduleRecord);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                      Manage Schemas                        */
@@ -374,13 +322,35 @@ interface IRegistry is IERC7484 {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     event NewResolver(ResolverUID indexed uid, address indexed resolver);
+    event NewResolverOwner(ResolverUID indexed uid, address newOwner);
 
     error ResolverAlreadyExists();
 
-    function registerResolver(IExternalResolver _resolver) external returns (ResolverUID uid);
+    /**
+     * Allows Marketplace Agents to register external resolvers.
+     * @param  resolver external resolver contract
+     * @return uid ResolverUID of the registered resolver
+     */
+    function registerResolver(IExternalResolver resolver) external returns (ResolverUID uid);
 
+    /**
+     * Entities that previously regsitered an external resolver, may update the implementation address.
+     * @param uid The UID of the resolver.
+     * @param resolver The new resolver implementation address.
+     */
     function setResolver(ResolverUID uid, IExternalResolver resolver) external;
 
+    /**
+     * Transfer ownership of resolverUID to a new address
+     * @param uid The UID of the resolver to transfer ownership for
+     * @param newOwner The address of the new owner
+     */
+    function transferResolverOwnership(ResolverUID uid, address newOwner) external;
+
+    /**
+     * Getter function to get the ResolverRecord of a registerd resolver
+     * @param uid The UID of the resolver.
+     */
     function findResolver(ResolverUID uid) external view returns (ResolverRecord memory record);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
