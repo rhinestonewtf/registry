@@ -146,7 +146,6 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
          *     PackedModuleTypes packedModuleType = record.moduleTypes;
          */
 
-        // solhint-disable-next-line no-inline-assembly
         assembly {
             let mask := 0xffffffffffff
             let slot := sload($attestation.slot)

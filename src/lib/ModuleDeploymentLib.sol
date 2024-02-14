@@ -7,11 +7,14 @@ pragma solidity ^0.8.24;
  * @author zeroknots
  */
 library ModuleDeploymentLib {
+    error InvalidSalt();
+    error InvalidAddress();
     // source: https://github.com/0age/metamorphic/blob/master/contracts/ImmutableCreate2Factory.sol#L194-L203
+
     modifier containsCaller(bytes32 salt) {
         // prevent contract submissions from being stolen from tx.pool by requiring
         // that the first 20 bytes of the submitted salt match msg.sender.
-        require((address(bytes20(salt)) == msg.sender) || (bytes20(salt) == bytes20(0)), "Invalid salt");
+        if ((address(bytes20(salt)) != msg.sender) && (bytes20(salt) != bytes20(0))) revert InvalidSalt();
         _;
     }
 
@@ -36,7 +39,7 @@ library ModuleDeploymentLib {
         }
 
         // check address against target to ensure that deployment was successful.
-        require(deploymentAddress == targetDeploymentAddress, "invalid address");
+        if (deploymentAddress != targetDeploymentAddress) revert InvalidAddress();
     }
 
     /**

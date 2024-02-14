@@ -222,7 +222,9 @@ interface IRegistry is IERC7484 {
 
     /**
      * This registry implements a CREATE2 factory, that allows module developers to register and deploy module bytecode
-     * @param salt The salt to be used in the CREATE2 factory
+     * @param salt The salt to be used in the CREATE2 factory. This adheres to Pr000xy/Create2Factory.sol salt formatting.
+     *             The salt's first bytes20 should be the address of the sender
+     *             or bytes20(0) to bypass the check (this will lose replay protection)
      * @param resolverUID The resolverUID to be used in the CREATE2 factory
      * @param initCode The initCode to be used in the CREATE2 factory
      * @param metadata The metadata to be stored on the registry.
@@ -243,7 +245,8 @@ interface IRegistry is IERC7484 {
      * Registry can use other factories to deploy the module
      * @notice This function is used to deploy and register a module using a factory contract.
      *           Since one of the parameters of this function is a unique resolverUID and any
-     *           registered module address can only be registered once, using this function is of risk for a frontrun attack
+     *           registered module address can only be registered once,
+     *           using this function is of risk for a frontrun attack
      */
     function deployViaFactory(
         address factory,
@@ -259,7 +262,8 @@ interface IRegistry is IERC7484 {
      * Already deployed module addresses can be registered on the registry
      * @notice This function is used to deploy and register an already deployed module.
      *           Since one of the parameters of this function is a unique resolverUID and any
-     *           registered module address can only be registered once, using this function is of risk for a frontrun attack
+     *           registered module address can only be registered once,
+     *           using this function is of risk for a frontrun attack
      * @param resolverUID The resolverUID to be used for the module
      * @param moduleAddress The address of the module to be registered
      * @param metadata The metadata to be stored on the registry.

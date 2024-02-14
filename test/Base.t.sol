@@ -10,7 +10,7 @@ import "./mocks/MockERC1271Attester.sol";
 import "./mocks/MockModule.sol";
 
 contract BaseTest is Test {
-    Registry registry;
+    Registry internal registry;
 
     Account smartAccount1;
     Account smartAccount2;
@@ -40,7 +40,7 @@ contract BaseTest is Test {
 
     string defaultSchema = "Foobar";
     SchemaUID defaultSchemaUID;
-    ResolverUID defaultResolverUID;
+    ResolverUID internal defaultResolverUID;
 
     function setUp() public virtual {
         vm.warp(1_641_070_800);

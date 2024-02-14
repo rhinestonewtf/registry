@@ -75,7 +75,5 @@ contract ResolverTest is BaseTest {
         vm.prank(opsEntity2.addr);
         vm.expectRevert();
         registry.transferResolverOwnership(resolverUID, opsEntity2.addr);
-
-
     }
 }

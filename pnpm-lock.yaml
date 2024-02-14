@@ -16,9 +16,6 @@ devDependencies:
   forge-std:
     specifier: github:foundry-rs/forge-std#v1.7.6
     version: github.com/foundry-rs/forge-std/ae570fec082bfe1c1f45b0acca4a2b4f84d345ce
-  prettier:
-    specifier: ^2.8.8
-    version: 2.8.8
   solady:
     specifier: github:vectorized/solady#9deb9ed36a27261a8745db5b7cd7f4cdc3b1cd4e
     version: github.com/vectorized/solady/9deb9ed36a27261a8745db5b7cd7f4cdc3b1cd4e
@@ -548,7 +545,9 @@ packages:
     resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
     engines: {node: '>=10.13.0'}
     hasBin: true
+    requiresBuild: true
     dev: true
+    optional: true
 
   /proto-list@1.2.4:
     resolution: {integrity: sha512-vtK/94akxsTMhe0/cbfpR+syPuszcuwhqVjJq26CuNDgFGj682oRBXOP5MJpv2r7JtE8MsiepGIqvvOTBwn2vA==}

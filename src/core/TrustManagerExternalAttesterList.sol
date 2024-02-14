@@ -15,7 +15,6 @@ abstract contract TrustManagerExternalAttesterList is IRegistry {
 
         // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
         // @dev the solidity version of the assembly code is above
-        // solhint-disable-next-line no-inline-assembly
         assembly {
             let mask := 0xffffffffffff
             let times := sload($attestation.slot)
@@ -67,7 +66,6 @@ abstract contract TrustManagerExternalAttesterList is IRegistry {
 
             // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
             // @dev the solidity version of the assembly code is above
-            // solhint-disable-next-line no-inline-assembly
             assembly {
                 let mask := 0xffffffffffff
                 let times := sload($attestation.slot)
@@ -123,7 +121,6 @@ abstract contract TrustManagerExternalAttesterList is IRegistry {
 
             // @dev this loads the three time values from storage, bit shifts them and assigns them to the variables
             // @dev the solidity version of the assembly code is above
-            // solhint-disable-next-line no-inline-assembly
             assembly {
                 let mask := 0xffffffffffff
                 let times := sload($attestation.slot)
