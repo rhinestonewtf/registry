@@ -12,7 +12,7 @@ import {
 } from "../DataTypes.sol";
 import { SchemaManager } from "./SchemaManager.sol";
 import { ModuleManager } from "./ModuleManager.sol";
-import { TrustManager } from "./TrustManager.sol";
+import { TrustManagerExternalAttesterList } from "./TrustManagerExternalAttesterList.sol";
 import { StubLib } from "../lib/StubLib.sol";
 import { AttestationLib } from "../lib/AttestationLib.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
@@ -24,7 +24,7 @@ import { EMPTY_ATTESTATION_REF, EMPTY_RESOLVER_UID, _time, ZERO_TIMESTAMP } from
  * AttestationManager handles the registry's internal storage of new attestations and revocation of attestation
  * @dev This contract is abstract and provides utility functions to store attestations and revocations.
  */
-abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager, TrustManager {
+abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager, TrustManagerExternalAttesterList {
     using StubLib for *;
     using AttestationLib for AttestationDataRef;
     using AttestationLib for AttestationRequest;
@@ -228,7 +228,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
      * Returns the attestation records for the given module and attesters.
      * This function is expected to be used by TrustManager and TrustManagerExternalAttesterList
      */
-    function _getAttestation(address module, address attester) internal view override returns (AttestationRecord storage $attestation) {
+    function $getAttestation(address module, address attester) internal view override returns (AttestationRecord storage $attestation) {
         $attestation = $moduleToAttesterToAttestations[module][attester];
     }
 }

@@ -10691,8 +10691,8 @@ BRDA:241,9,1,8
 DA:242,0
 DA:246,8
 DA:248,8
-FN:255,AttestationManager._getAttestation
-FNDA:32,AttestationManager._getAttestation
+FN:255,AttestationManager.$getAttestation
+FNDA:32,AttestationManager.$getAttestation
 DA:264,32
 FNF:7
 FNH:7

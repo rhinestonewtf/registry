@@ -5,8 +5,8 @@ import { AttestationRecord, PackedModuleTypes, ModuleType, TrustedAttesterRecord
 import { ZERO_TIMESTAMP, ZERO_MODULE_TYPE, ZERO_ADDRESS } from "../Common.sol";
 // solhint-disable-next-line no-unused-import
 import { IRegistry, IERC7484 } from "../IRegistry.sol";
-import { TrustManagerExternalAttesterList } from "./TrustManagerExternalAttesterList.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
+import { TrustLib } from "../lib/TrustLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
 /**
@@ -19,8 +19,9 @@ import { LibSort } from "solady/utils/LibSort.sol";
  * Implements EIP-7484 to query attestations stored in the registry.
  * @dev This contract is abstract and provides utility functions to query attestations.
  */
-abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
+abstract contract TrustManager is IRegistry {
     using ModuleTypeLib for PackedModuleTypes;
+    using TrustLib for AttestationRecord;
     using LibSort for address[];
 
     mapping(address account => TrustedAttesterRecord attesters) internal $accountToAttester;
@@ -111,80 +112,23 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         // smart account only has ONE trusted attester
         // use this condition to save gas
         else if (threshold == 1) {
-            AttestationRecord storage $attestation = _getAttestation({ module: module, attester: attester });
-            _requireValidAttestation(moduleType, $attestation);
+            AttestationRecord storage $attestation = $getAttestation({ module: module, attester: attester });
+            $attestation.enforceValid(moduleType);
         }
         // smart account has more than one trusted attester
         else {
             // loop though list and check if the attestation is valid
-            AttestationRecord storage $attestation = _getAttestation({ module: module, attester: attester });
-            _requireValidAttestation(moduleType, $attestation);
+            AttestationRecord storage $attestation = $getAttestation({ module: module, attester: attester });
+            $attestation.enforceValid(moduleType);
             for (uint256 i = 1; i < attesterCount; i++) {
                 threshold--;
                 // get next attester from linked List
                 attester = $trustedAttesters.linkedAttesters[attester];
-                $attestation = _getAttestation({ module: module, attester: attester });
-                _requireValidAttestation(moduleType, $attestation);
+                $attestation = $getAttestation({ module: module, attester: attester });
+                $attestation.enforceValid(moduleType);
                 // if threshold reached, exit loop
                 if (threshold == 0) return;
             }
-        }
-    }
-
-    /**
-     * Check that attestationRecord is valid:
-     *                 - not revoked
-     *                 - not expired
-     *                 - correct module type (if not ZERO_MODULE_TYPE)
-     * @notice this function reverts if the attestationRecord is not valid
-     * @param expectedType the expected module type. if this is ZERO_MODULE_TYPE, types specified in the attestation are ignored
-     * @param $attestation the storage reference of the attestation record to check
-     */
-    function _requireValidAttestation(ModuleType expectedType, AttestationRecord storage $attestation) internal view {
-        uint256 attestedAt;
-        uint256 expirationTime;
-        uint256 revocationTime;
-        PackedModuleTypes packedModuleType;
-        /*
-         * Ensure only one SLOAD
-         * Assembly equiv to:
-         *
-         *     uint256 attestedAt = record.time;
-         *     uint256 expirationTime = record.expirationTime;
-         *     uint256 revocationTime = record.revocationTime;
-         *     PackedModuleTypes packedModuleType = record.moduleTypes;
-         */
-
-        assembly {
-            let mask := 0xffffffffffff
-            let slot := sload($attestation.slot)
-            attestedAt := and(mask, slot)
-            slot := shr(48, slot)
-            expirationTime := and(mask, slot)
-            slot := shr(48, slot)
-            revocationTime := and(mask, slot)
-            slot := shr(48, slot)
-            packedModuleType := and(mask, slot)
-        }
-
-        // check if any attestation was made
-        if (attestedAt == ZERO_TIMESTAMP) {
-            revert AttestationNotFound();
-        }
-
-        // check if attestation has expired
-        if (expirationTime != ZERO_TIMESTAMP && block.timestamp > expirationTime) {
-            revert AttestationNotFound();
-        }
-
-        // check if attestation has been revoked
-        if (revocationTime != ZERO_TIMESTAMP) {
-            revert RevokedAttestation($attestation.attester);
-        }
-        // if a expectedType is set, check if the attestation is for the correct module type
-        // if no expectedType is set, module type is not checked
-        if (expectedType != ZERO_MODULE_TYPE && !packedModuleType.isType(expectedType)) {
-            revert InvalidModuleType();
         }
     }
 
@@ -203,4 +147,6 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
             attesters[i] = $trustedAttesters.linkedAttesters[attesters[i - 1]];
         }
     }
+
+    function $getAttestation(address module, address attester) internal view virtual returns (AttestationRecord storage $attestation);
 }
