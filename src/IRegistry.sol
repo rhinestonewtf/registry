@@ -213,7 +213,7 @@ interface IRegistry is IERC7484 {
     /*                    Module Registration                     */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     // Event triggered when a module is deployed.
-    event ModuleRegistration(address indexed implementation, address indexed sender, ResolverUID resolverUID);
+    event ModuleRegistration(address indexed implementation, ResolverUID resolverUID, bool deployedViaRegistry);
 
     error AlreadyRegistered(address module);
     error InvalidDeployment();

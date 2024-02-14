@@ -7,4 +7,7 @@ import { IRegistry } from "./IRegistry.sol";
  * @author zeroknots
  */
 
-contract Registry is IRegistry, SignedAttestation { }
+contract Registry is IRegistry, SignedAttestation {
+// TODO: should we create a default resolverUID thats address(0).
+// this will allow the registry to be usable right after deployment without any resolver
+}

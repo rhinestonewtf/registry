@@ -130,7 +130,7 @@ contract AttestationTest is BaseTest {
         expirationTime = uint48(block.timestamp + expirationTime + 100);
         AttestationRequest memory request = mockAttestation(module, expirationTime, data, types);
         // It should revert.
-        vm.expectRevert(); // TODO: should we allow counterfactual?
+        vm.expectRevert();
         registry.attest(defaultSchemaUID, request);
     }
 

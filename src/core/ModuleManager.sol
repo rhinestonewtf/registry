@@ -54,12 +54,8 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         moduleAddress = initCode.deploy(salt);
         // _storeModuleRecord() will check if module is already registered,
         // which should prevent reentry to any deploy function
-        ModuleRecord memory record = _storeModuleRecord({
-            moduleAddress: moduleAddress, // TODO: is this reentrancy?
-            sender: msg.sender,
-            resolverUID: resolverUID,
-            metadata: metadata
-        });
+        ModuleRecord memory record =
+            _storeModuleRecord({ moduleAddress: moduleAddress, sender: msg.sender, resolverUID: resolverUID, metadata: metadata });
 
         record.requireExternalResolverOnModuleRegistration({ moduleAddress: moduleAddress, $resolver: $resolver });
     }
@@ -109,7 +105,6 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         // prevent someone from calling a registry function pretending its a factory
         if (factory == address(this)) revert FactoryCallFailed(factory);
         // call external factory to deploy module
-        // TODO: this could be reentrancy since its not using CEI
         (bool ok, bytes memory returnData) = factory.call{ value: msg.value }(callOnFactory);
         if (!ok) revert FactoryCallFailed(factory);
 
@@ -119,7 +114,6 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
 
         ModuleRecord memory record = _storeModuleRecord({
             moduleAddress: moduleAddress,
-            // TODO: should we use msg.sender or the factory address?
             sender: ZERO_ADDRESS, // setting sender to address(0) since anyone can invoke this function
             resolverUID: resolverUID,
             metadata: metadata
@@ -154,8 +148,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         $moduleAddrToRecords[moduleAddress] = moduleRegistration;
 
         // Emit ModuleRegistration event
-        // TODO: add flag to event to indicate if module was deployed or registered
-        emit ModuleRegistration({ implementation: moduleAddress, sender: sender, resolverUID: resolverUID });
+        emit ModuleRegistration({ implementation: moduleAddress, resolverUID: resolverUID, deployedViaRegistry: sender == msg.sender });
     }
 
     /**
