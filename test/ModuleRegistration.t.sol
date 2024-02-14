@@ -42,7 +42,7 @@ contract ModuleRegistrationTest is BaseTest {
     function test_WhenRegisteringAModuleOnAnInvalidResolverUID() external prankWithAccount(moduleDev1) {
         MockModule newModule = new MockModule();
         // It should revert.
-        ResolverUID invalidUID = ResolverUID.wrap(hex"00");
+        ResolverUID invalidUID = ResolverUID.wrap(hex"01");
         vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidResolver.selector, address(0)));
         registry.registerModule(invalidUID, address(newModule), "");
 
@@ -102,5 +102,16 @@ contract ModuleRegistrationTest is BaseTest {
     function test_WhenUsingRegistryASFactory() public {
         vm.expectRevert();
         registry.deployViaFactory(address(registry), "", "", defaultResolverUID);
+    }
+
+    function test_WhenUsingDefaultResolverUID() public prankWithAccount(moduleDev1) {
+        bytes32 salt = bytes32(abi.encodePacked(address(moduleDev1.addr), bytes12(0)));
+
+        bytes memory bytecode = type(MockModule).creationCode;
+
+        ResolverUID nullUID = ResolverUID.wrap(bytes32(0));
+        address moduleAddr = registry.deployModule(salt, nullUID, bytecode, "");
+        ModuleRecord memory record = registry.findModule(moduleAddr);
+        assertTrue(record.resolverUID == nullUID);
     }
 }

@@ -108,7 +108,7 @@ library StubLib {
     {
         IExternalResolver resolverContract = $resolver.resolver;
 
-        if (address(resolverContract) != ZERO_ADDRESS) return;
+        if (address(resolverContract) == ZERO_ADDRESS) return;
 
         if (resolverContract.resolveModuleRegistration({ sender: msg.sender, moduleAddress: moduleAddress, record: moduleRecord }) == false)
         {

@@ -34,7 +34,7 @@ struct SchemaRecord {
 }
 
 struct ResolverRecord {
-    IExternalResolver resolver; // Optional resolver.
+    IExternalResolver resolver; // resolver.
     address resolverOwner; // The address of the account used to register the resolver.
 }
 

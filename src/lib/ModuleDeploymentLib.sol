@@ -71,6 +71,4 @@ library ModuleDeploymentLib {
             )
         );
     }
-
-    error InvalidDeployment();
 }

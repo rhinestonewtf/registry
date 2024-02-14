@@ -12,6 +12,11 @@ abstract contract ResolverManager is IRegistry {
 
     mapping(ResolverUID uid => ResolverRecord resolver) internal $resolvers;
 
+    constructor() {
+        ResolverRecord storage $resolver = $resolvers[ResolverUID.wrap(bytes32(0))];
+        $resolver.resolverOwner = address(this);
+    }
+
     /**
      * @dev Modifier to require that the caller is the owner of a resolver
      *
