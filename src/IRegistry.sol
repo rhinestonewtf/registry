@@ -65,6 +65,7 @@ interface IRegistry is IERC7484 {
     /**
      * Allows smartaccounts - the end users of the registry - to appoint
      * one or many attesters as trusted.
+     * @notice this function reverts, if address(0), or duplicates are provided in attesters[]
      *
      * @param threshold The minimum number of attestations required for a module
      *                  to be considered secure.

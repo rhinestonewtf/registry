@@ -27,13 +27,18 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
 
     /**
      * @inheritdoc IRegistry
-     * @dev delibrately using memory here, so we can sort the array
      */
-    function trustAttesters(uint8 threshold, address[] memory attesters) external {
+    function trustAttesters(
+        uint8 threshold,
+        address[] memory attesters // deliberately using memory to allow sorting and uniquifying
+    )
+        external
+    {
         uint256 attestersLength = attesters.length;
         // sort attesters and remove duplicates
         attesters.sort();
         attesters.uniquifySorted();
+        // if attesters array has duplicates, revert
         if (attestersLength == 0) revert InvalidTrustedAttesterInput();
         if (attesters.length != attestersLength) revert InvalidTrustedAttesterInput();
 
@@ -47,6 +52,7 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
         $trustedAttester.attester = attesters[0];
 
         attestersLength--;
+        // setup the linked list of trusted attesters
         for (uint256 i; i < attestersLength; i++) {
             address _attester = attesters[i];
             // user could have set attester to address(0)
@@ -130,6 +136,9 @@ abstract contract TrustManager is IRegistry, TrustManagerExternalAttesterList {
      *                 - not revoked
      *                 - not expired
      *                 - correct module type (if not ZERO_MODULE_TYPE)
+     * @notice this function reverts if the attestationRecord is not valid
+     * @param expectedType the expected module type. if this is ZERO_MODULE_TYPE, types specified in the attestation are ignored
+     * @param $attestation the storage reference of the attestation record to check
      */
     function _requireValidAttestation(ModuleType expectedType, AttestationRecord storage $attestation) internal view {
         uint256 attestedAt;
