@@ -5,11 +5,11 @@ pragma solidity ^0.8.24;
  * @title ModuleDeploymentLib
  * @dev A library that can be used to deploy the Registry
  * @author zeroknots
+ *     source: https://github.com/0age/metamorphic/blob/master/contracts/ImmutableCreate2Factory.sol#L194-L203
  */
 library ModuleDeploymentLib {
     error InvalidSalt();
     error InvalidAddress();
-    // source: https://github.com/0age/metamorphic/blob/master/contracts/ImmutableCreate2Factory.sol#L194-L203
 
     modifier containsCaller(bytes32 salt) {
         // prevent contract submissions from being stolen from tx.pool by requiring
