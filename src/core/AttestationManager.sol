@@ -45,6 +45,9 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
      *         and call it, if an external IExternalSchemaValidator was set
      * function will get the external IExternalResolver for the module - that the attestation is for
      *        and call it, if an external Resolver was set
+     * @param attester The address of the attesting account.
+     * @param schemaUID the UID of the schema that the attestation is made for
+     * @param request AttestationRequest send by attester via calldata
      */
     function _attest(address attester, SchemaUID schemaUID, AttestationRequest calldata request) internal {
         (AttestationRecord memory record, ResolverUID resolverUID) =

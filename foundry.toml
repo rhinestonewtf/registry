@@ -11,6 +11,9 @@ line_length = 140
 multiline_func_header = "all"
 number_underscore="thousands"
 
+[doc]
+title = "Rhinestone Registry"
+
 [invariant]
 # fail_on_revert = true
 runs = 1200

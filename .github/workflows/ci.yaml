@@ -10,7 +10,7 @@ jobs:
     uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-build.yaml@main"
 
   test-unit:
-    needs: ["build"]
+    needs: ["lint", "build"]
     uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-test.yaml@main"
     with:
       foundry-fuzz-runs: 5000
