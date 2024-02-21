@@ -16,7 +16,6 @@ contract SchemaValidationTest is BaseTest {
         uid1 = registry.registerSchema(schema, IExternalSchemaValidator(address(schemaValidatorFalse)));
 
         assertTrue(uid != uid1);
-
     }
 
     function test_WhenSchemaNew() external whenRegisteringNewSchema {
@@ -26,7 +25,6 @@ contract SchemaValidationTest is BaseTest {
         SchemaUID uid = registry.registerSchema(schema, IExternalSchemaValidator(address(schemaValidatorFalse)));
 
         assertTrue(uid != SchemaUID.wrap(bytes32(0)));
-
 
         SchemaRecord memory record = registry.findSchema(uid);
         assertEq(record.registeredAt, block.timestamp);

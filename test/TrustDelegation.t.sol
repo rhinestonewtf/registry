@@ -27,15 +27,23 @@ contract TrustTest is AttestationTest {
         assertEq(result[0], address(attester1.addr));
     }
 
-    function test_WhenSupplyingManyAttesters(address[] memory attesters) external whenSettingAttester prankWithAccount(smartAccount1) {
+    function test_WhenSupplyingManyAttesters(
+        uint8 threshold,
+        address[] memory attesters
+    )
+        external
+        whenSettingAttester
+        prankWithAccount(smartAccount1)
+    {
         vm.assume(attesters.length < 100);
         vm.assume(attesters.length > 0);
+        vm.assume(threshold <= attesters.length + 4);
         for (uint256 i; i < attesters.length; i++) {
             vm.assume(attesters[i] != address(0));
         }
         attesters.sort();
         attesters.uniquifySorted();
-        registry.trustAttesters(uint8(attesters.length), attesters);
+        registry.trustAttesters(threshold, attesters);
         // It should set.
         // It should emit event.
         address[] memory result = registry.findTrustedAttesters(smartAccount1.addr);
