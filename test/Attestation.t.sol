@@ -230,24 +230,28 @@ contract AttestationTest is BaseTest {
     }
 
     function test_WhenUsingValidECDSA() public whenAttestingWithSignature {
-        uint256 nonceBefore = registry.attesterNonce(attester1.addr);
+        _make_WhenUsingValidECDSA(attester1);
+    }
+
+    function _make_WhenUsingValidECDSA(Account memory attester) public whenAttestingWithSignature {
+        uint256 nonceBefore = registry.attesterNonce(attester.addr);
         // It should recover.
         uint32[] memory types = new uint32[](2);
         types[0] = 1;
         types[1] = 2;
         AttestationRequest memory request = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
 
-        bytes32 digest = registry.getDigest(request, attester1.addr);
-        bytes memory sig = ecdsaSign(attester1.key, digest);
-        registry.attest(defaultSchemaUID, attester1.addr, request, sig);
+        bytes32 digest = registry.getDigest(request, attester.addr);
+        bytes memory sig = ecdsaSign(attester.key, digest);
+        registry.attest(defaultSchemaUID, attester.addr, request, sig);
 
-        AttestationRecord memory record = registry.findAttestation(address(module1), attester1.addr);
-        uint256 nonceAfter = registry.attesterNonce(attester1.addr);
+        AttestationRecord memory record = registry.findAttestation(address(module1), attester.addr);
+        uint256 nonceAfter = registry.attesterNonce(attester.addr);
 
         assertEq(record.time, block.timestamp);
         assertEq(record.expirationTime, request.expirationTime);
         assertEq(record.moduleAddr, request.moduleAddr);
-        assertEq(record.attester, attester1.addr);
+        assertEq(record.attester, attester.addr);
         assertEq(nonceAfter, nonceBefore + 1);
         assertEq(PackedModuleTypes.unwrap(record.moduleTypes), 2 ** 1 + 2 ** 2);
     }

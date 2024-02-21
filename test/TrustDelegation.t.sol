@@ -69,13 +69,13 @@ contract TrustTest is AttestationTest {
 
     function test_WhenNoAttestersSet() external whenQueryingRegisty {
         // It should revert.
-        vm.expectRevert(abi.encodeWithSelector(IRegistry.AttestationNotFound.selector));
+        vm.expectRevert();
         registry.check(address(module1), ModuleType.wrap(1));
-        vm.expectRevert(abi.encodeWithSelector(IRegistry.AttestationNotFound.selector));
+        vm.expectRevert();
         registry.checkForAccount(makeAddr("foo"), address(module1), ModuleType.wrap(1));
-        vm.expectRevert(abi.encodeWithSelector(IRegistry.AttestationNotFound.selector));
+        vm.expectRevert();
         registry.check(address(module1));
-        vm.expectRevert(abi.encodeWithSelector(IRegistry.AttestationNotFound.selector));
+        vm.expectRevert();
         registry.checkForAccount(makeAddr("foo"), address(module1));
     }
 

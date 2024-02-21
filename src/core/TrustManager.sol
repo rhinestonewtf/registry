@@ -106,7 +106,7 @@ abstract contract TrustManager is IRegistry {
         address attester = $trustedAttesters.attester;
 
         // smart account has no trusted attesters set
-        if (attester == ZERO_ADDRESS && threshold != 0) {
+        if (attester == ZERO_ADDRESS || threshold != 0) {
             revert NoTrustedAttestersFound();
         }
         // smart account only has ONE trusted attester
@@ -119,13 +119,12 @@ abstract contract TrustManager is IRegistry {
         else {
             // loop though list and check if the attestation is valid
             AttestationRecord storage $attestation = $getAttestation({ module: module, attester: attester });
-            $attestation.enforceValid(moduleType);
+            if ($attestation.checkValid(moduleType)) threshold--;
             for (uint256 i = 1; i < attesterCount; i++) {
-                threshold--;
                 // get next attester from linked List
                 attester = $trustedAttesters.linkedAttesters[attester];
                 $attestation = $getAttestation({ module: module, attester: attester });
-                $attestation.enforceValid(moduleType);
+                if ($attestation.checkValid(moduleType)) threshold--;
                 // if threshold reached, exit loop
                 if (threshold == 0) return;
             }
