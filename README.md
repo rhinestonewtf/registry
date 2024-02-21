@@ -1,6 +1,6 @@
 <img align="right" width="150" height="150" top="100" src="./public/logo.png">
 
-# Registry [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![solidity](https://img.shields.io/badge/solidity-^0.8.24-lightgrey) [![Github Actions][gha-badge]][gha] [![Coverage][codecov-badge]][codecov] [![Foundry][foundry-badge]][foundry]
+# Registry [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![solidity](https://img.shields.io/badge/solidity-^0.8.24-lightgrey) [![Coverage][codecov-badge]][codecov] [![Foundry][foundry-badge]][foundry]
 
 [gha]: https://github.com/rhinestonewtf/registry/actions
 [gha-badge]: https://github.com/rhinestonewtf/registry/actions/workflows/ci.yml/badge.svg
