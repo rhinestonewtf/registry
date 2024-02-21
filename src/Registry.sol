@@ -7,5 +7,4 @@ import { IRegistry } from "./IRegistry.sol";
  * @author zeroknots
  */
 
-contract Registry is IRegistry, SignedAttestation {
-}
+contract Registry is IRegistry, SignedAttestation { }
