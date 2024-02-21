@@ -28,6 +28,8 @@ contract BaseTest is Test {
     MockResolver resolverFalse;
     MockResolver resolverTrue;
 
+    MockResolver differentResolver;
+
     MockSchemaValidator schemaValidatorFalse;
     MockSchemaValidator schemaValidatorTrue;
 
@@ -41,6 +43,7 @@ contract BaseTest is Test {
     string defaultSchema = "Foobar";
     SchemaUID defaultSchemaUID;
     ResolverUID internal defaultResolverUID;
+    ResolverUID internal differentResolverUID;
 
     function setUp() public virtual {
         vm.warp(1_641_070_800);
@@ -61,6 +64,7 @@ contract BaseTest is Test {
 
         resolverFalse = new MockResolver(false);
         resolverTrue = new MockResolver(true);
+        differentResolver = new MockResolver(true);
 
         schemaValidatorFalse = new MockSchemaValidator(false);
         schemaValidatorTrue = new MockSchemaValidator(true);
@@ -85,12 +89,16 @@ contract BaseTest is Test {
         vm.prank(opsEntity1.addr);
         defaultResolverUID = registry.registerResolver(IExternalResolver(address(resolverTrue)));
         vm.prank(opsEntity1.addr);
+        differentResolverUID = registry.registerResolver(IExternalResolver(address(differentResolver)));
+        vm.prank(opsEntity1.addr);
         defaultSchemaUID = registry.registerSchema(defaultSchema, IExternalSchemaValidator(address(schemaValidatorTrue)));
 
         vm.prank(moduleDev1.addr);
         registry.registerModule(defaultResolverUID, address(module1), "");
         vm.prank(moduleDev2.addr);
         registry.registerModule(defaultResolverUID, address(module2), "");
+        vm.prank(moduleDev1.addr);
+        registry.registerModule(differentResolverUID, address(module3), "");
 
         AttestationRequest memory req = AttestationRequest({
             moduleAddr: address(module1),

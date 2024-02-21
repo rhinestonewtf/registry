@@ -63,13 +63,31 @@ contract AttestationTest is BaseTest {
         assertEq(record.attester, attester1.addr);
     }
 
+    function test_WhenUsingValidMultiDifferentResolver__ShouldRevert() public prankWithAccount(attester1) {
+        // It should recover.
+        uint32[] memory types = new uint32[](1);
+
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module3), uint48(block.timestamp + 100), "", types);
+
+        vm.expectRevert();
+        registry.attest(defaultSchemaUID, requests);
+    }
+
     function test_WhenUsingValidMulti__Revocation() public {
         test_WhenUsingValidMulti();
 
         RevocationRequest[] memory requests = new RevocationRequest[](2);
         requests[0] = mockRevocation(address(module1));
         requests[1] = mockRevocation(address(module2));
+
+        vm.prank(attester2.addr);
+        vm.expectRevert();
+        registry.revoke(requests);
         vm.prank(attester1.addr);
+        registry.revoke(requests);
+        vm.expectRevert();
         registry.revoke(requests);
     }
 
