@@ -45,6 +45,63 @@ contract AttestationTest is BaseTest {
         assertEq(record.attester, attester1.addr);
     }
 
+    function test_WhenUsingValidMulti() public prankWithAccount(attester1) {
+        // It should recover.
+        uint32[] memory types = new uint32[](1);
+
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module2), uint48(block.timestamp + 100), "", types);
+
+        registry.attest(defaultSchemaUID, requests);
+
+        AttestationRecord memory record = registry.findAttestation(address(module1), attester1.addr);
+
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, requests[0].expirationTime);
+        assertEq(record.moduleAddr, requests[0].moduleAddr);
+        assertEq(record.attester, attester1.addr);
+    }
+
+    function test_WhenUsingValidMulti__Revocation() public {
+        test_WhenUsingValidMulti();
+
+        RevocationRequest[] memory requests = new RevocationRequest[](2);
+        requests[0] = mockRevocation(address(module1));
+        requests[1] = mockRevocation(address(module2));
+        vm.prank(attester1.addr);
+        registry.revoke(requests);
+    }
+
+    function test_findAttestation() public {
+        // It should recover.
+        uint32[] memory types = new uint32[](1);
+
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module2), uint48(block.timestamp + 100), "", types);
+
+        vm.prank(attester1.addr);
+        registry.attest(defaultSchemaUID, requests);
+        vm.prank(attester2.addr);
+        registry.attest(defaultSchemaUID, requests);
+
+        address[] memory attesters = new address[](2);
+        attesters[0] = attester1.addr;
+        attesters[1] = attester2.addr;
+        AttestationRecord[] memory record = registry.findAttestations(address(module1), attesters);
+
+        assertEq(record[0].time, block.timestamp);
+        assertEq(record[0].expirationTime, requests[0].expirationTime);
+        assertEq(record[0].moduleAddr, requests[0].moduleAddr);
+        assertEq(record[0].attester, attester1.addr);
+
+        assertEq(record[1].time, block.timestamp);
+        assertEq(record[1].expirationTime, requests[0].expirationTime);
+        assertEq(record[1].moduleAddr, requests[0].moduleAddr);
+        assertEq(record[1].attester, attester2.addr);
+    }
+
     function test_WhenReAttestingToARevokedAttestation() public prankWithAccount(attester1) {
         address module = address(new MockModule());
         registry.registerModule(defaultResolverUID, module, "");
