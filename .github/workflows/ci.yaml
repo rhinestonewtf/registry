@@ -22,7 +22,5 @@ jobs:
     needs: ["build"]
     uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-coverage.yaml@main"
     with:
-      foundry-fuzz-runs: 5000
-      foundry-profile: "test"
       match-path: "test/**/*.sol"
       codecov-slug: zeroknots/registry
