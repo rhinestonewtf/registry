@@ -2,14 +2,12 @@
 pragma solidity ^0.8.24;
 
 import { AttestationRecord, PackedModuleTypes, ModuleType, TrustedAttesterRecord } from "../DataTypes.sol";
-import { ZERO_TIMESTAMP, ZERO_MODULE_TYPE, ZERO_ADDRESS } from "../Common.sol";
+import { ZERO_MODULE_TYPE, ZERO_ADDRESS } from "../Common.sol";
 // solhint-disable-next-line no-unused-import
 import { IRegistry, IERC7484 } from "../IRegistry.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 import { TrustLib } from "../lib/TrustLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
-
-import "forge-std/console2.sol";
 
 /**
  * @title TrustManager
@@ -127,7 +125,6 @@ abstract contract TrustManager is IRegistry {
                 attester = $trustedAttesters.linkedAttesters[attester];
                 $attestation = $getAttestation({ module: module, attester: attester });
                 if ($attestation.checkValid(moduleType)) threshold--;
-                console2.log("threshold: ", threshold);
                 // if threshold reached, exit loop
                 if (threshold == 0) return;
             }

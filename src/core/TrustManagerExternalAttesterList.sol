@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import { AttestationRecord, ModuleType } from "../DataTypes.sol";
-import { ZERO_MODULE_TYPE, ZERO_TIMESTAMP } from "../Common.sol";
+import { ZERO_MODULE_TYPE } from "../Common.sol";
 // solhint-disable-next-line no-unused-import
 import { IRegistry, IERC7484 } from "../IRegistry.sol";
 import { TrustManager } from "./TrustManager.sol";
