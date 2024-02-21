@@ -9,6 +9,8 @@ import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 import { TrustLib } from "../lib/TrustLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
+import "forge-std/console2.sol";
+
 /**
  * @title TrustManager
  * Allows smart accounts to query the registry for the security status of modules.
@@ -106,7 +108,7 @@ abstract contract TrustManager is IRegistry {
         address attester = $trustedAttesters.attester;
 
         // smart account has no trusted attesters set
-        if (attester == ZERO_ADDRESS || threshold != 0) {
+        if (attester == ZERO_ADDRESS || threshold == 0) {
             revert NoTrustedAttestersFound();
         }
         // smart account only has ONE trusted attester
@@ -125,9 +127,11 @@ abstract contract TrustManager is IRegistry {
                 attester = $trustedAttesters.linkedAttesters[attester];
                 $attestation = $getAttestation({ module: module, attester: attester });
                 if ($attestation.checkValid(moduleType)) threshold--;
+                console2.log("threshold: ", threshold);
                 // if threshold reached, exit loop
                 if (threshold == 0) return;
             }
+            if (threshold > 0) revert InsufficientAttestations();
         }
     }
 

@@ -5,7 +5,6 @@ import "./Attestation.t.sol";
 import "src/DataTypes.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
-
 contract TrustTestExternal is AttestationTest {
     using LibSort for address[];
 

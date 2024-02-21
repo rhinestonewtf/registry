@@ -54,6 +54,27 @@ contract TrustTest is AttestationTest {
         }
     }
 
+    function test_ManyAttesters() public {
+        _make_WhenUsingValidECDSA(attester1);
+        _make_WhenUsingValidECDSA(attester2);
+        Account memory attester3 = makeAccount("attester3");
+        Account memory attester4 = makeAccount("attester4");
+        address[] memory trustedAttesters = new address[](4);
+        trustedAttesters[0] = address(attester1.addr);
+        trustedAttesters[1] = address(attester3.addr);
+        trustedAttesters[2] = address(attester4.addr);
+        trustedAttesters[3] = address(attester2.addr);
+
+        vm.startPrank(smartAccount1.addr);
+        registry.trustAttesters(2, trustedAttesters);
+
+        registry.check(address(module1), ModuleType.wrap(1));
+        registry.check(address(module1), ModuleType.wrap(2));
+        registry.trustAttesters(3, trustedAttesters);
+        vm.expectRevert();
+        registry.check(address(module1), ModuleType.wrap(1));
+    }
+
     function test_WhenSupplyingSameAttesterMultipleTimes() external whenSettingAttester {
         address[] memory attesters = new address[](2);
         attesters[0] = address(attester1.addr);
