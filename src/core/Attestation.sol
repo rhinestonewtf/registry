@@ -38,7 +38,7 @@ abstract contract Attestation is IRegistry, AttestationManager {
      * @inheritdoc IRegistry
      */
     function findAttestation(address module, address attester) external view returns (AttestationRecord memory attestation) {
-        attestation = _getAttestation(module, attester);
+        attestation = $getAttestation(module, attester);
     }
 
     /**
@@ -55,7 +55,7 @@ abstract contract Attestation is IRegistry, AttestationManager {
         uint256 length = attesters.length;
         attestations = new AttestationRecord[](length);
         for (uint256 i; i < length; i++) {
-            attestations[i] = _getAttestation(module, attesters[i]);
+            attestations[i] = $getAttestation(module, attesters[i]);
         }
     }
 }
