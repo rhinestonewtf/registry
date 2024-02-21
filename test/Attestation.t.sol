@@ -63,6 +63,38 @@ contract AttestationTest is BaseTest {
         assertEq(record.attester, attester1.addr);
     }
 
+    function test_WhenUsingInvalidSchemaUIDAttestation() public prankWithAccount(attester1) {
+        // It should recover.
+        uint32[] memory types = new uint32[](1);
+
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module2), uint48(block.timestamp + 100), "", types);
+
+        vm.expectRevert();
+        registry.attest(SchemaUID.wrap(bytes32("1234")), requests);
+    }
+
+    function test_WhenUsingInvalidSchemaUIDRevocation() public prankWithAccount(attester1) {
+        // It should recover.
+        uint32[] memory types = new uint32[](1);
+
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module2), uint48(block.timestamp + 100), "", types);
+
+        registry.attest(defaultSchemaUID, requests);
+        AttestationRequest memory request = mockAttestation(address(module3), uint48(block.timestamp + 100), "", types);
+        registry.attest(defaultSchemaUID, request);
+
+        RevocationRequest[] memory revocations = new RevocationRequest[](2);
+        revocations[0] = mockRevocation(address(module2));
+        revocations[1] = mockRevocation(address(module3));
+
+        vm.expectRevert();
+        registry.revoke(revocations);
+    }
+
     function test_WhenUsingValidMultiDifferentResolver__ShouldRevert() public prankWithAccount(attester1) {
         // It should recover.
         uint32[] memory types = new uint32[](1);
