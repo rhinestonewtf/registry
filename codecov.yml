@@ -6,6 +6,6 @@ coverage:
     patch: off
 ignore:
   - "script"
-  - "src/lib/*"
-  - "src/external/*"
+  - "src/lib"
+  - "src/external"
   - "test"
