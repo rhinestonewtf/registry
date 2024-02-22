@@ -8,15 +8,16 @@ When an Attester creates an Attestation, the Attestation data, structured accord
 
 Inputs:
 
-AttestationRequestData
+AttestationRequest
 data is `abi.encode()` according to a defined schema. The data is not stored in the storage of thr Registry, but is rather stored with `SSTORE2` to save gas and a pointer to this data is stored on the Registry.
 
 ```solidity
-struct AttestationRequestData {
-    address subject; // The subject of the attestation.
+
+struct AttestationRequest {
+    address moduleAddr; // The moduleAddr of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
-    uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
     bytes data; // Custom attestation data.
+    ModuleType[] moduleTypes; // optional: The type(s) of the module.
 }
 ```
 
@@ -26,25 +27,26 @@ AttestationRecord stored in the registry contract storage
 
 ```solidity
 struct AttestationRecord {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    address subject; // The recipient of the attestation i.e. module
-    address attester; // The attester/sender of the attestation.
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
+    PackedModuleTypes moduleTypes; // bit-wise encoded module types. See ModuleTypeLib
+    SchemaUID schemaUID; // The unique identifier of the schema.
+    address moduleAddr; // The implementation address of the module that is being attested.
+    address attester; // The attesting account.
     AttestationDataRef dataPointer; // SSTORE2 pointer to the attestation data.
 }
 ```
 
 ![Sequence Diagram](../public/docs/attestationOnly.svg)
 
-### Interactions with the SchemaValidator
+### Interactions with the IExternalSchemaValidator
 
 Attestation data can be validated with an external contract than may to `abi.decode()` and validate all or specific fields.
 
-### Interaction with the IResolver
+### Interaction with the IExternalResolver
 
-Upon an Attestation's revocation, the Registry calls hooks on the associated IResolver, allowing the IResolver to update its internal state or
+Upon an Attestation's revocation, the Registry calls hooks on the associated IExternalResolver, allowing the IExternalResolver to update its internal state or
 perform other necessary actions. This allows for extended business logic integrations.
 
 ### The Revocation Process
@@ -60,7 +62,7 @@ Attestations can not be edited. Should attestation data change, the old attestat
 
 ## Delegated Attestations
 
-All Attestations leveraged within the Registry are designated as "delegated".
+All Attestations leveraged within the Registry are designated as "signed".
 Such Attestations empower an entity to sign an attestation while enabling another entity to
 bear the transaction cost. With these attestations, the actual Attester and the one relaying the
 Attestation can be separate entities, thus accommodating a variety of use cases.
@@ -71,11 +73,11 @@ This becomes particularly beneficial when:
 
 ```solidity
 /**
- * @dev A struct representing the full arguments of the full delegated attestation request.
+ * @dev A struct representing the full arguments of the full signed attestation request.
  */
-struct DelegatedAttestationRequest {
+struct SignedAttestationRequest {
     SchemaUID schemaUID; // The unique identifier of the schema.
-    AttestationRequestData data; // The arguments of the attestation request.
+    AttestationRequest data; // The arguments of the attestation request.
     bytes signature; // The signature data.
     address attester; // The attesting account.
 }
@@ -83,5 +85,5 @@ struct DelegatedAttestationRequest {
 
 ### ERC1271 Support
 
-The Registry attestation process supports the ERC1271 standard, which allows smart contracts to implement a standard interface for contract ownership. This is particularly useful for smart account modules that are owned by a smart contract. The Registry supports the ERC1271 standard for delegated attestations.
-Should the attester in the `DelegatedAttestationRequest` be a contract, a ERC1271 validation call is made.
+The Registry attestation process supports the ERC1271 standard, which allows smart contracts to implement a standard interface for contract ownership. This is particularly useful for smart account modules that are owned by a smart contract. The Registry supports the ERC1271 standard for signed attestations.
+Should the attester in the `SignedAttestationRequest` be a contract, a ERC1271 validation call is made.

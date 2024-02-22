@@ -34,10 +34,10 @@ make this possible, allowing for:
   Entities can focus their audit efforts on their custom logic without the need to
   re-audit the underlying core systems.
 
-## The IResolver interface: Standardizing Resolvers
+## The IExternalResolver interface: Standardizing Resolvers
 
 For any entity looking to employ a resolver, adherence to a standardized
-interface is essential. The [IResolver interface](../src/external/IResolver.sol) delineates the essential
+interface is essential. The [IExternalResolver interface](../src/external/IExternalResolver.sol) delineates the essential
 functions a resolver must implement to ensure seamless integration and operation with the Registry.
 
 ## Example Resolvers and Custom Development
@@ -62,12 +62,12 @@ The Registry exposes the following functions to register and manage Resolvers:
  * @dev This function allows the registration of a resolver by computing a unique ID and associating it with the schema owner.
  *      Emits a SchemaResolverRegistered event upon successful registration.
  *
- * @param _resolver Address of the IResolver to be registered.
+ * @param _resolver Address of the IExternalResolver to be registered.
  *
  * @return uid The unique ID (ResolverUID) associated with the registered resolver.
  */
 
-function registerResolver(IResolver _resolver) external returns (ResolverUID);
+function registerResolver(IExternalResolver _resolver) external returns (ResolverUID);
 
 /**
  * @notice Updates the resolver for a given UID.
@@ -77,14 +77,14 @@ function registerResolver(IResolver _resolver) external returns (ResolverUID);
  * @param uid The UID of the schema to update.
  * @param resolver The new resolver interface.
  */
-function setResolver(ResolverUID uid, IResolver resolver) external;
+function setResolver(ResolverUID uid, IExternalResolver resolver) external;
 ```
 
 After storing the resolver on the registy, a ResolverUID is emited, that Module Developers can utilize to register Modules.
 
 ```solidity
 struct ResolverRecord {
-    IResolver resolver; // Optional schema resolver.
+    IExternalResolver resolver; // Optional schema resolver.
     address schemaOwner; // The address of the account used to register the schema.
 }
 ```

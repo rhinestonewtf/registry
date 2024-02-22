@@ -1,146 +1,73 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.24;
 
-import { ISchemaValidator } from "./external/ISchemaValidator.sol";
-import { IResolver } from "./external/IResolver.sol";
-import { SSTORE2 } from "solady/utils/SSTORE2.sol";
+import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.sol";
+import { IExternalResolver } from "./external/IExternalResolver.sol";
 
-/*//////////////////////////////////////////////////////////////
-                          STORAGE 
-//////////////////////////////////////////////////////////////*/
+/*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+/*                     Storage Structs                        */
+/*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-// Struct that represents an attestation.
 struct AttestationRecord {
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    address subject; // The implementation address of the module that is being attested.
+    PackedModuleTypes moduleTypes; // bit-wise encoded module types. See ModuleTypeLib
+    address moduleAddr; // The implementation address of the module that is being attested.
     address attester; // The attesting account.
     AttestationDataRef dataPointer; // SSTORE2 pointer to the attestation data.
+    SchemaUID schemaUID; // The unique identifier of the schema.
 }
 
-// Struct that represents Module artefact.
 struct ModuleRecord {
     ResolverUID resolverUID; // The unique identifier of the resolver.
-    address implementation; // The deployed contract address
     address sender; // The address of the sender who deployed the contract
     bytes metadata; // Additional data related to the contract deployment
 }
 
 struct SchemaRecord {
     uint48 registeredAt; // The time when the schema was registered (Unix timestamp).
-    ISchemaValidator validator; // Optional external schema validator.
+    IExternalSchemaValidator validator; // Optional external schema validator.
     string schema; // Custom specification of the schema (e.g., an ABI).
 }
 
 struct ResolverRecord {
-    IResolver resolver; // Optional resolver.
+    IExternalResolver resolver; // Optional resolver.
     address resolverOwner; // The address of the account used to register the resolver.
 }
 
-/*//////////////////////////////////////////////////////////////
-                          Attestation Requests
-//////////////////////////////////////////////////////////////*/
+// Struct that represents a trusted attester.
+struct TrustedAttesterRecord {
+    uint8 attesterCount; // number of attesters in the linked list
+    uint8 threshold; // minimum number of attesters required
+    address attester; // first attester in linked list. (packed to save gas)
+    mapping(address attester => address linkedAttester) linkedAttesters; // linked list
+}
+
+/*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+/*            Attestation / Revocation Requests               */
+/*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
 /**
  * @dev A struct representing the arguments of the attestation request.
  */
-struct AttestationRequestData {
-    address subject; // The subject of the attestation.
-    uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
-    uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
-    bytes data; // Custom attestation data.
-}
-
-/**
- * @dev A struct representing the full arguments of the attestation request.
- */
 struct AttestationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    AttestationRequestData data; // The arguments of the attestation request.
+    address moduleAddr; // The moduleAddr of the attestation.
+    uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
+    bytes data; // Custom attestation data.
+    ModuleType[] moduleTypes; // optional: The type(s) of the module.
 }
-
-/**
- * @dev A struct representing the full arguments of the full delegated attestation request.
- */
-struct DelegatedAttestationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    AttestationRequestData data; // The arguments of the attestation request.
-    address attester; // The attesting account.
-    bytes signature; // The signature data.
-}
-
-/**
- * @dev A struct representing the full arguments of the multi attestation request.
- */
-struct MultiAttestationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    AttestationRequestData[] data; // The arguments of the attestation request.
-}
-
-/**
- * @dev A struct representing the full arguments of the delegated multi attestation request.
- */
-struct MultiDelegatedAttestationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    AttestationRequestData[] data; // The arguments of the attestation requests.
-    bytes[] signatures; // The signatures data. Please note that the signatures are assumed to be signed with increasing nonces.
-    address attester; // The attesting account.
-}
-
-/*//////////////////////////////////////////////////////////////
-                          Revocation Requests
-//////////////////////////////////////////////////////////////*/
 
 /**
  * @dev A struct representing the arguments of the revocation request.
  */
-struct RevocationRequestData {
-    address subject; // The module address.
-    address attester; // The attesting account.
-    uint256 value; // An explicit ETH amount to send to the resolver. This is important to prevent accidental user errors.
-}
-
-/**
- * @dev A struct representing the full arguments of the revocation request.
- */
 struct RevocationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    RevocationRequestData data; // The arguments of the revocation request.
+    address moduleAddr; // The module address.
 }
 
-/**
- * @dev A struct representing the arguments of the full delegated revocation request.
- */
-struct DelegatedRevocationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    RevocationRequestData data; // The arguments of the revocation request.
-    address revoker; // The revoking account.
-    bytes signature; // The signature data.
-}
-
-/**
- * @dev A struct representing the full arguments of the multi revocation request.
- */
-struct MultiRevocationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    RevocationRequestData[] data; // The arguments of the revocation request.
-}
-
-/**
- * @dev A struct representing the full arguments of the delegated multi revocation request.
- */
-struct MultiDelegatedRevocationRequest {
-    SchemaUID schemaUID; // The unique identifier of the schema.
-    RevocationRequestData[] data; // The arguments of the revocation requests.
-    address revoker; // The revoking account.
-    bytes[] signatures; // The signatures data. Please note that the signatures are assumed to be signed with increasing nonces.
-}
-
-/*//////////////////////////////////////////////////////////////
-                          CUSTOM TYPES
-//////////////////////////////////////////////////////////////*/
+/*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+/*                       Custom Types                         */
+/*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
 //---------------------- SchemaUID ------------------------------|
 type SchemaUID is bytes32;
@@ -172,19 +99,23 @@ function resolverNotEq(ResolverUID uid1, ResolverUID uid2) pure returns (bool) {
 
 type AttestationDataRef is address;
 
-function readAttestationData(AttestationDataRef dataPointer) view returns (bytes memory data) {
-    data = SSTORE2.read(AttestationDataRef.unwrap(dataPointer));
+using { attestationDataRefEq as == } for AttestationDataRef global;
+
+function attestationDataRefEq(AttestationDataRef uid1, AttestationDataRef uid2) pure returns (bool) {
+    return AttestationDataRef.unwrap(uid1) == AttestationDataRef.unwrap(uid2);
 }
 
-function writeAttestationData(
-    bytes memory attestationData,
-    bytes32 salt
-)
-    returns (AttestationDataRef dataPointer)
-{
-    /**
-     * @dev We are using CREATE2 to deterministically generate the address of the attestation data.
-     * Checking if an attestation pointer already exists, would cost more GAS in the average case.
-     */
-    dataPointer = AttestationDataRef.wrap(SSTORE2.writeDeterministic(attestationData, salt));
+type PackedModuleTypes is uint32;
+
+type ModuleType is uint256;
+
+using { moduleTypeEq as == } for ModuleType global;
+using { moduleTypeNeq as != } for ModuleType global;
+
+function moduleTypeEq(ModuleType uid1, ModuleType uid2) pure returns (bool) {
+    return ModuleType.unwrap(uid1) == ModuleType.unwrap(uid2);
+}
+
+function moduleTypeNeq(ModuleType uid1, ModuleType uid2) pure returns (bool) {
+    return ModuleType.unwrap(uid1) != ModuleType.unwrap(uid2);
 }

@@ -447,7 +447,7 @@ covered work, you indicate your acceptance of this License to do so.
 
   Each time you convey a covered work, the recipient automatically
 receives a license from the original licensors, to run, modify and
-propagate that work, subject to this License.  You are not responsible
+propagate that work, moduleAddr to this License.  You are not responsible
 for enforcing compliance by third parties with this License.
 
   An "entity transaction" is a transaction transferring control of an

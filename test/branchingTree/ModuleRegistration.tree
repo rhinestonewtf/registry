@@ -1,0 +1,7 @@
+ModuleRegistrationTest
+├── When registering a module on an invalid ResolverUID
+│   └── It should revert.
+├── When registering a module on a valid ResolverUID
+│   └── It should register.
+└── When registering two modules with the same bytecode
+    └── It should revert.

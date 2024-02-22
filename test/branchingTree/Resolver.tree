@@ -1,0 +1,11 @@
+ResolverTest
+├── When registering resolver
+│   ├── When new resolver
+│   │   └── It should work.
+│   └── When resolver already registered
+│       └── It should revert.
+└── When updating resolver
+    ├── When using unauthorized account
+    │   └── It should revert.
+    └── When using authorized account
+        └── It should update.

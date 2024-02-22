@@ -1,0 +1,12 @@
+codecov:
+  require_ci_to_pass: false
+comment: false
+coverage:
+  status:
+    patch: off
+ignore:
+  - "script"
+  - "src/lib"
+  - "src/external"
+  - "src/external/examples"
+  - "test"

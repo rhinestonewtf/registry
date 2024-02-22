@@ -1,74 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.24;
 
-import { Schema } from "./base/Schema.sol";
-import { AttestationDelegation } from "./base/AttestationDelegation.sol";
-import { Module } from "./base/Module.sol";
-import {
-    Query,
-    SchemaUID,
-    SchemaRecord,
-    AttestationResolve,
-    Attestation,
-    AttestationRecord,
-    ResolverUID,
-    ResolverRecord,
-    ModuleRecord
-} from "./base/Query.sol";
+import { SignedAttestation } from "./core/SignedAttestation.sol";
+import { IRegistry } from "./IRegistry.sol";
 
 /**
- * @author zeroknots
+ * Implementation of all features of the registry:
+ *      - Register Schemas
+ *      - Register External Resolvers
+ *      - Register Modules
+ *      - Make Attestations
+ *      - Make Revocations
+ *      - Delegate Trust to Attester(s)
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
-contract Registry is Schema, Query, AttestationDelegation, Module {
-    constructor() { }
-
-    /*//////////////////////////////////////////////////////////////
-                            Helper Functions
-    //////////////////////////////////////////////////////////////*/
-
-    function getSchema(SchemaUID uid) public view override(Schema) returns (SchemaRecord memory) {
-        return super.getSchema(uid);
-    }
-
-    function _getSchema(SchemaUID uid)
-        internal
-        view
-        override(AttestationResolve, Schema)
-        returns (SchemaRecord storage)
-    {
-        return super._getSchema({ schemaUID: uid });
-    }
-
-    function _getAttestation(
-        address module,
-        address attester
-    )
-        internal
-        view
-        virtual
-        override(Attestation, Query)
-        returns (AttestationRecord storage)
-    {
-        return super._getAttestation(module, attester);
-    }
-
-    function getResolver(ResolverUID uid)
-        public
-        view
-        virtual
-        override(AttestationResolve, Module, Schema)
-        returns (ResolverRecord memory)
-    {
-        return super.getResolver(uid);
-    }
-
-    function _getModule(address moduleAddress)
-        internal
-        view
-        virtual
-        override(AttestationResolve, Module)
-        returns (ModuleRecord storage)
-    {
-        return super._getModule(moduleAddress);
-    }
-}
+contract Registry is IRegistry, SignedAttestation { }

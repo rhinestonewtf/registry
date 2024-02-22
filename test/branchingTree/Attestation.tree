@@ -1,0 +1,29 @@
+AttestationTest
+├── When attesting to non-existing Module
+│   └── It should revert.
+├── When revoking attestation that doesn't exist
+│   └── It should revert.
+├── When attesting to module with invalid type
+│   └── It should revert.
+├── When attesting with expiration time in the past
+│   └── It should revert.
+├── When Attesting with no attestationData
+│   └── It should store.
+├── When Attesting
+│   ├── It should call SchemaValidator.
+│   └── It should call ExternalResolver.
+├── When attesting with tokenomics Resolver
+│   ├── When tokens are paid
+│   │   └── It should work.
+│   └── When tokens are not paid
+│       └── It should revert.
+└── When attesting with signature
+    ├── When using valid ECDSA
+    │   └── It should recover.
+    ├── When using invalid ECDSA
+    │   └── It should revert.
+    ├── When using valid ERC1271
+    │   └── It should recover.
+    └── When using invalid ERC1271
+        └── It should revert.
+

@@ -1,0 +1,58 @@
+{
+  "name": "@rhinestone/registry",
+  "description": "Rhinestone Registry",
+  "license": "GPL-3.0",
+  "version": "0.3.1",
+  "author": {
+    "name": "zeroknots.eth",
+    "url": "https://rhinestone.wtf"
+  },
+  "bugs": {
+    "url": "https://github.com/rhinestonewtf/registry/issues"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "5.0.1"
+  },
+  "devDependencies": {
+    "ds-test": "github:dapphub/ds-test#e282159d5170298eb2455a6c05280ab5a73a4ef0",
+    "forge-std": "github:foundry-rs/forge-std#v1.7.6",
+    "solmate": "github:transmissions11/solmate#c892309933b25c03d32b1b0d674df7ae292ba925",
+    "solady": "github:vectorized/solady#9deb9ed36a27261a8745db5b7cd7f4cdc3b1cd4e",
+    "solhint": "^4.1.1"
+  },
+  "files": [
+    "artifacts",
+    "src",
+    "test/utils",
+    "CHANGELOG.md",
+    "LICENSE-GPL.md"
+  ],
+  "homepage": "https://github.com/rhinestonewtf/registry/#readme",
+  "keywords": [
+    "blockchain",
+    "ethereum",
+    "foundry",
+    "smart-contracts",
+    "solidity",
+    "web3"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": "github.com/rhinestonewtf/registry",
+  "scripts": {
+    "build": "forge build",
+    "build:optimized": "FOUNDRY_PROFILE=optimized forge build",
+    "build:smt": "FOUNDRY_PROFILE=smt forge build",
+    "clean": "rm -rf artifacts broadcast cache docs out out-optimized out-svg",
+    "gas:report": "forge test --gas-report --mp \"./test/integration/**/*.sol\" --nmt \"test(Fuzz)?_RevertWhen_\\w{1,}?\"",
+    "gas:snapshot": "forge snapshot --mp \"./test/integration/**/*.sol\" --nmt \"test(Fuzz)?_RevertWhen_\\w{1,}?\"",
+    "gas:snapshot:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge snapshot --mp \"./test/integration/**/*.sol\" --nmt \"test(Fork)?(Fuzz)?_RevertWhen_\\w{1,}?\"",
+    "lint:sol": "forge fmt --check && pnpm solhint \"{script,src,test}/**/*.sol\"",
+    "prepack": "pnpm install",
+    "test": "forge test",
+    "test:lite": "FOUNDRY_PROFILE=lite forge test",
+    "test:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge test",
+    "build:docs": "forge doc && cd ./docs && rm -rf ./src/src/DataTypes.sol; mdbook build && cd .."
+  }
+}

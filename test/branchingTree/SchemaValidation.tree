@@ -1,0 +1,7 @@
+SchemaValidationTest
+└── When registering new schema
+    ├── When schema already registered
+    │   └── It should revert.
+    └── When schema new
+        ├── It should register schema.
+        └── It should emit event.

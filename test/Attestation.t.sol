@@ -1,514 +1,437 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.24;
 
-import { Test } from "forge-std/Test.sol";
-import {
-    Attestation,
-    MultiDelegatedAttestationRequest,
-    AttestationRecord,
-    IAttestation,
-    InvalidSchema,
-    NotFound,
-    AccessDenied
-} from "../src/base/Attestation.sol";
+import "./Base.t.sol";
+import "src/DataTypes.sol";
 
-import { ERC1271Attester, EXPECTED_SIGNATURE } from "./utils/ERC1271Attester.sol";
-
-import {
-    BaseTest,
-    RegistryTestLib,
-    RegistryInstance,
-    console2,
-    AttestationRequestData,
-    DelegatedAttestationRequest,
-    MockModuleWithArgs,
-    ResolverUID,
-    IResolver,
-    SchemaUID,
-    ISchemaValidator
-} from "./utils/BaseTest.t.sol";
-
-import {
-    MultiAttestationRequest,
-    MultiRevocationRequest,
-    RevocationRequestData,
-    RevocationRequest
-} from "../src/DataTypes.sol";
-
-struct SampleAttestation {
-    address[] dependencies;
-    string comment;
-    string url;
-    bytes32 hash;
-    uint256 severity;
-}
-
-/// @title AttestationTest
-/// @author zeroknots
 contract AttestationTest is BaseTest {
-    using RegistryTestLib for RegistryInstance;
-
     function setUp() public virtual override {
         super.setUp();
     }
 
-    function testAttest() public {
-        instance.mockAttestation(defaultSchema1, defaultModule1);
+    function mockAttestation(
+        address module,
+        uint48 expirationTime,
+        bytes memory data,
+        uint32[] memory types
+    )
+        internal
+        pure
+        returns (AttestationRequest memory request)
+    {
+        ModuleType[] memory typesEnc = new ModuleType[](types.length);
+        for (uint256 i; i < types.length; i++) {
+            typesEnc[i] = ModuleType.wrap(types[i]);
+        }
+        request = AttestationRequest({ moduleAddr: module, expirationTime: expirationTime, data: data, moduleTypes: typesEnc });
     }
 
-    function testAttest__RevertWhen__InvalidExpirationTime() public {
-        AttestationRequestData memory attData = AttestationRequestData({
-            subject: defaultModule1,
-            expirationTime: uint48(1),
-            data: abi.encode(true),
-            value: 0
-        });
-
-        vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidExpirationTime.selector));
-        instance.newAttestation(defaultSchema1, attData);
+    function mockRevocation(address module) internal pure returns (RevocationRequest memory request) {
+        request = RevocationRequest({ moduleAddr: module });
     }
 
-    function testAttest__RevertWhen__ZeroImplementation() public {
-        AttestationRequestData memory attData = AttestationRequestData({
-            subject: address(0x69),
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
+    function test_WhenAttestingWithNoAttestationData() public prankWithAccount(attester1) {
+        address module = address(new MockModule());
+        registry.registerModule(defaultResolverUID, module, "");
+        uint32[] memory types = new uint32[](1);
+        AttestationRequest memory request = mockAttestation(module, uint48(block.timestamp + 1), "", types);
+        // It should store.
+        registry.attest(defaultSchemaUID, request);
+        AttestationRecord memory record = registry.findAttestation(module, attester1.addr);
 
-        vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidAttestation.selector));
-        instance.newAttestation(defaultSchema1, attData);
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, request.expirationTime);
+        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.attester, attester1.addr);
     }
 
-    function testAttest__RevertWhen__InvalidSchema() public {
-        AttestationRequestData memory attData = AttestationRequestData({
-            subject: defaultModule1,
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
+    function test_WhenUsingValidMulti() public prankWithAccount(attester1) {
+        // It should recover.
+        uint32[] memory types = new uint32[](1);
 
-        vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
-        instance.newAttestation(SchemaUID.wrap(0), attData);
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module2), uint48(block.timestamp + 100), "", types);
+
+        registry.attest(defaultSchemaUID, requests);
+
+        AttestationRecord memory record = registry.findAttestation(address(module1), attester1.addr);
+
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, requests[0].expirationTime);
+        assertEq(record.moduleAddr, requests[0].moduleAddr);
+        assertEq(record.attester, attester1.addr);
     }
 
-    function testAttest__RevertWhen__ValidatorSaysInvalidAttestation() public {
-        SchemaUID schemaId = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
-        AttestationRequestData memory attData = AttestationRequestData({
-            subject: defaultModule1,
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
+    function test_WhenUsingInvalidSchemaUIDAttestation() public prankWithAccount(attester1) {
+        // It should recover.
+        uint32[] memory types = new uint32[](1);
 
-        vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidAttestation.selector));
-        instance.newAttestation(schemaId, attData);
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module2), uint48(block.timestamp + 100), "", types);
+
+        vm.expectRevert();
+        registry.attest(SchemaUID.wrap(bytes32("1234")), requests);
     }
 
-    function testAttest__With__LargeAttestation() public {
-        SampleAttestation memory sample = SampleAttestation({
-            dependencies: new address[](20),
-            comment: "This is a test!!",
-            url: "https://www.rhinestone.wtf",
-            hash: bytes32(0),
-            severity: 0
-        });
-        bytes memory data = abi.encode(sample);
+    function test_WhenUsingInvalidSchemaUIDRevocation() public prankWithAccount(attester1) {
+        // It should recover.
+        uint32[] memory types = new uint32[](1);
 
-        console2.log(data.length);
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module2), uint48(block.timestamp + 100), "", types);
 
-        AttestationRequestData memory attData = AttestationRequestData({
-            subject: defaultModule1,
-            expirationTime: uint48(0),
-            data: data,
-            value: 0
-        });
+        registry.attest(defaultSchemaUID, requests);
+        AttestationRequest memory request = mockAttestation(address(module3), uint48(block.timestamp + 100), "", types);
+        registry.attest(defaultSchemaUID, request);
 
-        instance.newAttestation(defaultSchema1, attData);
+        RevocationRequest[] memory revocations = new RevocationRequest[](2);
+        revocations[0] = mockRevocation(address(module2));
+        revocations[1] = mockRevocation(address(module3));
+
+        vm.expectRevert();
+        registry.revoke(revocations);
     }
 
-    function testMultiAttest() public {
-        address anotherModule = instance.deployAndRegister(
-            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
-        );
+    function test_WhenUsingValidMultiDifferentResolver__ShouldRevert() public prankWithAccount(attester1) {
+        // It should recover.
+        uint32[] memory types = new uint32[](1);
 
-        AttestationRequestData memory attData1 = AttestationRequestData({
-            subject: defaultModule1,
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module3), uint48(block.timestamp + 100), "", types);
 
-        AttestationRequestData memory attData2 = AttestationRequestData({
-            subject: anotherModule,
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
-
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
-        attArray[0] = attData1;
-        attArray[1] = attData2;
-
-        MultiAttestationRequest[] memory reqs = new MultiAttestationRequest[](1);
-        MultiAttestationRequest memory req1 =
-            MultiAttestationRequest({ schemaUID: defaultSchema1, data: attArray });
-        reqs[0] = req1;
-
-        instance.registry.multiAttest(reqs);
+        vm.expectRevert();
+        registry.attest(defaultSchemaUID, requests);
     }
 
-    function testMultiAttest__RevertWhen__InvalidSchema() public {
-        address anotherModule = instance.deployAndRegister(
-            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
-        );
+    function test_WhenUsingValidMulti__Revocation() public {
+        test_WhenUsingValidMulti();
 
-        AttestationRequestData memory attData1 = AttestationRequestData({
-            subject: defaultModule1,
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
+        RevocationRequest[] memory requests = new RevocationRequest[](2);
+        requests[0] = mockRevocation(address(module1));
+        requests[1] = mockRevocation(address(module2));
 
-        AttestationRequestData memory attData2 = AttestationRequestData({
-            subject: anotherModule,
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
-
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
-        attArray[0] = attData1;
-        attArray[1] = attData2;
-
-        MultiAttestationRequest[] memory reqs = new MultiAttestationRequest[](1);
-        MultiAttestationRequest memory req1 =
-            MultiAttestationRequest({ schemaUID: SchemaUID.wrap(0), data: attArray });
-        reqs[0] = req1;
-
-        vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
-        instance.registry.multiAttest(reqs);
+        vm.prank(attester2.addr);
+        vm.expectRevert();
+        registry.revoke(requests);
+        vm.prank(attester1.addr);
+        registry.revoke(requests);
+        vm.expectRevert();
+        registry.revoke(requests);
     }
 
-    function testMultiAttest__RevertWhen__ValidatorSaysInvalidAttestation() public {
-        SchemaUID schemaId = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
-        address anotherModule = instance.deployAndRegister(
-            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
-        );
+    function test_findAttestation() public {
+        // It should recover.
+        uint32[] memory types = new uint32[](1);
 
-        AttestationRequestData memory attData1 = AttestationRequestData({
-            subject: defaultModule1,
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module2), uint48(block.timestamp + 100), "", types);
 
-        AttestationRequestData memory attData2 = AttestationRequestData({
-            subject: anotherModule,
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
+        vm.prank(attester1.addr);
+        registry.attest(defaultSchemaUID, requests);
+        vm.prank(attester2.addr);
+        registry.attest(defaultSchemaUID, requests);
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
-        attArray[0] = attData1;
-        attArray[1] = attData2;
+        address[] memory attesters = new address[](2);
+        attesters[0] = attester1.addr;
+        attesters[1] = attester2.addr;
+        AttestationRecord[] memory record = registry.findAttestations(address(module1), attesters);
 
-        MultiAttestationRequest[] memory reqs = new MultiAttestationRequest[](1);
-        MultiAttestationRequest memory req1 =
-            MultiAttestationRequest({ schemaUID: schemaId, data: attArray });
-        reqs[0] = req1;
+        assertEq(record[0].time, block.timestamp);
+        assertEq(record[0].expirationTime, requests[0].expirationTime);
+        assertEq(record[0].moduleAddr, requests[0].moduleAddr);
+        assertEq(record[0].attester, attester1.addr);
 
-        vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidAttestation.selector));
-        instance.registry.multiAttest(reqs);
+        assertEq(record[1].time, block.timestamp);
+        assertEq(record[1].expirationTime, requests[0].expirationTime);
+        assertEq(record[1].moduleAddr, requests[0].moduleAddr);
+        assertEq(record[1].attester, attester2.addr);
     }
 
-    function testMultiAttest__RevertWhen__InvalidExpirationTime() public {
-        address anotherModule = instance.deployAndRegister(
-            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
-        );
+    function test_WhenReAttestingToARevokedAttestation() public prankWithAccount(attester1) {
+        address module = address(new MockModule());
+        registry.registerModule(defaultResolverUID, module, "");
+        uint32[] memory types = new uint32[](1);
+        AttestationRequest memory request = mockAttestation(module, uint48(block.timestamp + 1), "", types);
+        // It should store.
+        registry.attest(defaultSchemaUID, request);
+        AttestationRecord memory record = registry.findAttestation(module, attester1.addr);
 
-        AttestationRequestData memory attData1 = AttestationRequestData({
-            subject: defaultModule1,
-            expirationTime: uint48(1),
-            data: abi.encode(true),
-            value: 0
-        });
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, request.expirationTime);
+        assertEq(record.revocationTime, 0);
+        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.attester, attester1.addr);
 
-        AttestationRequestData memory attData2 = AttestationRequestData({
-            subject: anotherModule,
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
+        RevocationRequest memory revocation = RevocationRequest({ moduleAddr: module });
 
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
-        attArray[0] = attData1;
-        attArray[1] = attData2;
+        vm.warp(block.timestamp + 100);
+        registry.revoke(revocation);
 
-        MultiAttestationRequest[] memory reqs = new MultiAttestationRequest[](1);
-        MultiAttestationRequest memory req1 =
-            MultiAttestationRequest({ schemaUID: defaultSchema1, data: attArray });
-        reqs[0] = req1;
+        record = registry.findAttestation({ module: module, attester: attester1.addr });
+        assertEq(record.revocationTime, block.timestamp);
+        vm.warp(block.timestamp + 100);
 
-        vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidExpirationTime.selector));
-        instance.registry.multiAttest(reqs);
+        request.expirationTime = uint48(block.timestamp + 100);
+        registry.attest(defaultSchemaUID, request);
+        record = registry.findAttestation({ module: module, attester: attester1.addr });
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, request.expirationTime);
+        // ensure revocation time is reset
+        assertEq(record.revocationTime, 0);
+        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.attester, attester1.addr);
     }
 
-    function testMultiAttest__RevertWhen__ZeroImplementation() public {
-        SchemaUID schemaId = instance.registerSchema("", ISchemaValidator(falseSchemaValidator));
-        address anotherModule = instance.deployAndRegister(
-            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
-        );
+    function test_WhenAttestingWithExpirationTimeInThePast(address module, bytes memory data, uint32 moduleType) external {
+        vm.assume(moduleType > 31);
+        uint48 expirationTime = uint48(block.timestamp - 1000);
 
-        AttestationRequestData memory attData1 = AttestationRequestData({
-            subject: address(0x69),
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
+        uint32[] memory types = new uint32[](1);
+        types[0] = moduleType;
+        AttestationRequest memory request = mockAttestation(module, expirationTime, data, types);
 
-        AttestationRequestData memory attData2 = AttestationRequestData({
-            subject: anotherModule,
-            expirationTime: uint48(0),
-            data: abi.encode(true),
-            value: 0
-        });
-
-        AttestationRequestData[] memory attArray = new AttestationRequestData[](
-            2
-        );
-        attArray[0] = attData1;
-        attArray[1] = attData2;
-
-        MultiAttestationRequest[] memory reqs = new MultiAttestationRequest[](1);
-        MultiAttestationRequest memory req1 =
-            MultiAttestationRequest({ schemaUID: schemaId, data: attArray });
-        reqs[0] = req1;
-
-        vm.expectRevert(abi.encodeWithSelector(IAttestation.InvalidAttestation.selector));
-        instance.registry.multiAttest(reqs);
+        // It should revert.
+        vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidExpirationTime.selector));
+        registry.attest(defaultSchemaUID, request);
     }
 
-    function testRevoke() public {
-        address attester = address(this);
-        instance.mockAttestation(defaultSchema1, defaultModule1);
-        instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
+    function test_WhenAttestingWithTooHighModuleType(
+        address module,
+        uint48 expirationTime,
+        bytes memory data,
+        uint32 moduleType
+    )
+        external
+    {
+        vm.assume(moduleType > 31);
+        // ensure that the expiration time is in the future
+        // function test_WhenAttestingWithExpirationTimeInThePast covers this
+        expirationTime = uint48(block.timestamp + expirationTime);
+        uint32[] memory types = new uint32[](1);
+        types[0] = moduleType;
+        AttestationRequest memory request = mockAttestation(module, expirationTime, data, types);
 
-        AttestationRecord memory attestation =
-            instance.registry.findAttestation(defaultModule1, attester);
-        assertTrue(attestation.revocationTime != 0);
+        // It should revert.
+        vm.expectRevert();
+        registry.attest(defaultSchemaUID, request);
     }
 
-    function testRevoke__RevertWhen__AttestationNotFound() public {
-        address attester = address(this);
-        vm.expectRevert(abi.encodeWithSelector(NotFound.selector));
-        instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
+    function test_WhenAttestingToNon_existingModule(
+        address module,
+        uint48 expirationTime,
+        bytes memory data,
+        uint32[] memory types
+    )
+        external
+        prankWithAccount(attester1)
+    {
+        for (uint256 i; i < types.length; i++) {
+            vm.assume(types[i] < 32);
+        }
+
+        expirationTime = uint48(block.timestamp + expirationTime + 100);
+        AttestationRequest memory request = mockAttestation(module, expirationTime, data, types);
+        // It should revert.
+        vm.expectRevert();
+        registry.attest(defaultSchemaUID, request);
     }
 
-    function testRevoke__RevertWhen__InvalidSchema() public {
-        address attester = address(this);
-        instance.mockAttestation(defaultSchema1, defaultModule1);
-
-        vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
-        instance.revokeAttestation(defaultModule1, SchemaUID.wrap(0), attester);
+    function test_WhenRevokingAttestationThatDoesntExist(address module) external prankWithAccount(attester1) {
+        // It should revert.
+        vm.expectRevert(abi.encodeWithSelector(IRegistry.AttestationNotFound.selector));
+        registry.revoke(mockRevocation(module));
     }
 
-    function testRevoke__RevertWhen__NotOriginalAttester() public {
-        address attester = address(this);
-        address notAttester = makeAddr("notAttester");
+    function test_WhenAttesting_ShouldCallResolver() external {
+        resolverTrue.reset();
+        // It should call ExternalResolver.
 
-        instance.mockAttestation(defaultSchema1, defaultModule1);
+        uint32[] memory types = new uint32[](1);
+        AttestationRequest memory request = mockAttestation(address(module1), uint48(block.timestamp + 1), "", types);
+        // It should store.
+        registry.attest(defaultSchemaUID, request);
 
-        RevocationRequestData memory revoke =
-            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
-
-        RevocationRequest memory req =
-            RevocationRequest({ schemaUID: defaultSchema1, data: revoke });
-
-        vm.startPrank(notAttester);
-        vm.expectRevert(abi.encodeWithSelector(AccessDenied.selector));
-        instance.registry.revoke(req);
-        vm.stopPrank();
+        assertTrue(resolverTrue.onAttestCalled());
     }
 
-    function testRevoke__RevertWhen__AlreadyRevoked() public {
-        address attester = address(this);
-        instance.mockAttestation(defaultSchema1, defaultModule1);
-        instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
-
-        AttestationRecord memory attestation =
-            instance.registry.findAttestation(defaultModule1, attester);
-        assertTrue(attestation.revocationTime != 0);
-
-        vm.expectRevert(abi.encodeWithSelector(IAttestation.AlreadyRevoked.selector));
-        instance.revokeAttestation(defaultModule1, defaultSchema1, attester);
+    modifier whenAttestingWithTokenomicsResolver() {
+        _;
     }
 
-    function testMultiRevoke() public {
-        address attester = address(this);
-        address anotherModule = instance.deployAndRegister(
-            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
-        );
-
-        instance.mockAttestation(defaultSchema1, defaultModule1);
-        instance.mockAttestation(defaultSchema1, anotherModule);
-
-        RevocationRequestData memory attData1 =
-            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
-
-        RevocationRequestData memory attData2 =
-            RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
-
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
-        attArray[0] = attData1;
-        attArray[1] = attData2;
-
-        MultiRevocationRequest[] memory reqs = new MultiRevocationRequest[](1);
-        MultiRevocationRequest memory req1 =
-            MultiRevocationRequest({ schemaUID: defaultSchema1, data: attArray });
-        reqs[0] = req1;
-
-        instance.registry.multiRevoke(reqs);
-
-        AttestationRecord memory attestation =
-            instance.registry.findAttestation(defaultModule1, attester);
-        assertTrue(attestation.revocationTime != 0);
-
-        AttestationRecord memory attestation2 =
-            instance.registry.findAttestation(anotherModule, attester);
-        assertTrue(attestation2.revocationTime != 0);
+    function test_WhenTokensArePaid() external whenAttestingWithTokenomicsResolver {
+        // It should work.
     }
 
-    function testMultiRevoke__RevertWhen__InvalidSchema() public {
-        address attester = address(this);
-        address anotherModule = instance.deployAndRegister(
-            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
-        );
-
-        instance.mockAttestation(defaultSchema1, defaultModule1);
-        instance.mockAttestation(defaultSchema1, anotherModule);
-
-        RevocationRequestData memory attData1 =
-            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
-
-        RevocationRequestData memory attData2 =
-            RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
-
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
-        attArray[0] = attData1;
-        attArray[1] = attData2;
-
-        MultiRevocationRequest[] memory reqs = new MultiRevocationRequest[](1);
-        MultiRevocationRequest memory req1 =
-            MultiRevocationRequest({ schemaUID: SchemaUID.wrap(0), data: attArray });
-        reqs[0] = req1;
-
-        vm.expectRevert(abi.encodeWithSelector(InvalidSchema.selector));
-        instance.registry.multiRevoke(reqs);
+    function test_WhenTokensAreNotPaid() external whenAttestingWithTokenomicsResolver {
+        // It should revert.
     }
 
-    function testMultiRevoke__RevertWhen__AttestationNotFound() public {
-        address attester = address(this);
-        address anotherModule = instance.deployAndRegister(
-            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
-        );
-
-        RevocationRequestData memory attData1 =
-            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
-
-        RevocationRequestData memory attData2 =
-            RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
-
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
-        attArray[0] = attData1;
-        attArray[1] = attData2;
-
-        MultiRevocationRequest[] memory reqs = new MultiRevocationRequest[](1);
-        MultiRevocationRequest memory req1 =
-            MultiRevocationRequest({ schemaUID: defaultSchema1, data: attArray });
-        reqs[0] = req1;
-
-        vm.expectRevert(abi.encodeWithSelector(NotFound.selector));
-        instance.registry.multiRevoke(reqs);
+    modifier whenAttestingWithSignature() {
+        _;
     }
 
-    function testMultiRevoke__RevertWhen__NotOriginalAttester() public {
-        address attester = address(this);
-        address notAttester = makeAddr("notAttester");
-        address anotherModule = instance.deployAndRegister(
-            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
-        );
-
-        instance.mockAttestation(defaultSchema1, defaultModule1);
-        instance.mockAttestation(defaultSchema1, anotherModule);
-
-        RevocationRequestData memory attData1 =
-            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
-
-        RevocationRequestData memory attData2 =
-            RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
-
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
-        attArray[0] = attData1;
-        attArray[1] = attData2;
-
-        MultiRevocationRequest[] memory reqs = new MultiRevocationRequest[](1);
-        MultiRevocationRequest memory req1 =
-            MultiRevocationRequest({ schemaUID: defaultSchema1, data: attArray });
-        reqs[0] = req1;
-
-        vm.startPrank(notAttester);
-        vm.expectRevert(abi.encodeWithSelector(AccessDenied.selector));
-        instance.registry.multiRevoke(reqs);
-        vm.stopPrank();
+    modifier whenRevokingWithSignature() {
+        _;
     }
 
-    function testMultiRevoke__RevertWhen__AlreadyRevoked() public {
-        address attester = address(this);
-        address anotherModule = instance.deployAndRegister(
-            defaultResolver, type(MockModuleWithArgs).creationCode, abi.encode(1_234_819_239_123)
-        );
+    function test_WhenUsingValidECDSA() public whenAttestingWithSignature {
+        _make_WhenUsingValidECDSA(attester1);
+    }
 
-        instance.mockAttestation(defaultSchema1, defaultModule1);
-        instance.mockAttestation(defaultSchema1, anotherModule);
+    function _make_WhenUsingValidECDSA(Account memory attester) public whenAttestingWithSignature {
+        uint256 nonceBefore = registry.attesterNonce(attester.addr);
+        // It should recover.
+        uint32[] memory types = new uint32[](2);
+        types[0] = 1;
+        types[1] = 2;
+        AttestationRequest memory request = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
 
-        RevocationRequestData memory attData1 =
-            RevocationRequestData({ subject: defaultModule1, attester: attester, value: 0 });
+        bytes32 digest = registry.getDigest(request, attester.addr);
+        bytes memory sig = ecdsaSign(attester.key, digest);
+        registry.attest(defaultSchemaUID, attester.addr, request, sig);
 
-        RevocationRequestData memory attData2 =
-            RevocationRequestData({ subject: anotherModule, attester: attester, value: 0 });
+        AttestationRecord memory record = registry.findAttestation(address(module1), attester.addr);
+        uint256 nonceAfter = registry.attesterNonce(attester.addr);
 
-        RevocationRequestData[] memory attArray = new RevocationRequestData[](
-            2
-        );
-        attArray[0] = attData1;
-        attArray[1] = attData2;
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, request.expirationTime);
+        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.attester, attester.addr);
+        assertEq(nonceAfter, nonceBefore + 1);
+        assertEq(PackedModuleTypes.unwrap(record.moduleTypes), 2 ** 1 + 2 ** 2);
+    }
 
-        MultiRevocationRequest[] memory reqs = new MultiRevocationRequest[](1);
-        MultiRevocationRequest memory req1 =
-            MultiRevocationRequest({ schemaUID: defaultSchema1, data: attArray });
-        reqs[0] = req1;
+    function test_WhenRevokingWithValidECDSA() public {
+        test_WhenUsingValidECDSA();
 
-        instance.registry.multiRevoke(reqs);
+        RevocationRequest memory request = mockRevocation(address(module1));
+        bytes32 digest = registry.getDigest(request, attester1.addr);
+        bytes memory sig = ecdsaSign(attester1.key, digest);
+        registry.revoke(attester1.addr, request, sig);
+    }
 
-        vm.expectRevert(abi.encodeWithSelector(IAttestation.AlreadyRevoked.selector));
-        instance.registry.multiRevoke(reqs);
+    function test_WhenRevokingWithValidECDSAMulti() public {
+        test_WhenUsingValidECDSAMulti();
+
+        RevocationRequest[] memory requests = new RevocationRequest[](2);
+        requests[0] = mockRevocation(address(module1));
+        requests[1] = mockRevocation(address(module2));
+        bytes32 digest = registry.getDigest(requests, attester1.addr);
+        bytes memory sig = ecdsaSign(attester1.key, digest);
+        registry.revoke(attester1.addr, requests, sig);
+    }
+
+    function test_WhenUsingValidECDSAMulti() public whenAttestingWithSignature {
+        uint256 nonceBefore = registry.attesterNonce(attester1.addr);
+        // It should recover.
+        uint32[] memory types = new uint32[](1);
+
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module2), uint48(block.timestamp + 100), "", types);
+
+        bytes32 digest = registry.getDigest(requests, attester1.addr);
+        bytes memory sig = ecdsaSign(attester1.key, digest);
+        registry.attest(defaultSchemaUID, attester1.addr, requests, sig);
+
+        AttestationRecord memory record = registry.findAttestation(address(module1), attester1.addr);
+        uint256 nonceAfter = registry.attesterNonce(attester1.addr);
+
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, requests[0].expirationTime);
+        assertEq(record.moduleAddr, requests[0].moduleAddr);
+        assertEq(record.attester, attester1.addr);
+        assertEq(nonceAfter, nonceBefore + 1);
+    }
+
+    function test_WhenUsingInvalidECDSA() external whenAttestingWithSignature {
+        uint32[] memory types = new uint32[](1);
+        AttestationRequest memory request = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+
+        bytes32 digest = registry.getDigest(request, attester1.addr);
+        bytes memory sig = ecdsaSign(attester1.key, digest);
+        sig = abi.encodePacked(sig, "foo");
+        // It should revert.
+        vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidSignature.selector));
+        registry.attest(defaultSchemaUID, attester1.addr, request, sig);
+    }
+
+    function test_WhenUsingInvalidECDSAMulti() external whenAttestingWithSignature {
+        uint32[] memory types = new uint32[](1);
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module2), uint48(block.timestamp + 100), "", types);
+
+        bytes32 digest = registry.getDigest(requests, attester1.addr);
+        bytes memory sig = ecdsaSign(attester1.key, digest);
+        sig = abi.encodePacked(sig, "foo");
+        // It should revert.
+        vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidSignature.selector));
+        registry.attest(defaultSchemaUID, attester1.addr, requests, sig);
+    }
+
+    function test_WhenUsingValidERC1271() external whenAttestingWithSignature {
+        uint32[] memory types = new uint32[](1);
+        AttestationRequest memory request = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+
+        bytes memory sig = "signature";
+        registry.attest(defaultSchemaUID, address(erc1271AttesterTrue), request, sig);
+
+        AttestationRecord memory record = registry.findAttestation(address(module1), address(erc1271AttesterTrue));
+
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, request.expirationTime);
+        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.attester, address(erc1271AttesterTrue));
+    }
+
+    function test_WhenUsingValidERC1271Multi() external whenAttestingWithSignature {
+        uint32[] memory types = new uint32[](1);
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module2), uint48(block.timestamp + 100), "", types);
+
+        bytes memory sig = "signature";
+        registry.attest(defaultSchemaUID, address(erc1271AttesterTrue), requests, sig);
+
+        AttestationRecord memory record = registry.findAttestation(address(module1), address(erc1271AttesterTrue));
+
+        assertEq(record.time, block.timestamp);
+        assertEq(record.expirationTime, requests[0].expirationTime);
+        assertEq(record.moduleAddr, requests[0].moduleAddr);
+        assertEq(record.attester, address(erc1271AttesterTrue));
+    }
+
+    function test_WhenUsingInvalidERC1271Multi() external whenAttestingWithSignature {
+        // It should revert.
+        uint32[] memory types = new uint32[](1);
+
+        AttestationRequest[] memory requests = new AttestationRequest[](2);
+        requests[0] = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+        requests[1] = mockAttestation(address(module2), uint48(block.timestamp + 100), "", types);
+
+        bytes memory sig = "signature";
+        vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidSignature.selector));
+        registry.attest(defaultSchemaUID, address(erc1271AttesterFalse), requests, sig);
+    }
+
+    function test_WhenUsingInvalidERC1271() external whenAttestingWithSignature {
+        // It should revert.
+        uint32[] memory types = new uint32[](1);
+        AttestationRequest memory request = mockAttestation(address(module1), uint48(block.timestamp + 100), "", types);
+
+        bytes memory sig = "signature";
+        vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidSignature.selector));
+        registry.attest(defaultSchemaUID, address(erc1271AttesterFalse), request, sig);
+    }
+
+    function ecdsaSign(uint256 privKey, bytes32 digest) internal pure returns (bytes memory signature) {
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
+        return abi.encodePacked(r, s, v);
     }
 }

@@ -1,5 +1,5 @@
 [profile.default]
-solc_version = "0.8.22"
+solc_version = "0.8.24"
 src = 'src'
 out = 'out'
 libs = ['lib']
@@ -7,9 +7,13 @@ evm_version = 'paris'
 
 [fmt]
 bracket_spacing = true
-line_length = 100
+line_length = 140
 multiline_func_header = "all"
 number_underscore="thousands"
+
+[doc]
+title = "Rhinestone Registry"
+ignore = ["src/DataTypes.sol", "src/Common.sol", "src/external"]
 
 [invariant]
 # fail_on_revert = true

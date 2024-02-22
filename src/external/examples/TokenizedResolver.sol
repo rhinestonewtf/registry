@@ -1,60 +1,38 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.24;
 
-import { ResolverBase, AttestationRecord, ModuleRecord } from "../ResolverBase.sol";
-
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-/**
- * @title TokenizedResolver
- * @author zeroknots
- * @notice A resolver for tokenized attestations.
- */
+import "./ResolverBase.sol";
+import "forge-std/interfaces/IERC20.sol";
 
 contract TokenizedResolver is ResolverBase {
-    using SafeERC20 for IERC20;
+    IERC20 public immutable TOKEN;
+    uint256 internal immutable fee = 1e18;
 
-    IERC20 private immutable token;
-
-    uint256 immutable fee = 10;
-
-    constructor(address rs, address tokenAddr) ResolverBase(rs) {
-        token = IERC20(tokenAddr);
+    constructor(IERC20 _token, IRegistry _registry) ResolverBase(_registry) {
+        TOKEN = _token;
     }
 
-    function onAttest(
-        AttestationRecord calldata attestation,
-        uint256 value
-    )
-        internal
-        virtual
-        override
-        returns (bool)
-    {
-        token.safeTransferFrom(attestation.attester, address(this), fee);
-        return true;
-    }
+    function supportsInterface(bytes4 interfaceID) external view override returns (bool) { }
 
-    function onRevoke(
-        AttestationRecord calldata attestation,
-        uint256 value
-    )
-        internal
-        virtual
-        override
-        returns (bool)
-    {
-        return true;
-    }
+    function resolveAttestation(AttestationRecord calldata attestation) external payable override onlyRegistry returns (bool) { }
 
-    function onModuleRegistration(
-        ModuleRecord calldata module,
-        uint256 value
+    function resolveAttestation(AttestationRecord[] calldata attestation) external payable override onlyRegistry returns (bool) { }
+
+    function resolveRevocation(AttestationRecord calldata attestation) external payable override onlyRegistry returns (bool) { }
+
+    function resolveRevocation(AttestationRecord[] calldata attestation) external payable override onlyRegistry returns (bool) { }
+
+    function resolveModuleRegistration(
+        address sender,
+        address moduleAddress,
+        ModuleRecord calldata record
     )
-        internal
+        external
+        payable
         override
+        onlyRegistry
         returns (bool)
     {
-        return true;
+        TOKEN.transferFrom(sender, address(this), fee);
     }
 }
