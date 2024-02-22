@@ -26,6 +26,10 @@ concurrency:
 
 jobs:
   # Build job
+  #
+  build-docs:
+    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-docs.yaml@main"
+
   build:
     runs-on: ubuntu-latest
     env:
