@@ -8,6 +8,11 @@ import { EIP712 } from "solady/utils/EIP712.sol";
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { IRegistry } from "../IRegistry.sol";
 
+/**
+ * Implements similar functionality to Attestation.sol, but with the added feature of requiring a signature from the attester.
+ * Signatures may be provided as `ECDSA` or `ERC-1271`
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
+ */
 contract SignedAttestation is IRegistry, Attestation, EIP712 {
     using AttestationLib for AttestationRequest;
     using AttestationLib for RevocationRequest;

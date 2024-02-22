@@ -2,6 +2,7 @@
 cache/
 out/
 .DS_Store
+docs/
 
 # Ignores development broadcast logs
 /broadcast

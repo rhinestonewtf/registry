@@ -10,14 +10,13 @@ import { TrustLib } from "../lib/TrustLib.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
 /**
- * @title TrustManager
  * Allows smart accounts to query the registry for the security status of modules.
  * Smart accounts may trust a list of attesters to attest to the security status of
  *   modules and configure a minimum threshold of how many attestations have to be in place
  *   to consider a module as "trust worthy"
- * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
- * Implements EIP-7484 to query attestations stored in the registry.
+ * Implements `ERC-7484` to query attestations stored in the registry.
  * @dev This contract is abstract and provides utility functions to query attestations.
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
 abstract contract TrustManager is IRegistry {
     using ModuleTypeLib for PackedModuleTypes;
@@ -92,7 +91,7 @@ abstract contract TrustManager is IRegistry {
     }
 
     /**
-     * Internal helper function to check for module's security attestations on behalf of a SmartAccount
+     * Internal helper function to check for module's security attestations on behalf of a Smart Account
      * will use registy's storage to get the trusted attester(s) of a smart account, and check if the module was attested
      * @param smartAccount the smart account to check for
      * @param module address of the module to check

@@ -13,6 +13,7 @@ number_underscore="thousands"
 
 [doc]
 title = "Rhinestone Registry"
+ignore = ["src/DataTypes.sol", "src/Common.sol", "src/external"]
 
 [invariant]
 # fail_on_revert = true

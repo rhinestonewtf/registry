@@ -52,6 +52,7 @@
     "prepack": "pnpm install",
     "test": "forge test",
     "test:lite": "FOUNDRY_PROFILE=lite forge test",
-    "test:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge test"
+    "test:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge test",
+    "build:docs": "forge doc && cd ./docs && rm -rf ./src/src/DataTypes.sol; mdbook build && cd .."
   }
 }

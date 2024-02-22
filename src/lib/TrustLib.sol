@@ -6,8 +6,13 @@ import { ZERO_TIMESTAMP, ZERO_MODULE_TYPE } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 
+/**
+ * Library implements checks to validat if a storage reference for an `AttestationRecord` is currently valid
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
+ */
 library TrustLib {
     using ModuleTypeLib for PackedModuleTypes;
+
     /**
      * Check that attestationRecord is valid:
      *                 - not revoked
@@ -17,7 +22,6 @@ library TrustLib {
      * @param expectedType the expected module type. if this is ZERO_MODULE_TYPE, types specified in the attestation are ignored
      * @param $attestation the storage reference of the attestation record to check
      */
-
     function enforceValid(AttestationRecord storage $attestation, ModuleType expectedType) internal view {
         uint256 attestedAt;
         uint256 expirationTime;
@@ -66,6 +70,15 @@ library TrustLib {
         }
     }
 
+    /**
+     * Check that attestationRecord is valid:
+     *                 - not revoked
+     *                 - not expired
+     *                 - correct module type (if not ZERO_MODULE_TYPE)
+     * @dev this function DOES NOT revert if the attestationRecord is not valid, but returns false
+     * @param expectedType the expected module type. if this is ZERO_MODULE_TYPE, types specified in the attestation are ignored
+     * @param $attestation the storage reference of the attestation record to check
+     */
     function checkValid(AttestationRecord storage $attestation, ModuleType expectedType) internal view returns (bool) {
         uint256 attestedAt;
         uint256 expirationTime;

@@ -11,6 +11,8 @@ import { TrustLib } from "../lib/TrustLib.sol";
 /**
  * If smart accounts want to query the registry, and supply a list of trusted attesters in calldata, this component can be used
  * @dev This contract is abstract and provides utility functions to query attestations with a calldata provided list of attesters
+ *
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
 abstract contract TrustManagerExternalAttesterList is IRegistry, TrustManager {
     using TrustLib for AttestationRecord;

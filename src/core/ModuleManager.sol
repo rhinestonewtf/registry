@@ -10,21 +10,16 @@ import { ResolverManager } from "./ResolverManager.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 /**
- * @title Module
- *
- * @dev The Module contract is responsible for handling the registration,
+ * The ModuleManager contract is responsible for handling module the registration,
  *           storage and retrieval of modules on the Registry.
- *           This contract inherits from the IModule interface
- *
- * @dev The primary responsibility of the Module is to deploy and manage modules. A module is a smart contract
- * that has been deployed through the Module. The details of each module, such as its address, code hash, schema ID,
+ *           This contract inherits from the `IModule` interface
+ * The primary responsibility of the Module is to deploy and manage modules. A module is a smart contract
+ * that has been deployed through the Module. The details of each module, such as its address, resolver UID
  * sender address, deploy parameters hash, and additional metadata are stored in
  *        a struct and mapped to the module's address in
  * the `_modules` mapping for easy access and management.
- *
- * @dev In conclusion, the Module is a central part of a system to manage,
- *    deploy, and interact with a set of smart contracts
- * in a structured and controlled manner.
+ * @dev The module developer select the resolver to be used for attestations and revocations made of the module.
+ *    @dev Important: only module registrations made through the `deployModule()`  function are frontrun protected.
  *
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
@@ -122,6 +117,17 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         record.requireExternalResolverOnModuleRegistration({ moduleAddress: moduleAddress, $resolver: $resolver });
     }
 
+    /**
+     * Turns module registration artifacts to `ModuleRecord` to stores it in the registry storage
+     * @dev if a non-existent resolverUID is provided, this function reverts.
+     * @dev if moduleAddress is already registered, this function reverts.
+     * @dev if moduleAddress is not a contract, this function reverts.
+     * @param moduleAddress the address of the module to register
+     * @param sender the address of the sender who deployed the module
+     * @param resolverUID the unique identifier of the resolver
+     * @param metadata additional data related to the contract deployment.
+     *            This parameter is optional and may be used to facilitate custom business logic on the external resolver
+     */
     function _storeModuleRecord(
         address moduleAddress,
         address sender,

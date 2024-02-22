@@ -8,7 +8,6 @@ import { IExternalResolver } from "./external/IExternalResolver.sol";
 /*                     Storage Structs                        */
 /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-// Struct that represents an attestation.
 struct AttestationRecord {
     uint48 time; // The time when the attestation was created (Unix timestamp).
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
@@ -20,7 +19,6 @@ struct AttestationRecord {
     SchemaUID schemaUID; // The unique identifier of the schema.
 }
 
-// Struct that represents Module artefact.
 struct ModuleRecord {
     ResolverUID resolverUID; // The unique identifier of the resolver.
     address sender; // The address of the sender who deployed the contract

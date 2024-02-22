@@ -5,6 +5,11 @@ import { AttestationRecord, AttestationRequest, RevocationRequest, SchemaUID } f
 import { AttestationManager } from "./AttestationManager.sol";
 import { IRegistry } from "../IRegistry.sol";
 
+/**
+ * Abstract contract that implements the `IRegistry` interface
+ * Allows `msg.sender` to make attestations / revocations directly
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
+ */
 abstract contract Attestation is IRegistry, AttestationManager {
     /**
      * @inheritdoc IRegistry

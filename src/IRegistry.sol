@@ -42,6 +42,17 @@ interface IERC7484 {
     function checkN(address module, ModuleType moduleType, address[] calldata attesters, uint256 threshold) external view;
 }
 
+/**
+ * Interface definition of all features of the registry:
+ *      - Register Schemas
+ *      - Register External Resolvers
+ *      - Register Modules
+ *      - Make Attestations
+ *      - Make Revocations
+ *      - Delegate Trust to Attester(s)
+ *
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
+ */
 interface IRegistry is IERC7484 {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*             Smart Account - Trust Management               */
@@ -60,9 +71,9 @@ interface IRegistry is IERC7484 {
     error InsufficientAttestations();
 
     /**
-     * Allows smartaccounts - the end users of the registry - to appoint
+     * Allows Smart Accounts - the end users of the registry - to appoint
      * one or many attesters as trusted.
-     * @notice this function reverts, if address(0), or duplicates are provided in attesters[]
+     * @dev this function reverts, if address(0), or duplicates are provided in attesters[]
      *
      * @param threshold The minimum number of attestations required for a module
      *                  to be considered secure.
@@ -71,8 +82,8 @@ interface IRegistry is IERC7484 {
     function trustAttesters(uint8 threshold, address[] calldata attesters) external;
 
     /**
-     * Get trusted attester for a specific smartAccount
-     * @param smartAccount The address of the smartAccount
+     * Get trusted attester for a specific Smart Account
+     * @param smartAccount The address of the Smart Account
      */
     function findTrustedAttesters(address smartAccount) external view returns (address[] memory attesters);
 
@@ -93,8 +104,8 @@ interface IRegistry is IERC7484 {
     error InvalidModuleTypes();
 
     /**
-     * Allows msg.sender to attest to multiple modules' security status.
-     * The AttestationRequest.Data provided should match the attestation
+     * Allows `msg.sender` to attest to multiple modules' security status.
+     * The `AttestationRequest.Data` provided should match the attestation
      * schema defined by the Schema corresponding to the SchemaUID
      *
      * @dev This function will revert if the same module is attested twice by the same attester.
@@ -106,8 +117,8 @@ interface IRegistry is IERC7484 {
     function attest(SchemaUID schemaUID, AttestationRequest calldata request) external;
 
     /**
-     * Allows msg.sender to attest to multiple modules' security status.
-     * The AttestationRequest.Data provided should match the attestation
+     * Allows `msg.sender` to attest to multiple modules' security status.
+     * The `AttestationRequest.Data` provided should match the attestation
      * schema defined by the Schema corresponding to the SchemaUID
      *
      * @dev This function will revert if the same module is attested twice by the same attester.
@@ -119,8 +130,8 @@ interface IRegistry is IERC7484 {
     function attest(SchemaUID schemaUID, AttestationRequest[] calldata requests) external;
 
     /**
-     * Allows attester to attest by signing an AttestationRequest (ECDSA or ERC1271)
-     * The AttestationRequest.Data provided should match the attestation
+     * Allows attester to attest by signing an `AttestationRequest` (`ECDSA` or `ERC1271`)
+     * The `AttestationRequest.Data` provided should match the attestation
      * schema defined by the Schema corresponding to the SchemaUID
      *
      * @dev This function will revert if the same module is attested twice by the same attester.
@@ -134,8 +145,8 @@ interface IRegistry is IERC7484 {
     function attest(SchemaUID schemaUID, address attester, AttestationRequest calldata request, bytes calldata signature) external;
 
     /**
-     * Allows attester to attest by signing an AttestationRequest (ECDSA or ERC1271)
-     * The AttestationRequest.Data provided should match the attestation
+     * Allows attester to attest by signing an `AttestationRequest` (`ECDSA` or `ERC1271`)
+     * The `AttestationRequest.Data` provided should match the attestation
      * schema defined by the Schema corresponding to the SchemaUID
      *
      * @dev This function will revert if the same module is attested twice by the same attester.
@@ -169,17 +180,17 @@ interface IRegistry is IERC7484 {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     /**
-     * Allows msg.sender to revoke an attstation made by the same msg.sender
+     * Allows `msg.sender` to revoke an attestation made by the same `msg.sender`
      *
      * @dev this function will revert if the attestation is not found
      * @dev this function will revert if the attestation is already revoked
      *
-     * @param request  the RevocationRequest
+     * @param request single RevocationRequest
      */
     function revoke(RevocationRequest calldata request) external;
 
     /**
-     * Allows msg.sender to revoke multiple attstations made by the same msg.sender
+     * Allows msg.sender to revoke multiple attestation made by the same msg.sender
      *
      * @dev this function will revert if the attestation is not found
      * @dev this function will revert if the attestation is already revoked
@@ -189,16 +200,16 @@ interface IRegistry is IERC7484 {
     function revoke(RevocationRequest[] calldata requests) external;
 
     /**
-     * Allows attester to revoke an attestation by signing an RevocationRequest (ECDSA or ERC1271)
+     * Allows attester to revoke an attestation by signing an `RevocationRequest` (`ECDSA` or `ERC1271`)
      *
      * @param attester the signer / revoker
-     * @param request the RevocationRequest
+     * @param request single RevocationRequest
      * @param signature ECDSA or ERC1271 signature
      */
     function revoke(address attester, RevocationRequest calldata request, bytes calldata signature) external;
 
     /**
-     * Allows attester to revoke an attestation by signing an RevocationRequest (ECDSA or ERC1271)
+     * Allows attester to revoke an attestation by signing an `RevocationRequest` (`ECDSA` or `ERC1271`)
      * @dev if you want to revoke multiple attestations, but from different attesters, call this function multiple times
      *
      * @param attester the signer / revoker
@@ -219,12 +230,12 @@ interface IRegistry is IERC7484 {
     error FactoryCallFailed(address factory);
 
     /**
-     * This registry implements a CREATE2 factory, that allows module developers to register and deploy module bytecode
-     * @param salt The salt to be used in the CREATE2 factory. This adheres to Pr000xy/Create2Factory.sol salt formatting.
+     * This registry implements a `CREATE2` factory, that allows module developers to register and deploy module bytecode
+     * @param salt The salt to be used in the `CREATE2` factory. This adheres to Pr000xy/Create2Factory.sol salt formatting.
      *             The salt's first bytes20 should be the address of the sender
      *             or bytes20(0) to bypass the check (this will lose replay protection)
-     * @param resolverUID The resolverUID to be used in the CREATE2 factory
-     * @param initCode The initCode to be used in the CREATE2 factory
+     * @param resolverUID The resolverUID to be used in the `CREATE2` factory
+     * @param initCode The initCode to be used in the `CREATE2` factory
      * @param metadata The metadata to be stored on the registry.
      *            This field is optional, and might be used by the module developer to store additional
      *            information about the module or facilitate business logic with the Resolver stub
@@ -297,14 +308,14 @@ interface IRegistry is IERC7484 {
     error InvalidSchemaValidator(IExternalSchemaValidator validator);
 
     /**
-     * Register Schema and (optional) external IExternalSchemaValidator
-     * Schemas describe the structure of the data of attestations
+     * Register Schema and (optional) external `IExternalSchemaValidator`
+     * A Schema describe the structure of the data of attestations
      * every attestation made on this registry, will reference a SchemaUID to
      *  make it possible to decode attestation data in human readable form
      * overrwriting a schema is not allowed, and will revert
      * @param schema ABI schema used to encode attestations that are made with this schema
      * @param validator (optional) external schema validator that will be used to validate attestations.
-     *                  use address(0), if you dont need an external validator
+     *                  use address(0), if you don't need an external validator
      * @return uid SchemaUID of the registered schema
      */
     function registerSchema(
@@ -315,7 +326,7 @@ interface IRegistry is IERC7484 {
         returns (SchemaUID uid);
 
     /**
-     * getter function to retrieve SchemaRecord
+     * Getter function to retrieve SchemaRecord
      */
     function findSchema(SchemaUID uid) external view returns (SchemaRecord memory record);
 
@@ -336,7 +347,7 @@ interface IRegistry is IERC7484 {
     function registerResolver(IExternalResolver resolver) external returns (ResolverUID uid);
 
     /**
-     * Entities that previously regsitered an external resolver, may update the implementation address.
+     * Entities that previously registered an external resolver, may update the implementation address.
      * @param uid The UID of the resolver.
      * @param resolver The new resolver implementation address.
      */
@@ -350,7 +361,7 @@ interface IRegistry is IERC7484 {
     function transferResolverOwnership(ResolverUID uid, address newOwner) external;
 
     /**
-     * Getter function to get the ResolverRecord of a registerd resolver
+     * Getter function to get the ResolverRecord of a registered resolver
      * @param uid The UID of the resolver.
      */
     function findResolver(ResolverUID uid) external view returns (ResolverRecord memory record);

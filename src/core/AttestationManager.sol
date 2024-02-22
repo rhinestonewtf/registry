@@ -22,7 +22,9 @@ import { EMPTY_ATTESTATION_REF, EMPTY_RESOLVER_UID, _time, ZERO_TIMESTAMP } from
 
 /**
  * AttestationManager handles the registry's internal storage of new attestations and revocation of attestation
- * @dev This contract is abstract and provides utility functions to store attestations and revocations.
+ * @dev This contract is abstract and provides internal utility functions to store attestations and revocations.
+ *
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
 abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager, TrustManagerExternalAttesterList {
     using StubLib for *;
@@ -42,12 +44,12 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
      * Processes an attestation request and stores the attestation in the registry.
      * If the attestation was made for a module that was not registered, the function will revert.
      * function will get the external Schema Validator for the supplied SchemaUID
-     *         and call it, if an external IExternalSchemaValidator was set
-     * function will get the external IExternalResolver for the module - that the attestation is for
+     *         and call it, if an external `IExternalSchemaValidator` was set
+     * function will get the external `IExternalResolver` for the module - that the attestation is for
      *        and call it, if an external Resolver was set
      * @param attester The address of the attesting account.
      * @param schemaUID the UID of the schema that the attestation is made for
-     * @param request AttestationRequest send by attester via calldata
+     * @param request AttestationRequest send by attester via `calldata`
      */
     function _attest(address attester, SchemaUID schemaUID, AttestationRequest calldata request) internal {
         (AttestationRecord memory record, ResolverUID resolverUID) =
@@ -88,11 +90,11 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
 
     /**
      * Stores an attestation in the registry storage.
-     * The bytes encoded AttestationRequest.Data is not stored directly into the registry storage,
-     * but rather stored with SSTORE2. SSTORE2/SLOAD2 is writing and reading contract storage
+     * The bytes encoded `AttestationRequest.Data` is not stored directly into the registry storage,
+     * but rather stored with `SSTORE2`. `SSTORE2/SLOAD2` is writing and reading contract storage
      * paying a fraction of the cost, it uses contract code as storage, writing data takes the
-     * form of contract creations and reading data uses EXTCODECOPY.
-     * since attestation data is supposed to be immutable, it is a good candidate for SSTORE2
+     * form of contract creations and reading data uses `EXTCODECOPY`.
+     * since attestation data is supposed to be immutable, it is a good candidate for `SSTORE2`
      *
      * @dev This function will revert if the same module is attested twice by the same attester.
      *      If you want to re-attest, you have to revoke your attestation first, and then attest again.
@@ -128,7 +130,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         }
 
         // use SSTORE2 to store the data in attestationRequest
-        // @dev this will revert, if in a batched attestation,
+        // this will revert, if in a batched attestation,
         // the same data is used twice by the same attester for the same module since the salt will be the same
         AttestationDataRef sstore2Pointer = request.sstore2({ salt: attester.sstore2Salt(module) });
 
@@ -155,8 +157,8 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
 
     /**
      * Revoke a single Revocation Request
-     * This function will write the RevocationRequest into storage, and get the stored RevocationRecord back,
-     * and pass the RevocationRecord to the resolver to check if the revocation is valid
+     * This function will write the `RevocationRequest` into storage, and get the stored `RevocationRecord` back,
+     * and pass the `RevocationRecord` to the resolver to check if the revocation is valid
      */
     function _revoke(address attester, RevocationRequest calldata request) internal {
         (AttestationRecord memory record, ResolverUID resolverUID) = _storeRevocation(attester, request);
@@ -165,8 +167,8 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
 
     /**
      * Revoke an array Revocation Request
-     * This function will write the RevocationRequest into storage, and get the stored RevocationRecord back,
-     * and pass the RevocationRecord to the resolver to check if the revocation is valid
+     * This function will write the `RevocationRequest` into storage, and get the stored `RevocationRecord` back,
+     * and pass the `RevocationRecord` to the resolver to check if the revocation is valid
      */
     function _revoke(address attester, RevocationRequest[] calldata requests) internal {
         uint256 length = requests.length;
@@ -182,7 +184,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
             else if (resolverUID_cache != resolverUID) revert DifferentResolvers();
         }
 
-        // No schema validation required during revocation. the attestation data was already checked against
+        // No schema validation required during revocation. The attestation data was already checked against
         records.tryExternalResolverOnRevocation({ $resolver: $resolvers[resolverUID] });
     }
 
@@ -228,8 +230,8 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
     }
 
     /**
-     * Returns the attestation records for the given module and attesters.
-     * This function is expected to be used by TrustManager and TrustManagerExternalAttesterList
+     * Returns a storage reference to attestation records for the given module and attesters.
+     * This function is expected to be used by `TrustManager` and `TrustManagerExternalAttesterList`
      */
     function $getAttestation(address module, address attester) internal view override returns (AttestationRecord storage $attestation) {
         $attestation = $moduleToAttesterToAttestations[module][attester];

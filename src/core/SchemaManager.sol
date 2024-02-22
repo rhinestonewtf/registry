@@ -9,7 +9,6 @@ import { ZERO_TIMESTAMP, _time } from "../Common.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 /**
- * @title SchemaManager
  * Allows the creation registration and creation of schemas.
  *    Schemas are used to describe attestation data. It is recommended to use ABI encoded data as schema.
  *    An external schema validator contract may be provided,

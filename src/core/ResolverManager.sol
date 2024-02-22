@@ -7,6 +7,17 @@ import { IExternalResolver } from "../external/IExternalResolver.sol";
 import { UIDLib } from "../lib/Helpers.sol";
 import { IRegistry } from "../IRegistry.sol";
 
+/**
+ * The ResolverManager allows entities that operate modular marketplaces to register and
+ * manager custom `IExternalResolver` implementations.
+ *    This feature may be used to extend the registry's security guarantees with custom business logic
+ *      for example:
+ *             - KYC of module devs / attesters
+ *             - tokenomics of module devs / attestation
+ * @dev only `msg.sender` and the external `IExternalResolver` address are used to create a unique ID for the resolver
+ *    This allows for a single resolver address to be possible across different chains
+ * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
+ */
 abstract contract ResolverManager is IRegistry {
     using UIDLib for ResolverRecord;
 
@@ -25,7 +36,7 @@ abstract contract ResolverManager is IRegistry {
     }
 
     /**
-     * If a resolver is not address(0), we check if it supports the IExternalResolver interface
+     * If a resolver is not address(0), we check if it supports the `IExternalResolver` interface
      */
     modifier onlyResolver(IExternalResolver resolver) {
         if (address(resolver) == address(0) || !resolver.supportsInterface(type(IExternalResolver).interfaceId)) {
