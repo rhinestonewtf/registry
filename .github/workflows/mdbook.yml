@@ -45,8 +45,7 @@ jobs:
         uses: actions/configure-pages@v4
 
       - name: Build with mdBook
-        run: mdbook build
-        working-directory: docs
+        run: cd ./docs ; mdbook build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
