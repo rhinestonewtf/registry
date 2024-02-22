@@ -7,7 +7,7 @@ name: Deploy mdBook site to Pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ["main"]
+    branches: ["main", "feature/docs"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -43,7 +43,8 @@ jobs:
         uses: actions/configure-pages@v4
 
       - name: Build with mdBook
-        run: mdbook build docs
+        run: mdbook build
+        working-directory: docs/mdbook
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
