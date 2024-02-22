@@ -10,7 +10,16 @@ import { IRegistry } from "../IRegistry.sol";
 
 /**
  * Implements similar functionality to Attestation.sol, but with the added feature of requiring a signature from the attester.
+ *
+ * ## Signed Attestations
+ *
+ * All Attestations leveraged within the Registry are designated as "signed/delegated".
+ * Such Attestations empower an entity to sign an attestation while enabling another entity to
+ * bear the transaction cost. With these attestations, the actual Attester and the one relaying the
+ * Attestation can be separate entities, thus accommodating a variety of use cases.
+ * This becomes particularly beneficial when:
  * Signatures may be provided as `ECDSA` or `ERC-1271`
+ *
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
 contract SignedAttestation is IRegistry, Attestation, EIP712 {

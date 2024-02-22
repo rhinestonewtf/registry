@@ -14,6 +14,7 @@ import { IRegistry } from "../IRegistry.sol";
  *    An external schema validator contract may be provided,
  *    which  will be called for every attestation made against the schema.
  *    arbitrary checks may be implemented, by SchemaValidators
+ *
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
 abstract contract SchemaManager is IRegistry {

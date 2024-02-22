@@ -8,12 +8,45 @@ import { UIDLib } from "../lib/Helpers.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 /**
- * The ResolverManager allows entities that operate modular marketplaces to register and
- * manager custom `IExternalResolver` implementations.
- *    This feature may be used to extend the registry's security guarantees with custom business logic
- *      for example:
- *             - KYC of module devs / attesters
- *             - tokenomics of module devs / attestation
+ * Resolvers are external contracts that are tied to Modules and called when specific Registry actions are executed.
+ * ## Resolver Hooks
+ *
+ * external Resolvers are called during:
+ *
+ * - attestation
+ * - revocation
+ * - module registration
+ *
+ * This architectural design aims to provide entities like Smart Account vendors or DAOs, with the
+ * flexibility to incorporate custom business logic while maintaining the
+ * robustness and security of the core functionalities implemented by the Registry.
+ *
+ * ## Role of Resolveres in extending Registry functionalities
+ *
+ * Entities utilizing the Registry frequently need to extend its core functionalities
+ * to cater to their unique business requirements. Resolvers are the mechanisms that
+ * make this possible, allowing for:
+ *
+ * - _Custom Business Logic Integration:_ Entities can build upon the foundational
+ *   registry operations by introducing complex logic sequences, tailored to their
+ *   operational needs.
+ *
+ * - _Security Assurance:_ One of the significant advantages of using resolvers is that
+ *   they abstract away the intricacies of attestation storage and validation.
+ *   This abstraction ensures that the foundational security of the Registry isn't compromised,
+ *   even when new functionalities are added.
+ *
+ * - _Cost Efficiency in Audits:_ Given that the core attestation storage and validation
+ *   logic remains untouched, auditing becomes more straightforward and cost-effective.
+ *   Entities can focus their audit efforts on their custom logic without the need to
+ *   re-audit the underlying core systems.
+ *
+ * ## The `IExternalResolver` interface: Standardizing Resolvers
+ *
+ * For any entity looking to employ a resolver, adherence to a standardized
+ * interface is essential.
+ * The [IExternalResolver interface](../../external/IExternalResolver.sol/interface.IExternalResolver.html) delineates the essential
+ * functions a resolver must implement to ensure seamless integration and operation with the Registry.
  * @dev only `msg.sender` and the external `IExternalResolver` address are used to create a unique ID for the resolver
  *    This allows for a single resolver address to be possible across different chains
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
