@@ -8,7 +8,7 @@ import { LibSort } from "solady/utils/LibSort.sol";
 contract TrustTest is AttestationTest {
     using LibSort for address[];
 
-    function setUp() public override {
+    function setUp() public virtual override {
         super.setUp();
         // test_WhenAttestingWithNoAttestationData(address(module1));
     }
@@ -17,7 +17,7 @@ contract TrustTest is AttestationTest {
         _;
     }
 
-    function test_WhenSupplyingOneAttester() external whenSettingAttester prankWithAccount(smartAccount1) {
+    function test_WhenSupplyingOneAttester() public whenSettingAttester prankWithAccount(smartAccount1) {
         // It should set.
         address[] memory trustedAttesters = new address[](1);
         trustedAttesters[0] = address(attester1.addr);
@@ -31,7 +31,7 @@ contract TrustTest is AttestationTest {
         uint8 threshold,
         address[] memory attesters
     )
-        external
+        public
         whenSettingAttester
         prankWithAccount(smartAccount1)
     {

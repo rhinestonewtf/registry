@@ -4,8 +4,8 @@ pragma solidity ^0.8.24;
 import { Attestation } from "./Attestation.sol";
 import { AttestationRequest, RevocationRequest, SchemaUID } from "../DataTypes.sol";
 import { AttestationLib } from "../lib/AttestationLib.sol";
-import { EIP712 } from "solady/utils/EIP712.sol";
-import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
+import { EIP712 } from "solady/src/utils/EIP712.sol";
+import { SignatureCheckerLib } from "solady/src/utils/SignatureCheckerLib.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 /**

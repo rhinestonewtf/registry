@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import { AttestationRequest, RevocationRequest, AttestationDataRef } from "../DataTypes.sol";
-import { SSTORE2 } from "solady/utils/SSTORE2.sol";
+import { SSTORE2 } from "solady/src/utils/SSTORE2.sol";
 
 library AttestationLib {
     // The hash of the data type used to relay calls to the attest function. It's the value of

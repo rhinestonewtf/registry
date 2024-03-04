@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import { AttestationRecord, AttestationRequest, RevocationRequest, SchemaUID } from "../DataTypes.sol";
 import { AttestationManager } from "./AttestationManager.sol";
+import { Aggregator } from "./Aggregator.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 /**

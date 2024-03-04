@@ -7,7 +7,8 @@ import { ZERO_MODULE_TYPE, ZERO_ADDRESS } from "../Common.sol";
 import { IRegistry, IERC7484 } from "../IRegistry.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 import { TrustLib } from "../lib/TrustLib.sol";
-import { LibSort } from "solady/utils/LibSort.sol";
+import { Aggregator } from "./Aggregator.sol";
+import { LibSort } from "solady/src/utils/LibSort.sol";
 
 /**
  * Allows smart accounts to query the registry for the security status of modules.
@@ -18,7 +19,7 @@ import { LibSort } from "solady/utils/LibSort.sol";
  * @dev This contract is abstract and provides utility functions to query attestations.
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
-abstract contract TrustManager is IRegistry {
+abstract contract TrustManager is IRegistry, Aggregator {
     using ModuleTypeLib for PackedModuleTypes;
     using TrustLib for AttestationRecord;
     using LibSort for address[];
@@ -97,7 +98,7 @@ abstract contract TrustManager is IRegistry {
      * @param module address of the module to check
      * @param moduleType (optional param), setting  moduleType = 0, will ignore moduleTypes in attestations
      */
-    function _check(address smartAccount, address module, ModuleType moduleType) internal view {
+    function _check(address smartAccount, address module, ModuleType moduleType) internal view override {
         TrustedAttesterRecord storage $trustedAttesters = $accountToAttester[smartAccount];
         // SLOAD from one slot
         uint256 attesterCount = $trustedAttesters.attesterCount;
