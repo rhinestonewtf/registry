@@ -57,8 +57,7 @@ library StubLib {
     function requireExternalResolverOnAttestation(AttestationRecord memory attestationRecord, ResolverRecord storage $resolver) internal {
         IExternalResolver resolverContract = $resolver.resolver;
 
-        if (address(resolverContract) == ZERO_ADDRESS) return;
-        if (resolverContract.resolveAttestation(attestationRecord) == false) {
+        if (address(resolverContract) != ZERO_ADDRESS && resolverContract.resolveAttestation(attestationRecord) == false) {
             revert IRegistry.ExternalError_ResolveAtteststation();
         }
     }
@@ -153,10 +152,11 @@ library StubLib {
     {
         IExternalResolver resolverContract = $resolver.resolver;
 
-        if (address(resolverContract) != ZERO_ADDRESS) return;
-
-        if (resolverContract.resolveModuleRegistration({ sender: msg.sender, moduleAddress: moduleAddress, record: moduleRecord }) == false)
-        {
+        if (
+            address(resolverContract) != ZERO_ADDRESS
+                && resolverContract.resolveModuleRegistration({ sender: msg.sender, moduleAddress: moduleAddress, record: moduleRecord })
+                    == false
+        ) {
             revert IRegistry.ExternalError_ModuleRegistration();
         }
     }
