@@ -224,8 +224,9 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         }
 
         // SSTORE revocation time to registry storage
-        $attestation.revocationTime = _time();
         // set revocation time to NOW
+        $attestation.revocationTime = _time();
+
         emit Revoked({ moduleAddr: request.moduleAddr, revoker: revoker, schema: record.schemaUID });
     }
 

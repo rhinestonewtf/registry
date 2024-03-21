@@ -88,7 +88,7 @@ library StubLib {
      * Calls an external resolver contract to resolve a single revocation
      * @dev if a resolver is set, it will call `resolveRevocation()` on the `IExternalResolver` contract
      * @dev if the resolver contract reverts, the function will return without reverting.
-     * This prevents Resolvers to stop DoS revocations
+     * This prevents Resolvers from denying revocations
      * @param attestationRecord the data records of the attestation that will be revoked
      * @param $resolver the storage reference of the resolver record used for this attestation
      */

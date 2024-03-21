@@ -10,7 +10,9 @@ import { ResolverManager } from "./ResolverManager.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 /**
- * In order for Attesters to be able to make statements about a Module, the Module first needs to be registered on the Registry. This can be done as part of or after Module deployment. On registration, every module is tied to a [ResolverManager](../ModuleManager.sol/abstract.ResolverManager.html) that is triggered on certain registry actions.
+ * In order for Attesters to be able to make statements about a Module, the Module first needs to be registered on the Registry.
+ * This can be done as part of or after Module deployment. On registration, every module is tied to a
+ * [ResolverManager](../ModuleManager.sol/abstract.ResolverManager.html) that is triggered on certain registry actions.
  *
  * The ModuleManager contract is responsible for handling module the registration,
  *           storage and retrieval of modules on the Registry.

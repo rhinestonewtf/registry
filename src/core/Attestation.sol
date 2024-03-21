@@ -21,7 +21,7 @@ import { IRegistry } from "../IRegistry.sol";
  *  its lifecycle.
  *
  *  ### AttestationRequest
- *  data is `abi.encode()` according to a defined schema. The data is not stored in the storage of thr Registry,
+ *  data is `abi.encode()` according to a defined schema. The data is not stored in the storage of the Registry,
  *  but is rather stored with `SSTORE2` to save gas and a pointer to this data is stored on the Registry.
  *
  * ![Sequence Diagram](public/docs/attestationOnly.svg)

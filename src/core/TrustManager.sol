@@ -35,23 +35,28 @@ abstract contract TrustManager is IRegistry {
         external
     {
         uint256 attestersLength = attesters.length;
+
         // sort attesters and remove duplicates
         attesters.sort();
         attesters.uniquifySorted();
+
         // if attesters array has duplicates, revert
         if (attestersLength == 0) revert InvalidTrustedAttesterInput();
         if (attesters.length != attestersLength) revert InvalidTrustedAttesterInput();
 
         TrustedAttesterRecord storage $trustedAttester = $accountToAttester[msg.sender];
+
         // threshold cannot be greater than the number of attesters
         if (threshold > attestersLength) {
             threshold = uint8(attestersLength);
         }
+
         $trustedAttester.attesterCount = uint8(attestersLength);
         $trustedAttester.threshold = threshold;
         $trustedAttester.attester = attesters[0];
 
         attestersLength--;
+
         // setup the linked list of trusted attesters
         for (uint256 i; i < attestersLength; i++) {
             address _attester = attesters[i];
@@ -59,6 +64,7 @@ abstract contract TrustManager is IRegistry {
             if (_attester == ZERO_ADDRESS) revert InvalidTrustedAttesterInput();
             $trustedAttester.linkedAttesters[_attester] = attesters[i + 1];
         }
+
         emit NewTrustedAttesters();
     }
 
@@ -99,6 +105,7 @@ abstract contract TrustManager is IRegistry {
      */
     function _check(address smartAccount, address module, ModuleType moduleType) internal view {
         TrustedAttesterRecord storage $trustedAttesters = $accountToAttester[smartAccount];
+
         // SLOAD from one slot
         uint256 attesterCount = $trustedAttesters.attesterCount;
         uint256 threshold = $trustedAttesters.threshold;
@@ -119,11 +126,13 @@ abstract contract TrustManager is IRegistry {
             // loop though list and check if the attestation is valid
             AttestationRecord storage $attestation = $getAttestation({ module: module, attester: attester });
             if ($attestation.checkValid(moduleType)) threshold--;
+
             for (uint256 i = 1; i < attesterCount; i++) {
                 // get next attester from linked List
                 attester = $trustedAttesters.linkedAttesters[attester];
                 $attestation = $getAttestation({ module: module, attester: attester });
                 if ($attestation.checkValid(moduleType)) threshold--;
+
                 // if threshold reached, exit loop
                 if (threshold == 0) return;
             }
@@ -136,8 +145,10 @@ abstract contract TrustManager is IRegistry {
      */
     function findTrustedAttesters(address smartAccount) public view returns (address[] memory attesters) {
         TrustedAttesterRecord storage $trustedAttesters = $accountToAttester[smartAccount];
+
         uint256 count = $trustedAttesters.attesterCount;
         address attester0 = $trustedAttesters.attester;
+
         attesters = new address[](count);
         attesters[0] = attester0;
 

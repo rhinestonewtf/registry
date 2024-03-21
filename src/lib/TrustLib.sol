@@ -27,6 +27,7 @@ library TrustLib {
         uint256 expirationTime;
         uint256 revocationTime;
         PackedModuleTypes packedModuleType;
+
         /*
          * Ensure only one SLOAD
          * Assembly equiv to:
@@ -36,7 +37,6 @@ library TrustLib {
          *     uint256 revocationTime = record.revocationTime;
          *     PackedModuleTypes packedModuleType = record.moduleTypes;
          */
-
         assembly {
             let mask := 0xffffffffffff
             let slot := sload($attestation.slot)
@@ -63,6 +63,7 @@ library TrustLib {
         if (revocationTime != ZERO_TIMESTAMP) {
             revert IRegistry.RevokedAttestation($attestation.attester);
         }
+
         // if a expectedType is set, check if the attestation is for the correct module type
         // if no expectedType is set, module type is not checked
         if (expectedType != ZERO_MODULE_TYPE && !packedModuleType.isType(expectedType)) {

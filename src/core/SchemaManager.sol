@@ -19,8 +19,8 @@ import { IRegistry } from "../IRegistry.sol";
  */
 abstract contract SchemaManager is IRegistry {
     using UIDLib for SchemaRecord;
-    // The global mapping between schema records and their IDs.
 
+    // The global mapping between schema records and their IDs.
     mapping(SchemaUID uid => SchemaRecord schemaRecord) internal schemas;
 
     /**
