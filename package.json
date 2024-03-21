@@ -14,11 +14,12 @@
     "@openzeppelin/contracts": "5.0.1"
   },
   "devDependencies": {
+    "@defi-wonderland/natspec-smells": "^1.1.1",
     "ds-test": "github:dapphub/ds-test#e282159d5170298eb2455a6c05280ab5a73a4ef0",
     "forge-std": "github:foundry-rs/forge-std#v1.7.6",
-    "solmate": "github:transmissions11/solmate#c892309933b25c03d32b1b0d674df7ae292ba925",
     "solady": "github:vectorized/solady#9deb9ed36a27261a8745db5b7cd7f4cdc3b1cd4e",
-    "solhint": "^4.5.2"
+    "solhint": "^4.5.2",
+    "solmate": "github:transmissions11/solmate#c892309933b25c03d32b1b0d674df7ae292ba925"
   },
   "files": [
     "artifacts",
@@ -53,6 +54,7 @@
     "test": "forge test",
     "test:lite": "FOUNDRY_PROFILE=lite forge test",
     "test:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge test",
-    "build:docs": "forge doc && cd ./docs && rm -rf ./src/src/DataTypes.sol; mdbook build && cd .."
+    "build:docs": "forge doc && cd ./docs && rm -rf ./src/src/DataTypes.sol; mdbook build && cd ..",
+    "natspec": "natspec-smells"
   }
 }
