@@ -57,9 +57,8 @@ library StubLib {
     function requireExternalResolverOnAttestation(AttestationRecord memory attestationRecord, ResolverRecord storage $resolver) internal {
         IExternalResolver resolverContract = $resolver.resolver;
 
-        if (address(resolverContract) == ZERO_ADDRESS) return;
-        if (resolverContract.resolveAttestation(attestationRecord) == false) {
-            revert IRegistry.ExternalError_ResolveAtteststation();
+        if (address(resolverContract) != ZERO_ADDRESS && resolverContract.resolveAttestation(attestationRecord) == false) {
+            revert IRegistry.ExternalError_ResolveAttestation();
         }
     }
 
@@ -80,7 +79,7 @@ library StubLib {
         if (address(resolverContract) == ZERO_ADDRESS) return;
 
         if (resolverContract.resolveAttestation(attestationRecords) == false) {
-            revert IRegistry.ExternalError_ResolveAtteststation();
+            revert IRegistry.ExternalError_ResolveAttestation();
         }
     }
 
@@ -88,7 +87,7 @@ library StubLib {
      * Calls an external resolver contract to resolve a single revocation
      * @dev if a resolver is set, it will call `resolveRevocation()` on the `IExternalResolver` contract
      * @dev if the resolver contract reverts, the function will return without reverting.
-     * This prevents Resolvers to stop DoS revocations
+     * This prevents Resolvers from denying revocations
      * @param attestationRecord the data records of the attestation that will be revoked
      * @param $resolver the storage reference of the resolver record used for this attestation
      */
@@ -153,10 +152,11 @@ library StubLib {
     {
         IExternalResolver resolverContract = $resolver.resolver;
 
-        if (address(resolverContract) != ZERO_ADDRESS) return;
-
-        if (resolverContract.resolveModuleRegistration({ sender: msg.sender, moduleAddress: moduleAddress, record: moduleRecord }) == false)
-        {
+        if (
+            address(resolverContract) != ZERO_ADDRESS
+                && resolverContract.resolveModuleRegistration({ sender: msg.sender, moduleAddress: moduleAddress, record: moduleRecord })
+                    == false
+        ) {
             revert IRegistry.ExternalError_ModuleRegistration();
         }
     }

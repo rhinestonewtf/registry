@@ -21,7 +21,7 @@ import { IRegistry } from "../IRegistry.sol";
  * flexibility to incorporate custom business logic while maintaining the
  * robustness and security of the core functionalities implemented by the Registry.
  *
- * ## Role of Resolveres in extending Registry functionalities
+ * ## Role of Resolvers in extending Registry functionalities
  *
  * Entities utilizing the Registry frequently need to extend its core functionalities
  * to cater to their unique business requirements. Resolvers are the mechanisms that

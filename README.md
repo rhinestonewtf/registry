@@ -20,7 +20,7 @@ could drastically undermine the objective by opening up a plethora of new attack
 
 The Registry aims to solve this concern by providing a means of verifying the legitimacy and
 security of independently built smart account modules for installation and use across any integrated
-smart account. It allows entities to attest to statements about modules and smart accounts to query these at module nstallation and/or execution time. The Registry is a Singleton that is free, open and permissionless. It also serves as the reference implementation for [ERC-7484](https://eips.ethereum.org/EIPS/eip-7484).
+smart account. It allows entities to attest to statements about modules and smart accounts to query these at module installation and/or execution time. The Registry is a Singleton that is free, open and permissionless. It also serves as the reference implementation for [ERC-7484](https://eips.ethereum.org/EIPS/eip-7484).
 
 ## Usage
 
@@ -106,7 +106,7 @@ For feature or change requests, feel free to open a PR or get in touch with us.
 
 ## Credits & Special Thanks
 
-For the continious support and constructive feedback, we would like to thank:
+For the continuous support and constructive feedback, we would like to thank:
 
 - [Ethereum Foundation](https://erc4337.mirror.xyz/hRn_41cef8oKn44ZncN9pXvY3VID6LZOtpLlktXYtmA)
 - ERC-4337 Team

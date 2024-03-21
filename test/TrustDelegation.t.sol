@@ -84,11 +84,11 @@ contract TrustTest is AttestationTest {
         registry.trustAttesters(uint8(attesters.length), attesters);
     }
 
-    modifier whenQueryingRegisty() {
+    modifier whenQueryingRegistry() {
         _;
     }
 
-    function test_WhenNoAttestersSet() external whenQueryingRegisty {
+    function test_WhenNoAttestersSet() external whenQueryingRegistry {
         // It should revert.
         vm.expectRevert();
         registry.check(address(module1), ModuleType.wrap(1));
@@ -100,15 +100,15 @@ contract TrustTest is AttestationTest {
         registry.checkForAccount(makeAddr("foo"), address(module1));
     }
 
-    function test_WhenAttesterSetButNoAttestationMade() external whenQueryingRegisty {
+    function test_WhenAttesterSetButNoAttestationMade() external whenQueryingRegistry {
         // It should revert.
     }
 
-    function test_WhenAttestersSetButThresholdTooLow() external whenQueryingRegisty {
+    function test_WhenAttestersSetButThresholdTooLow() external whenQueryingRegistry {
         // It should revert.
     }
 
-    function test_WhenAttestersSetAndAllOk() external whenQueryingRegisty {
+    function test_WhenAttestersSetAndAllOk() external whenQueryingRegistry {
         test_WhenUsingValidECDSA();
 
         vm.startPrank(smartAccount1.addr);

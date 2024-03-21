@@ -10,7 +10,9 @@ import { ResolverManager } from "./ResolverManager.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 /**
- * In order for Attesters to be able to make statements about a Module, the Module first needs to be registered on the Registry. This can be done as part of or after Module deployment. On registration, every module is tied to a [ResolverManager](../ModuleManager.sol/abstract.ResolverManager.html) that is triggered on certain registry actions.
+ * In order for Attesters to be able to make statements about a Module, the Module first needs to be registered on the Registry.
+ * This can be done as part of or after Module deployment. On registration, every module is tied to a
+ * [ResolverManager](../ModuleManager.sol/abstract.ResolverManager.html) that is triggered on certain registry actions.
  *
  * The ModuleManager contract is responsible for handling module the registration,
  *           storage and retrieval of modules on the Registry.
@@ -99,15 +101,15 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
     {
         ResolverRecord storage $resolver = $resolvers[resolverUID];
         if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
+
         // prevent someone from calling a registry function pretending its a factory
         if (factory == address(this)) revert FactoryCallFailed(factory);
+
         // call external factory to deploy module
         (bool ok, bytes memory returnData) = factory.call{ value: msg.value }(callOnFactory);
         if (!ok) revert FactoryCallFailed(factory);
 
         moduleAddress = abi.decode(returnData, (address));
-        if (moduleAddress == ZERO_ADDRESS) revert InvalidDeployment();
-        if (_isContract(moduleAddress) == false) revert ModuleAddressIsNotContract(moduleAddress);
 
         ModuleRecord memory record = _storeModuleRecord({
             moduleAddress: moduleAddress,
