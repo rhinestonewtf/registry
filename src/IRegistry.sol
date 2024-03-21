@@ -316,7 +316,7 @@ interface IRegistry is IERC7484 {
      * A Schema describe the structure of the data of attestations
      * every attestation made on this registry, will reference a SchemaUID to
      *  make it possible to decode attestation data in human readable form
-     * overrwriting a schema is not allowed, and will revert
+     * overwriting a schema is not allowed, and will revert
      * @param schema ABI schema used to encode attestations that are made with this schema
      * @param validator (optional) external schema validator that will be used to validate attestations.
      *                  use address(0), if you don't need an external validator
@@ -375,7 +375,7 @@ interface IRegistry is IERC7484 {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     error ExternalError_SchemaValidation();
-    error ExternalError_ResolveAtteststation();
+    error ExternalError_ResolveAttestation();
     error ExternalError_ResolveRevocation();
     error ExternalError_ModuleRegistration();
 }

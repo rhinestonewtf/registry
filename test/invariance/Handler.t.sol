@@ -77,7 +77,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
     }
 
     function handle_attest(
-        uint256 randResolv,
+        uint256 randResolve,
         bytes calldata bytecode,
         bytes calldata metadata,
         uint256 randomSchemaUID,
@@ -88,14 +88,14 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         bound(request.expirationTime, block.timestamp + 1, type(uint48).max);
         request.moduleTypes = _pickTypes();
 
-        handle_registerModule(randResolv, request.moduleAddr, bytecode, metadata);
+        handle_registerModule(randResolve, request.moduleAddr, bytecode, metadata);
         SchemaUID uid = _pickRandomSchemaUID(randomSchemaUID);
 
         REGISTRY.attest(uid, request);
     }
 
     function handle_attests(
-        uint256 randResolv,
+        uint256 randResolve,
         bytes calldata bytecode,
         bytes calldata metadata,
         uint256 randomSchemaUID,
@@ -106,7 +106,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         // for (uint256 i = 0; i < requests.length; i++) {
         //     bound(requests[i].expirationTime, block.timestamp + 1, type(uint48).max);
         //     requests[i].moduleTypes = _pickTypes();
-        //     handle_registerModule(randResolv, requests[i].moduleAddr, bytecode, metadata);
+        //     handle_registerModule(randResolve, requests[i].moduleAddr, bytecode, metadata);
         // }
         //
         SchemaUID uid = _pickRandomSchemaUID(randomSchemaUID);

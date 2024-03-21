@@ -48,7 +48,7 @@ import { IRegistry } from "../IRegistry.sol";
  * Due to the nature of `SSTORE2`, all attestation data will remain onchain and thus preserves the history of
  *  attestations done.
  *
- * ### Editing Attestions
+ * ### Editing Attestations
  *
  * Attestations can not be edited. Should attestation data change, the old attestation must be revoked and a new attestation issued.
  *

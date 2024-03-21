@@ -15,7 +15,7 @@ import { IRegistry } from "./IRegistry.sol";
  * The Registry aims to solve this concern by providing a means of verifying the legitimacy and
  * security of independently built smart account modules for installation and use across any integrated
  * smart account. It allows entities to attest to statements about modules and smart accounts to query these
- *  at module nstallation and/or execution time. The Registry is a Singleton that is free, open and
+ *  at module installation and/or execution time. The Registry is a Singleton that is free, open and
  *  permissionless. It also serves as the reference implementation
  *  for [ERC-7484](https://eips.ethereum.org/EIPS/eip-7484).
  * ## Core Concepts

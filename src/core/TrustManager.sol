@@ -98,7 +98,7 @@ abstract contract TrustManager is IRegistry {
 
     /**
      * Internal helper function to check for module's security attestations on behalf of a Smart Account
-     * will use registy's storage to get the trusted attester(s) of a smart account, and check if the module was attested
+     * will use registry's storage to get the trusted attester(s) of a smart account, and check if the module was attested
      * @param smartAccount the smart account to check for
      * @param module address of the module to check
      * @param moduleType (optional param), setting  moduleType = 0, will ignore moduleTypes in attestations

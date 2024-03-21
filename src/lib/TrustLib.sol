@@ -7,7 +7,7 @@ import { IRegistry } from "../IRegistry.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 
 /**
- * Library implements checks to validat if a storage reference for an `AttestationRecord` is currently valid
+ * Library implements checks to validate if a storage reference for an `AttestationRecord` is currently valid
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
 library TrustLib {

@@ -58,7 +58,7 @@ library StubLib {
         IExternalResolver resolverContract = $resolver.resolver;
 
         if (address(resolverContract) != ZERO_ADDRESS && resolverContract.resolveAttestation(attestationRecord) == false) {
-            revert IRegistry.ExternalError_ResolveAtteststation();
+            revert IRegistry.ExternalError_ResolveAttestation();
         }
     }
 
@@ -79,7 +79,7 @@ library StubLib {
         if (address(resolverContract) == ZERO_ADDRESS) return;
 
         if (resolverContract.resolveAttestation(attestationRecords) == false) {
-            revert IRegistry.ExternalError_ResolveAtteststation();
+            revert IRegistry.ExternalError_ResolveAttestation();
         }
     }
 
