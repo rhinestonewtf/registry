@@ -2,6 +2,7 @@
   "name": "@rhinestone/registry",
   "description": "Rhinestone Registry",
   "license": "GPL-3.0",
+  "version": "1.0.0",
   "author": {
     "name": "zeroknots.eth",
     "url": "https://rhinestone.wtf"
@@ -17,7 +18,7 @@
     "forge-std": "github:foundry-rs/forge-std#v1.7.6",
     "solmate": "github:transmissions11/solmate#c892309933b25c03d32b1b0d674df7ae292ba925",
     "solady": "github:vectorized/solady#9deb9ed36a27261a8745db5b7cd7f4cdc3b1cd4e",
-    "solhint": "^4.1.1"
+    "solhint": "^4.5.2"
   },
   "files": [
     "artifacts",
