@@ -18,9 +18,11 @@ import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.so
 import { IExternalResolver } from "./external/IExternalResolver.sol";
 
 interface IERC7484 {
+    event NewTrustedAttesters();
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*          Check with Registry internal attesters            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
     function check(address module) external view;
 
     function checkForAccount(address smartAccount, address module) external view;
@@ -68,8 +70,6 @@ interface IRegistry is IERC7484 {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*             Smart Account - Trust Management               */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-
-    event NewTrustedAttesters();
 
     error InvalidResolver(IExternalResolver resolver);
     error InvalidResolverUID(ResolverUID uid);

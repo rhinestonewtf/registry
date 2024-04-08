@@ -26,7 +26,7 @@ abstract contract TrustManager is IRegistry {
     mapping(address account => TrustedAttesterRecord attesters) internal $accountToAttester;
 
     /**
-     * @inheritdoc IRegistry
+     * @inheritdoc IERC7484
      */
     function trustAttesters(
         uint8 threshold,
