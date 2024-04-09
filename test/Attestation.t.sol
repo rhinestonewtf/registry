@@ -222,7 +222,7 @@ contract AttestationTest is BaseTest {
     }
 
     function test_WhenAttestingToNon_existingModule(
-        address module,
+        uint32 moduleFuzz,
         uint48 expirationTime,
         bytes memory data,
         uint32[] memory types
@@ -233,6 +233,9 @@ contract AttestationTest is BaseTest {
         for (uint256 i; i < types.length; i++) {
             vm.assume(types[i] < 32);
         }
+
+        vm.assume(moduleFuzz != 0);
+        address module = vm.addr(moduleFuzz);
 
         expirationTime = uint48(block.timestamp + expirationTime + 100);
         AttestationRequest memory request = mockAttestation(module, expirationTime, data, types);

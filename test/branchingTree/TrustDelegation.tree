@@ -8,7 +8,7 @@ TrustTest
 │   └── When supplying many attesters
 │       ├── It should set.
 │       └── It should emit event.
-└── When querying registy
+└── When querying registry
     ├── When no attesters set
     │   └── It should revert.
     ├── When attester set but no attestation made

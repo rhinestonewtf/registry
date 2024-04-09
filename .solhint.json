@@ -6,7 +6,6 @@
     "compiler-version": ["error", ">=0.8.0"],
     "contract-name-camelcase": "off",
     "const-name-snakecase": "off",
-    "custom-errors": "error",
     "no-inline-assembly": "off",
     "func-name-mixedcase": "error",
     "func-visibility": ["error", { "ignoreConstructors": true }],

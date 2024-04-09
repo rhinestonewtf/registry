@@ -13,18 +13,17 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 ### Changed
 
 - Refactored multiAttest code
-- Standardised naming
+- Standardized naming
 - Import remappings
 
 ### Added
 
-- Gas optimisations of query functions
+- Gas optimizations of query functions
 - Expanded test coverage
 
 ### Removed
 
 - Unchecked increments in loops
-
 
 ## [0.2.0] - 25-10-2023
 

@@ -101,15 +101,15 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
     {
         ResolverRecord storage $resolver = $resolvers[resolverUID];
         if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
+
         // prevent someone from calling a registry function pretending its a factory
         if (factory == address(this)) revert FactoryCallFailed(factory);
+
         // call external factory to deploy module
         (bool ok, bytes memory returnData) = factory.call{ value: msg.value }(callOnFactory);
         if (!ok) revert FactoryCallFailed(factory);
 
         moduleAddress = abi.decode(returnData, (address));
-        if (moduleAddress == ZERO_ADDRESS) revert InvalidDeployment();
-        if (_isContract(moduleAddress) == false) revert ModuleAddressIsNotContract(moduleAddress);
 
         ModuleRecord memory record = _storeModuleRecord({
             moduleAddress: moduleAddress,
@@ -141,8 +141,6 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         internal
         returns (ModuleRecord memory moduleRegistration)
     {
-        // ensure that non-zero resolverUID was provided
-        if (resolverUID == EMPTY_RESOLVER_UID) revert InvalidDeployment();
         // ensure moduleAddress is not already registered
         if ($moduleAddrToRecords[moduleAddress].resolverUID != EMPTY_RESOLVER_UID) {
             revert AlreadyRegistered(moduleAddress);
@@ -158,7 +156,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         $moduleAddrToRecords[moduleAddress] = moduleRegistration;
 
         // Emit ModuleRegistration event
-        emit ModuleRegistration({ implementation: moduleAddress, resolverUID: resolverUID, deployedViaRegistry: sender == msg.sender });
+        emit ModuleRegistration({ implementation: moduleAddress });
     }
 
     /**

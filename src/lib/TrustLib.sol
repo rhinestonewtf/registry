@@ -7,7 +7,7 @@ import { IRegistry } from "../IRegistry.sol";
 import { ModuleTypeLib } from "../lib/ModuleTypeLib.sol";
 
 /**
- * Library implements checks to validat if a storage reference for an `AttestationRecord` is currently valid
+ * Library implements checks to validate if a storage reference for an `AttestationRecord` is currently valid
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
 library TrustLib {
@@ -27,6 +27,7 @@ library TrustLib {
         uint256 expirationTime;
         uint256 revocationTime;
         PackedModuleTypes packedModuleType;
+
         /*
          * Ensure only one SLOAD
          * Assembly equiv to:
@@ -36,7 +37,6 @@ library TrustLib {
          *     uint256 revocationTime = record.revocationTime;
          *     PackedModuleTypes packedModuleType = record.moduleTypes;
          */
-
         assembly {
             let mask := 0xffffffffffff
             let slot := sload($attestation.slot)
@@ -63,6 +63,7 @@ library TrustLib {
         if (revocationTime != ZERO_TIMESTAMP) {
             revert IRegistry.RevokedAttestation($attestation.attester);
         }
+
         // if a expectedType is set, check if the attestation is for the correct module type
         // if no expectedType is set, module type is not checked
         if (expectedType != ZERO_MODULE_TYPE && !packedModuleType.isType(expectedType)) {
