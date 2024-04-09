@@ -1,10 +1,10 @@
 {
   "name": "@rhinestone/registry",
-  "description": "Rhinestone Registry",
+  "description": "Attestation Registry for securely using Smart Account Modules",
   "license": "GPL-3.0",
   "version": "1.0.0",
   "author": {
-    "name": "zeroknots.eth",
+    "name": "Rhinestone",
     "url": "https://rhinestone.wtf"
   },
   "bugs": {
@@ -41,7 +41,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "repository": "github.com/rhinestonewtf/registry",
+  "repository": "github:rhinestonewtf/registry",
   "scripts": {
     "build": "forge build",
     "build:optimized": "FOUNDRY_PROFILE=optimized forge build",
