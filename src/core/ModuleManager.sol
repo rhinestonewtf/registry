@@ -141,8 +141,6 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         internal
         returns (ModuleRecord memory moduleRegistration)
     {
-        // ensure that non-zero resolverUID was provided
-        if (resolverUID == EMPTY_RESOLVER_UID) revert InvalidDeployment();
         // ensure moduleAddress is not already registered
         if ($moduleAddrToRecords[moduleAddress].resolverUID != EMPTY_RESOLVER_UID) {
             revert AlreadyRegistered(moduleAddress);

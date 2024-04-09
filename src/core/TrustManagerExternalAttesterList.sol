@@ -36,7 +36,8 @@ abstract contract TrustManagerExternalAttesterList is IRegistry, TrustManager {
      */
     function checkN(address module, address[] calldata attesters, uint256 threshold) external view {
         uint256 attestersLength = attesters.length;
-        if (attestersLength < threshold || threshold == 0) threshold = attestersLength;
+        if (threshold == 0) threshold = attestersLength;
+        else if (attestersLength < threshold) revert InsufficientAttestations();
 
         for (uint256 i; i < attestersLength; ++i) {
             if ($getAttestation(module, attesters[i]).checkValid(ZERO_MODULE_TYPE)) {
@@ -52,7 +53,8 @@ abstract contract TrustManagerExternalAttesterList is IRegistry, TrustManager {
      */
     function checkN(address module, ModuleType moduleType, address[] calldata attesters, uint256 threshold) external view {
         uint256 attestersLength = attesters.length;
-        if (attestersLength < threshold || threshold == 0) threshold = attestersLength;
+        if (threshold == 0) threshold = attestersLength;
+        else if (attestersLength < threshold) revert InsufficientAttestations();
 
         for (uint256 i; i < attestersLength; ++i) {
             if ($getAttestation(module, attesters[i]).checkValid(moduleType)) {
