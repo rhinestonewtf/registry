@@ -158,7 +158,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         $moduleAddrToRecords[moduleAddress] = moduleRegistration;
 
         // Emit ModuleRegistration event
-        emit ModuleRegistration({ implementation: moduleAddress, resolverUID: resolverUID, deployedViaRegistry: sender == msg.sender });
+        emit ModuleRegistration({ implementation: moduleAddress });
     }
 
     /**
