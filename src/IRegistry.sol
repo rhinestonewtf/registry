@@ -18,9 +18,11 @@ import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.so
 import { IExternalResolver } from "./external/IExternalResolver.sol";
 
 interface IERC7484 {
+    event NewTrustedAttesters();
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*          Check with Registry internal attesters            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
     function check(address module) external view;
 
     function checkForAccount(address smartAccount, address module) external view;
@@ -28,6 +30,17 @@ interface IERC7484 {
     function check(address module, ModuleType moduleType) external view;
 
     function checkForAccount(address smartAccount, address module, ModuleType moduleType) external view;
+
+    /**
+     * Allows Smart Accounts - the end users of the registry - to appoint
+     * one or many attesters as trusted.
+     * @dev this function reverts, if address(0), or duplicates are provided in attesters[]
+     *
+     * @param threshold The minimum number of attestations required for a module
+     *                  to be considered secure.
+     * @param attesters The addresses of the attesters to be trusted.
+     */
+    function trustAttesters(uint8 threshold, address[] calldata attesters) external;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*              Check with external attester(s)               */
@@ -58,8 +71,6 @@ interface IRegistry is IERC7484 {
     /*             Smart Account - Trust Management               */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    event NewTrustedAttesters();
-
     error InvalidResolver(IExternalResolver resolver);
     error InvalidResolverUID(ResolverUID uid);
     error InvalidTrustedAttesterInput();
@@ -69,17 +80,6 @@ interface IRegistry is IERC7484 {
     error AttestationNotFound();
 
     error InsufficientAttestations();
-
-    /**
-     * Allows Smart Accounts - the end users of the registry - to appoint
-     * one or many attesters as trusted.
-     * @dev this function reverts, if address(0), or duplicates are provided in attesters[]
-     *
-     * @param threshold The minimum number of attestations required for a module
-     *                  to be considered secure.
-     * @param attesters The addresses of the attesters to be trusted.
-     */
-    function trustAttesters(uint8 threshold, address[] calldata attesters) external;
 
     /**
      * Get trusted attester for a specific Smart Account
@@ -222,7 +222,7 @@ interface IRegistry is IERC7484 {
     /*                    Module Registration                     */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     // Event triggered when a module is deployed.
-    event ModuleRegistration(address indexed implementation, ResolverUID resolverUID, bool deployedViaRegistry);
+    event ModuleRegistration(address indexed implementation);
 
     error AlreadyRegistered(address module);
     error InvalidDeployment();

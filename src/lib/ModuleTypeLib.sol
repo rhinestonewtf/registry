@@ -19,7 +19,7 @@ library ModuleTypeLib {
         uint256 _type;
         for (uint256 i; i < length; i++) {
             _type = ModuleType.unwrap(moduleTypes[i]);
-            if (_type > 31 && isType(packed, _type)) revert IRegistry.InvalidModuleType();
+            if (_type > 31 || isType(packed, _type)) revert IRegistry.InvalidModuleType();
             packed = packed + uint32(2 ** _type);
         }
         return PackedModuleTypes.wrap(packed);
