@@ -20,21 +20,7 @@ abstract contract TrustManagerExternalAttesterList is IRegistry, TrustManager {
     /**
      * @inheritdoc IERC7484
      */
-    function check(address module, address attester) external view {
-        $getAttestation(module, attester).enforceValid(ZERO_MODULE_TYPE);
-    }
-
-    /**
-     * @inheritdoc IERC7484
-     */
-    function check(address module, ModuleType moduleType, address attester) external view {
-        $getAttestation(module, attester).enforceValid(moduleType);
-    }
-
-    /**
-     * @inheritdoc IERC7484
-     */
-    function checkN(address module, address[] calldata attesters, uint256 threshold) external view {
+    function check(address module, address[] calldata attesters, uint256 threshold) external view {
         uint256 attestersLength = attesters.length;
         if (threshold == 0) threshold = attestersLength;
         else if (attestersLength < threshold) revert InsufficientAttestations();
@@ -51,7 +37,7 @@ abstract contract TrustManagerExternalAttesterList is IRegistry, TrustManager {
     /**
      * @inheritdoc IERC7484
      */
-    function checkN(address module, ModuleType moduleType, address[] calldata attesters, uint256 threshold) external view {
+    function check(address module, ModuleType moduleType, address[] calldata attesters, uint256 threshold) external view {
         uint256 attestersLength = attesters.length;
         if (threshold == 0) threshold = attestersLength;
         else if (attestersLength < threshold) revert InsufficientAttestations();

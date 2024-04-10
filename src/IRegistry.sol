@@ -46,13 +46,9 @@ interface IERC7484 {
     /*              Check with external attester(s)               */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    function check(address module, address attester) external view;
+    function check(address module, address[] calldata attesters, uint256 threshold) external view;
 
-    function check(address module, ModuleType moduleType, address attester) external view;
-
-    function checkN(address module, address[] calldata attesters, uint256 threshold) external view;
-
-    function checkN(address module, ModuleType moduleType, address[] calldata attesters, uint256 threshold) external view;
+    function check(address module, ModuleType moduleType, address[] calldata attesters, uint256 threshold) external view;
 }
 
 /**
