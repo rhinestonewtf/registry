@@ -13,7 +13,7 @@ import { IRegistry } from "../IRegistry.sol";
  * In order to separate msg.sender context from registry,
  * interactions with external Factories are done with this Trampolin contract.
  */
-contract FactoryTrampolin {
+contract FactoryTrampoline {
     error FactoryCallFailed(address factory);
 
     /**
