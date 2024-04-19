@@ -139,7 +139,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
 
         // Call the factory via the trampolin contract. This will make sure that there is msg.sender separation
         // Making "raw" calls to user supplied addresses could create security issues.
-        moduleAddress = FACTORY_TRAMPOLIN.deployViaFactory{ value: msg.value }({ factory: factory, callOnFactory: callOnFactory });
+        moduleAddress = FACTORY_TRAMPOLINE.deployViaFactory{ value: msg.value }({ factory: factory, callOnFactory: callOnFactory });
 
         ModuleRecord memory record = _storeModuleRecord({
             moduleAddress: moduleAddress,
