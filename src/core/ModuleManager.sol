@@ -60,7 +60,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
 
     mapping(address moduleAddress => ModuleRecord moduleRecord) internal $moduleAddrToRecords;
 
-    FactoryTrampolin private immutable FACTORY_TRAMPOLIN;
+    FactoryTrampoline private immutable FACTORY_TRAMPOLINE;
 
     constructor() {
         FACTORY_TRAMPOLINE = new FactoryTrampoline();
