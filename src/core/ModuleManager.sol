@@ -63,7 +63,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
     FactoryTrampolin private immutable FACTORY_TRAMPOLIN;
 
     constructor() {
-        FACTORY_TRAMPOLIN = new FactoryTrampolin();
+        FACTORY_TRAMPOLINE = new FactoryTrampoline();
     }
 
     /**
