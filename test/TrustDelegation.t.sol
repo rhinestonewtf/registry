@@ -4,9 +4,12 @@ pragma solidity ^0.8.0;
 import "./Attestation.t.sol";
 import "src/DataTypes.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
+import { VmSafe } from "forge-std/Vm.sol";
+import { ERC4337SpecsParser } from "erc4337-validation/SpecsParser.sol";
 
 contract TrustTest is AttestationTest {
     using LibSort for address[];
+    using ERC4337SpecsParser for VmSafe.AccountAccess;
 
     function setUp() public override {
         super.setUp();
@@ -31,7 +34,7 @@ contract TrustTest is AttestationTest {
         uint8 threshold,
         address[] memory attesters
     )
-        external
+        public
         whenSettingAttester
         prankWithAccount(smartAccount1)
     {
@@ -122,5 +125,33 @@ contract TrustTest is AttestationTest {
         registry.check(address(module1), ModuleType.wrap(2));
         vm.expectRevert();
         registry.check(address(module1), ModuleType.wrap(3));
+    }
+
+    function test_WhenSupplyingManyAttesters_ShouldBe4337Compliant(uint8 threshold, address[] memory attesters) public {
+        vm.startMappingRecording();
+        vm.startStateDiffRecording();
+
+        test_WhenSupplyingManyAttesters(threshold, attesters);
+
+        VmSafe.AccountAccess[] memory accesses = vm.stopAndReturnStateDiff();
+
+        ERC4337SpecsParser.Entities memory entities = ERC4337SpecsParser.Entities({
+            account: smartAccount1.addr,
+            factory: address(0),
+            isFactoryStaked: false,
+            paymaster: address(0),
+            isPaymasterStaked: false,
+            aggregator: address(0),
+            isAggregatorStaked: false
+        });
+
+        for (uint256 i; i < accesses.length; i++) {
+            VmSafe.AccountAccess memory currentAccess = accesses[i];
+            if (currentAccess.account != address(this) && currentAccess.accessor != address(this)) {
+                currentAccess.validateBannedStorageLocations(entities);
+            }
+        }
+
+        vm.stopMappingRecording();
     }
 }

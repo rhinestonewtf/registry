@@ -62,7 +62,7 @@ abstract contract TrustManager is IRegistry {
             address _attester = attesters[i];
             // user could have set attester to address(0)
             if (_attester == ZERO_ADDRESS) revert InvalidTrustedAttesterInput();
-            $trustedAttester.linkedAttesters[_attester] = attesters[i + 1];
+            $trustedAttester.linkedAttesters[_attester][msg.sender] = attesters[i + 1];
         }
 
         emit NewTrustedAttesters();
@@ -129,7 +129,7 @@ abstract contract TrustManager is IRegistry {
 
             for (uint256 i = 1; i < attesterCount; i++) {
                 // get next attester from linked List
-                attester = $trustedAttesters.linkedAttesters[attester];
+                attester = $trustedAttesters.linkedAttesters[attester][smartAccount];
                 $attestation = $getAttestation({ module: module, attester: attester });
                 if ($attestation.checkValid(moduleType)) threshold--;
 
@@ -154,7 +154,7 @@ abstract contract TrustManager is IRegistry {
 
         for (uint256 i = 1; i < count; i++) {
             // get next attester from linked List
-            attesters[i] = $trustedAttesters.linkedAttesters[attesters[i - 1]];
+            attesters[i] = $trustedAttesters.linkedAttesters[attesters[i - 1]][smartAccount];
         }
     }
 
