@@ -25,12 +25,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Build job
-  #
   build-docs:
     uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-docs.yaml@main"
 
   build:
+    needs: ["build-docs"]
     runs-on: ubuntu-latest
     env:
       MDBOOK_VERSION: 0.4.36
@@ -38,6 +37,7 @@ jobs:
       - uses: peaceiris/actions-mdbook@v1
         with:
           mdbook-version: "latest"
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v4
