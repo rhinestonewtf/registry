@@ -1,47 +1,12 @@
 {
   "name": "@rhinestone/registry",
+  "version": "1.0.0",
   "description": "Attestation Registry for securely using Smart Account Modules",
   "license": "GPL-3.0",
-  "version": "1.0.0",
   "author": {
     "name": "Rhinestone",
     "url": "https://rhinestone.wtf"
   },
-  "bugs": {
-    "url": "https://github.com/rhinestonewtf/registry/issues"
-  },
-  "dependencies": {
-    "@openzeppelin/contracts": "5.0.1"
-  },
-  "devDependencies": {
-    "@defi-wonderland/natspec-smells": "^1.1.1",
-    "cspell": "^8.6.0",
-    "ds-test": "github:dapphub/ds-test#e282159d5170298eb2455a6c05280ab5a73a4ef0",
-    "forge-std": "github:foundry-rs/forge-std#v1.7.6",
-    "solady": "github:vectorized/solady#9deb9ed36a27261a8745db5b7cd7f4cdc3b1cd4e",
-    "solhint": "^4.5.2",
-    "solmate": "github:transmissions11/solmate#c892309933b25c03d32b1b0d674df7ae292ba925"
-  },
-  "files": [
-    "artifacts",
-    "src",
-    "test/utils",
-    "CHANGELOG.md",
-    "LICENSE-GPL.md"
-  ],
-  "homepage": "https://github.com/rhinestonewtf/registry/#readme",
-  "keywords": [
-    "blockchain",
-    "ethereum",
-    "foundry",
-    "smart-contracts",
-    "solidity",
-    "web3"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "repository": "github:rhinestonewtf/registry",
   "scripts": {
     "build": "forge build",
     "build:optimized": "FOUNDRY_PROFILE=optimized forge build",
@@ -58,5 +23,40 @@
     "build:docs": "forge doc && cd ./docs && rm -rf ./src/src/DataTypes.sol; mdbook build && cd ..",
     "natspec": "natspec-smells",
     "spellcheck": "cspell '**'"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "5.0.1"
+  },
+  "devDependencies": {
+    "@defi-wonderland/natspec-smells": "^1.1.1",
+    "cspell": "^8.6.0",
+    "ds-test": "github:dapphub/ds-test#e282159d5170298eb2455a6c05280ab5a73a4ef0",
+    "forge-std": "github:foundry-rs/forge-std#v1.7.6",
+    "solady": "github:vectorized/solady#9deb9ed36a27261a8745db5b7cd7f4cdc3b1cd4e",
+    "solhint": "^4.5.2",
+    "solmate": "github:transmissions11/solmate#c892309933b25c03d32b1b0d674df7ae292ba925",
+    "@rhinestone/erc4337-validation": "github:rhinestonewtf/erc4337-validation"
+  },
+  "files": [
+    "src",
+    "foundry.toml",
+    "remappings.txt"
+  ],
+  "homepage": "https://github.com/rhinestonewtf/registry/#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rhinestonewtf/registry.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rhinestonewtf/registry/issues"
+  },
+  "keywords": [
+    "account abstraction",
+    "smart account modules",
+    "registry",
+    "smart account security"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
