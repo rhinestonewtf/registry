@@ -32,7 +32,7 @@ contract AttestationTest is BaseTest {
 
     function test_WhenAttestingWithNoAttestationData() public prankWithAccount(attester1) {
         address module = address(new MockModule());
-        registry.registerModule(defaultResolverUID, module, "");
+        registry.registerModule(defaultResolverUID, module, "", "");
         uint32[] memory types = new uint32[](1);
         AttestationRequest memory request = mockAttestation(module, uint48(block.timestamp + 1), "", types);
         // It should store.
@@ -154,7 +154,7 @@ contract AttestationTest is BaseTest {
 
     function test_WhenReAttestingToARevokedAttestation() public prankWithAccount(attester1) {
         address module = address(new MockModule());
-        registry.registerModule(defaultResolverUID, module, "");
+        registry.registerModule(defaultResolverUID, module, "", "");
         uint32[] memory types = new uint32[](1);
         AttestationRequest memory request = mockAttestation(module, uint48(block.timestamp + 1), "", types);
         // It should store.

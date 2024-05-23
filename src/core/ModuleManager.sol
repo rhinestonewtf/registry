@@ -41,7 +41,8 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         bytes32 salt,
         ResolverUID resolverUID,
         bytes calldata initCode,
-        bytes calldata metadata
+        bytes calldata metadata,
+        bytes calldata resolverContext
     )
         external
         payable
@@ -56,7 +57,11 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         ModuleRecord memory record =
             _storeModuleRecord({ moduleAddress: moduleAddress, sender: msg.sender, resolverUID: resolverUID, metadata: metadata });
 
-        record.requireExternalResolverOnModuleRegistration({ moduleAddress: moduleAddress, $resolver: $resolver });
+        record.requireExternalResolverOnModuleRegistration({
+            moduleAddress: moduleAddress,
+            $resolver: $resolver,
+            resolverContext: resolverContext
+        });
     }
 
     /**
@@ -69,7 +74,14 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
     /**
      * @inheritdoc IRegistry
      */
-    function registerModule(ResolverUID resolverUID, address moduleAddress, bytes calldata metadata) external {
+    function registerModule(
+        ResolverUID resolverUID,
+        address moduleAddress,
+        bytes calldata metadata,
+        bytes calldata resolverContext
+    )
+        external
+    {
         ResolverRecord storage $resolver = $resolvers[resolverUID];
 
         // ensure that non-zero resolverUID was provided
@@ -83,7 +95,11 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         });
 
         // resolve module registration
-        record.requireExternalResolverOnModuleRegistration({ moduleAddress: moduleAddress, $resolver: $resolver });
+        record.requireExternalResolverOnModuleRegistration({
+            moduleAddress: moduleAddress,
+            $resolver: $resolver,
+            resolverContext: resolverContext
+        });
     }
 
     /**
@@ -93,7 +109,8 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         address factory,
         bytes calldata callOnFactory,
         bytes calldata metadata,
-        ResolverUID resolverUID
+        ResolverUID resolverUID,
+        bytes calldata resolverContext
     )
         external
         payable
@@ -118,7 +135,11 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             metadata: metadata
         });
 
-        record.requireExternalResolverOnModuleRegistration({ moduleAddress: moduleAddress, $resolver: $resolver });
+        record.requireExternalResolverOnModuleRegistration({
+            moduleAddress: moduleAddress,
+            $resolver: $resolver,
+            resolverContext: resolverContext
+        });
     }
 
     /**
