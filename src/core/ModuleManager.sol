@@ -80,7 +80,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         returns (address moduleAddress)
     {
         ResolverRecord storage $resolver = $resolvers[resolverUID];
-        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver($resolver.resolver);
+        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
 
         moduleAddress = initCode.deploy(salt);
         // _storeModuleRecord() will check if module is already registered,
@@ -105,7 +105,7 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         ResolverRecord storage $resolver = $resolvers[resolverUID];
 
         // ensure that non-zero resolverUID was provided
-        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver($resolver.resolver);
+        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
 
         ModuleRecord memory record = _storeModuleRecord({
             moduleAddress: moduleAddress,
