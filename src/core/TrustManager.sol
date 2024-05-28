@@ -28,21 +28,17 @@ abstract contract TrustManager is IRegistry {
     /**
      * @inheritdoc IERC7484
      */
-    function trustAttesters(
-        uint8 threshold,
-        address[] memory attesters // deliberately using memory to allow sorting and uniquifying
-    )
-        external
-    {
+    function trustAttesters(uint8 threshold, address[] calldata attesters) external {
         uint256 attestersLength = attesters.length;
 
-        // sort attesters and remove duplicates
-        attesters.sort();
-        attesters.uniquifySorted();
+        if (!attesters.isSortedAndUniquified()) revert InvalidTrustedAttesterInput();
 
         // if attesters array has duplicates or is too large revert
         if (attestersLength == 0 || attestersLength > type(uint8).max) revert InvalidTrustedAttesterInput();
         if (attesters.length != attestersLength) revert InvalidTrustedAttesterInput();
+        // revert if the first attester is the zero address
+        // other attesters can not be zero address, as the array was sorted
+        if (attesters[0] == ZERO_ADDRESS) revert InvalidTrustedAttesterInput();
 
         TrustedAttesterRecord storage $trustedAttester = $accountToAttester[msg.sender];
 
@@ -60,8 +56,6 @@ abstract contract TrustManager is IRegistry {
         // setup the linked list of trusted attesters
         for (uint256 i; i < attestersLength; i++) {
             address _attester = attesters[i];
-            // user could have set attester to address(0)
-            if (_attester == ZERO_ADDRESS) revert InvalidTrustedAttesterInput();
             $trustedAttester.linkedAttesters[_attester][msg.sender] = attesters[i + 1];
         }
 

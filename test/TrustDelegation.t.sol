@@ -68,6 +68,9 @@ contract TrustTest is AttestationTest {
         trustedAttesters[2] = address(attester4.addr);
         trustedAttesters[3] = address(attester2.addr);
 
+        trustedAttesters.sort();
+        trustedAttesters.uniquifySorted();
+
         vm.startPrank(smartAccount1.addr);
         registry.trustAttesters(2, trustedAttesters);
 
@@ -135,6 +138,9 @@ contract TrustTest is AttestationTest {
         address[] memory attesters = new address[](2);
         attesters[0] = address(makeAddr("foo"));
         attesters[1] = address(attester1.addr);
+
+        attesters.sort();
+        attesters.uniquifySorted();
         registry.trustAttesters(1, attesters);
 
         registry.check(address(module1), ModuleType.wrap(1));
