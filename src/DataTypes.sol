@@ -75,12 +75,12 @@ type SchemaUID is bytes32;
 using { schemaEq as == } for SchemaUID global;
 using { schemaNotEq as != } for SchemaUID global;
 
-function schemaEq(SchemaUID uid1, SchemaUID uid) pure returns (bool) {
-    return SchemaUID.unwrap(uid1) == SchemaUID.unwrap(uid);
+function schemaEq(SchemaUID uid1, SchemaUID uid2) pure returns (bool) {
+    return SchemaUID.unwrap(uid1) == SchemaUID.unwrap(uid2);
 }
 
-function schemaNotEq(SchemaUID uid1, SchemaUID uid) pure returns (bool) {
-    return SchemaUID.unwrap(uid1) != SchemaUID.unwrap(uid);
+function schemaNotEq(SchemaUID uid1, SchemaUID uid2) pure returns (bool) {
+    return SchemaUID.unwrap(uid1) != SchemaUID.unwrap(uid2);
 }
 
 //--------------------- ResolverUID -----------------------------|
