@@ -41,7 +41,7 @@ struct TrustedAttesterRecord {
     uint8 attesterCount; // number of attesters in the linked list
     uint8 threshold; // minimum number of attesters required
     address attester; // first attester in linked list. (packed to save gas)
-    mapping(address attester => address linkedAttester) linkedAttesters; // linked list
+    mapping(address attester => mapping(address account => address linkedAttester)) linkedAttesters;
 }
 
 /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/

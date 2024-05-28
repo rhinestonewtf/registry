@@ -62,7 +62,7 @@ abstract contract TrustManager is IRegistry {
             address _attester = attesters[i];
             // user could have set attester to address(0)
             if (_attester == ZERO_ADDRESS) revert InvalidTrustedAttesterInput();
-            $trustedAttester.linkedAttesters[_attester] = attesters[i + 1];
+            $trustedAttester.linkedAttesters[_attester][msg.sender] = attesters[i + 1];
         }
 
         emit NewTrustedAttesters();
@@ -119,7 +119,17 @@ abstract contract TrustManager is IRegistry {
         // use this condition to save gas
         else if (threshold == 1) {
             AttestationRecord storage $attestation = $getAttestation({ module: module, attester: attester });
-            $attestation.enforceValid(moduleType);
+            if ($attestation.checkValid(moduleType)) return;
+
+            // if first attestation is not valid, iterate over the linked list of attesters
+            // and check if the attestation is valid
+            for (uint256 i; i < attesterCount; i++) {
+                attester = $trustedAttesters.linkedAttesters[attester][smartAccount];
+                $attestation = $getAttestation({ module: module, attester: attester });
+                if ($attestation.checkValid(moduleType)) return;
+            }
+            // if no valid attestations were found in the for loop. the module is not valid
+            revert InsufficientAttestations();
         }
         // smart account has more than one trusted attester
         else {
@@ -129,7 +139,7 @@ abstract contract TrustManager is IRegistry {
 
             for (uint256 i = 1; i < attesterCount; i++) {
                 // get next attester from linked List
-                attester = $trustedAttesters.linkedAttesters[attester];
+                attester = $trustedAttesters.linkedAttesters[attester][smartAccount];
                 $attestation = $getAttestation({ module: module, attester: attester });
                 if ($attestation.checkValid(moduleType)) threshold--;
 
@@ -154,7 +164,7 @@ abstract contract TrustManager is IRegistry {
 
         for (uint256 i = 1; i < count; i++) {
             // get next attester from linked List
-            attesters[i] = $trustedAttesters.linkedAttesters[attesters[i - 1]];
+            attesters[i] = $trustedAttesters.linkedAttesters[attesters[i - 1]][smartAccount];
         }
     }
 
