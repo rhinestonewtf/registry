@@ -250,7 +250,9 @@ interface IRegistry is IERC7484 {
     /**
      * In order to make the integration into existing business logics possible,
      * the Registry is able to utilize external factories that can be utilized to deploy the modules.
-     * @dev Registry can use other factories to deploy the module
+     * @dev Registry can use other factories to deploy the module.
+     * @dev Note that this function will call the external factory via the FactoryTrampoline contract.
+     *           Factory MUST not assume that msg.sender == registry
      * @dev This function is used to deploy and register a module using a factory contract.
      *           Since one of the parameters of this function is a unique resolverUID and any
      *           registered module address can only be registered once,
