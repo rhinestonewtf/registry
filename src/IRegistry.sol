@@ -18,7 +18,7 @@ import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.so
 import { IExternalResolver } from "./external/IExternalResolver.sol";
 
 interface IERC7484 {
-    event NewTrustedAttesters();
+    event NewTrustedAttesters(address indexed smartAccount);
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*          Check with Registry internal attesters            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/

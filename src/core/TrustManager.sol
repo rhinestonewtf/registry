@@ -59,7 +59,7 @@ abstract contract TrustManager is IRegistry {
             $trustedAttester.linkedAttesters[_attester][msg.sender] = attesters[i + 1];
         }
 
-        emit NewTrustedAttesters();
+        emit NewTrustedAttesters(msg.sender);
     }
 
     /**
