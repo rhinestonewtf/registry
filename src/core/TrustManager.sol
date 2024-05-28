@@ -40,8 +40,8 @@ abstract contract TrustManager is IRegistry {
         attesters.sort();
         attesters.uniquifySorted();
 
-        // if attesters array has duplicates, revert
-        if (attestersLength == 0) revert InvalidTrustedAttesterInput();
+        // if attesters array has duplicates or is too large revert
+        if (attestersLength == 0 || attestersLength > type(uint8).max) revert InvalidTrustedAttesterInput();
         if (attesters.length != attestersLength) revert InvalidTrustedAttesterInput();
 
         TrustedAttesterRecord storage $trustedAttester = $accountToAttester[msg.sender];

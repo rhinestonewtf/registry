@@ -51,8 +51,6 @@ contract TrustTestExternal is AttestationTest {
         trustedAttesters[2] = address(attester4.addr);
         trustedAttesters[3] = address(attester2.addr);
 
-
-
         vm.expectRevert();
         registry.check(address(module1), trustedAttesters, 2);
 
