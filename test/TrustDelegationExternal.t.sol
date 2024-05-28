@@ -27,6 +27,8 @@ contract TrustTestExternal is AttestationTest {
         trustedAttesters[0] = address(attester1.addr);
         trustedAttesters[1] = address(attester2.addr);
 
+        trustedAttesters.sort();
+
         registry.check(address(module1), ModuleType.wrap(1), trustedAttestersSingle, 1);
         registry.check(address(module1), ModuleType.wrap(2), trustedAttestersSingle, 1);
         vm.expectRevert();
@@ -49,6 +51,12 @@ contract TrustTestExternal is AttestationTest {
         trustedAttesters[2] = address(attester4.addr);
         trustedAttesters[3] = address(attester2.addr);
 
+
+
+        vm.expectRevert();
+        registry.check(address(module1), trustedAttesters, 2);
+
+        trustedAttesters.sort();
         registry.check(address(module1), trustedAttesters, 2);
     }
 }
