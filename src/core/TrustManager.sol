@@ -159,6 +159,9 @@ abstract contract TrustManager is IRegistry {
         uint256 count = $trustedAttesters.attesterCount;
         address attester0 = $trustedAttesters.attester;
 
+        // return if no trusted attesters are set
+        if (count == 0) return attesters;
+
         attesters = new address[](count);
         attesters[0] = attester0;
 
