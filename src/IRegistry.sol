@@ -91,6 +91,7 @@ interface IRegistry is IERC7484 {
     event Attested(address indexed moduleAddr, address indexed attester, SchemaUID schemaUID, AttestationDataRef indexed sstore2Pointer);
 
     error AlreadyRevoked();
+    error AlreadyAttested();
     error ModuleNotFoundInRegistry(address module);
     error AccessDenied();
     error InvalidAttestation();
