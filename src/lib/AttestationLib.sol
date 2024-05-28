@@ -6,10 +6,18 @@ import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 
 library AttestationLib {
     // The hash of the data type used to relay calls to the attest function. It's the value of
-    bytes32 internal constant ATTEST_TYPEHASH = keccak256("AttestationRequest(address,uint48,bytes,uint256[])");
+    bytes32 internal constant ATTEST_REQUEST_TYPEHASH = keccak256("AttestationRequest(address,uint48,bytes,uint256[])");
+    bytes32 internal constant ATTEST_TYPEHASH =
+        keccak256("SignedAttestationRequest(AttestationRequest,uint256 nonce)AttestationRequest(address,uint48,bytes,uint256[])");
+    bytes32 internal constant ATTEST_ARRAY_TYPEHASH =
+        keccak256("SignedAttestationRequests(AttestationRequest[],uint256 nonce)AttestationRequest(address,uint48,bytes,uint256[])");
 
     // The hash of the data type used to relay calls to the revoke function. It's the value of
-    bytes32 internal constant REVOKE_TYPEHASH = keccak256("RevocationRequest(address)");
+    bytes32 internal constant REVOKE_REQUEST_TYPEHASH = keccak256("RevocationRequest(address)");
+    bytes32 internal constant REVOKE_TYPEHASH =
+        keccak256("SignedRevocationRequest(RevocationRequest,uint256 nonce)RevocationRequest(address)");
+    bytes32 internal constant REVOKE_ARRAY_TYPEHASH =
+        keccak256("SignedRevocationRequests(RevocationRequest[],uint256 nonce)RevocationRequest(address)");
 
     function sload2(AttestationDataRef dataPointer) internal view returns (bytes memory data) {
         data = SSTORE2.read(AttestationDataRef.unwrap(dataPointer));
@@ -32,7 +40,7 @@ library AttestationLib {
     }
 
     function hash(AttestationRequest[] calldata data, uint256 nonce) internal pure returns (bytes32 _hash) {
-        _hash = keccak256(abi.encode(ATTEST_TYPEHASH, keccak256(abi.encode(data)), nonce));
+        _hash = keccak256(abi.encode(ATTEST_ARRAY_TYPEHASH, keccak256(abi.encode(data)), nonce));
     }
 
     function hash(RevocationRequest calldata data, uint256 nonce) internal pure returns (bytes32 _hash) {
@@ -40,6 +48,6 @@ library AttestationLib {
     }
 
     function hash(RevocationRequest[] calldata data, uint256 nonce) internal pure returns (bytes32 _hash) {
-        _hash = keccak256(abi.encode(REVOKE_TYPEHASH, keccak256(abi.encode(data)), nonce));
+        _hash = keccak256(abi.encode(REVOKE_ARRAY_TYPEHASH, keccak256(abi.encode(data)), nonce));
     }
 }
