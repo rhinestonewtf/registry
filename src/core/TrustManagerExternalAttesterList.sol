@@ -22,8 +22,11 @@ abstract contract TrustManagerExternalAttesterList is IRegistry, TrustManager {
      */
     function check(address module, address[] calldata attesters, uint256 threshold) external view {
         uint256 attestersLength = attesters.length;
-        if (threshold == 0) threshold = attestersLength;
-        else if (attestersLength < threshold) revert InsufficientAttestations();
+        if (attestersLength == 0 || threshold == 0) {
+            revert NoTrustedAttestersFound();
+        } else if (attestersLength < threshold) {
+            revert InsufficientAttestations();
+        }
 
         address _attesterCache;
         for (uint256 i; i < attestersLength; ++i) {
@@ -43,8 +46,11 @@ abstract contract TrustManagerExternalAttesterList is IRegistry, TrustManager {
      */
     function check(address module, ModuleType moduleType, address[] calldata attesters, uint256 threshold) external view {
         uint256 attestersLength = attesters.length;
-        if (threshold == 0) threshold = attestersLength;
-        else if (attestersLength < threshold) revert InsufficientAttestations();
+        if (attestersLength == 0 || threshold == 0) {
+            revert NoTrustedAttestersFound();
+        } else if (attestersLength < threshold) {
+            revert InsufficientAttestations();
+        }
 
         address _attesterCache;
         for (uint256 i; i < attestersLength; ++i) {

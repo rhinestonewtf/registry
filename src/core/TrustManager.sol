@@ -23,6 +23,8 @@ abstract contract TrustManager is IRegistry {
     using TrustLib for AttestationRecord;
     using LibSort for address[];
 
+    error InvalidThreshold();
+
     mapping(address account => TrustedAttesterRecord attesters) internal $accountToAttester;
 
     /**
@@ -44,7 +46,7 @@ abstract contract TrustManager is IRegistry {
 
         // threshold cannot be greater than the number of attesters
         if (threshold > attestersLength) {
-            threshold = uint8(attestersLength);
+            revert InvalidThreshold();
         }
 
         $trustedAttester.attesterCount = uint8(attestersLength);

@@ -40,7 +40,7 @@ contract TrustTest is AttestationTest {
     {
         vm.assume(attesters.length < 100);
         vm.assume(attesters.length > 0);
-        vm.assume(threshold <= attesters.length + 4);
+        vm.assume(threshold <= attesters.length);
         for (uint256 i; i < attesters.length; i++) {
             vm.assume(attesters[i] != address(0));
         }
@@ -150,6 +150,7 @@ contract TrustTest is AttestationTest {
     }
 
     function test_WhenSupplyingManyAttesters_ShouldBe4337Compliant(uint8 threshold, address[] memory attesters) public {
+        vm.assume(threshold < attesters.length);
         vm.startMappingRecording();
         vm.startStateDiffRecording();
 
