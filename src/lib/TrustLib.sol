@@ -85,6 +85,7 @@ library TrustLib {
         uint256 expirationTime;
         uint256 revocationTime;
         PackedModuleTypes packedModuleType;
+
         /*
          * Ensure only one SLOAD
          * Assembly equiv to:
@@ -94,7 +95,6 @@ library TrustLib {
          *     uint256 revocationTime = record.revocationTime;
          *     PackedModuleTypes packedModuleType = record.moduleTypes;
          */
-
         assembly {
             let mask := 0xFFFFFFFF
             let slot := sload($attestation.slot)
