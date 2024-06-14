@@ -25,8 +25,12 @@ abstract contract TrustManagerExternalAttesterList is IRegistry, TrustManager {
         if (threshold == 0) threshold = attestersLength;
         else if (attestersLength < threshold) revert InsufficientAttestations();
 
+        address _attesterCache;
         for (uint256 i; i < attestersLength; ++i) {
-            if ($getAttestation(module, attesters[i]).checkValid(ZERO_MODULE_TYPE)) {
+            address attester = attesters[i];
+            if (attester < _attesterCache) revert InvalidTrustedAttesterInput();
+            else _attesterCache = attester;
+            if ($getAttestation(module, attester).checkValid(ZERO_MODULE_TYPE)) {
                 --threshold;
             }
             if (threshold == 0) return;
@@ -42,8 +46,13 @@ abstract contract TrustManagerExternalAttesterList is IRegistry, TrustManager {
         if (threshold == 0) threshold = attestersLength;
         else if (attestersLength < threshold) revert InsufficientAttestations();
 
+        address _attesterCache;
         for (uint256 i; i < attestersLength; ++i) {
-            if ($getAttestation(module, attesters[i]).checkValid(moduleType)) {
+            address attester = attesters[i];
+
+            if (attester < _attesterCache) revert InvalidTrustedAttesterInput();
+            else _attesterCache = attester;
+            if ($getAttestation(module, attester).checkValid(moduleType)) {
                 --threshold;
             }
             if (threshold == 0) return;
