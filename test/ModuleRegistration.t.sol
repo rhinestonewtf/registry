@@ -22,7 +22,7 @@ contract ModuleRegistrationTest is BaseTest {
 
         bytes memory bytecode = type(MockModule).creationCode;
 
-        address moduleAddr = registry.deployModule(salt, defaultResolverUID, bytecode, "");
+        address moduleAddr = registry.deployModule(salt, defaultResolverUID, bytecode, "", "");
         ModuleRecord memory record = registry.findModule(moduleAddr);
         assertTrue(record.resolverUID == defaultResolverUID);
     }
@@ -33,7 +33,7 @@ contract ModuleRegistrationTest is BaseTest {
         bytes memory bytecode = type(MockModuleWithArgs).creationCode;
         bytes memory initCode = abi.encodePacked(bytecode, abi.encode(313_131));
 
-        address moduleAddr = registry.deployModule(salt, defaultResolverUID, initCode, "");
+        address moduleAddr = registry.deployModule(salt, defaultResolverUID, initCode, "", "");
 
         address moduleAddrCalc = registry.calcModuleAddress(salt, initCode);
         assertTrue(moduleAddr == moduleAddrCalc);
@@ -43,36 +43,40 @@ contract ModuleRegistrationTest is BaseTest {
         MockModule newModule = new MockModule();
         // It should revert.
         ResolverUID invalidUID = ResolverUID.wrap(hex"00");
+
         vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidResolverUID.selector, invalidUID));
         registry.registerModule(invalidUID, address(newModule), "");
 
         invalidUID = ResolverUID.wrap("1");
         vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidResolverUID.selector, invalidUID));
         registry.registerModule(invalidUID, address(newModule), "");
+
     }
 
     function test_WhenRegisteringAModuleOnAValidResolverUID() external prankWithAccount(moduleDev1) {
         // It should register.
 
         MockModule newModule = new MockModule();
-        registry.registerModule(defaultResolverUID, address(newModule), "");
+        registry.registerModule(defaultResolverUID, address(newModule), "", "");
     }
 
     function test_WhenRegisteringAModuleOnAInValidResolverUID() external prankWithAccount(moduleDev1) {
         // It should revert
 
         MockModule newModule = new MockModule();
+
         vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidResolverUID.selector, ResolverUID.wrap(bytes32("foobar"))));
         registry.registerModule(ResolverUID.wrap(bytes32("foobar")), address(newModule), "");
+
     }
 
     function test_WhenRegisteringTwoModulesWithTheSameBytecode() external prankWithAccount(moduleDev1) {
         MockModule newModule = new MockModule();
         // It should revert.
-        registry.registerModule(defaultResolverUID, address(newModule), "");
+        registry.registerModule(defaultResolverUID, address(newModule), "", "");
 
         vm.expectRevert(abi.encodeWithSelector(IRegistry.AlreadyRegistered.selector, address(newModule)));
-        registry.registerModule(defaultResolverUID, address(newModule), "");
+        registry.registerModule(defaultResolverUID, address(newModule), "", "");
     }
 
     function test_WhenRegisteringViaFactory() public {
@@ -82,25 +86,25 @@ contract ModuleRegistrationTest is BaseTest {
 
         factory.setReturnAddress(address(0));
         vm.expectRevert();
-        registry.deployViaFactory(address(factory), abi.encodeCall(factory.deployFn, ()), "", defaultResolverUID);
+        registry.deployViaFactory(address(factory), abi.encodeCall(factory.deployFn, ()), "", defaultResolverUID, "");
 
         factory.setReturnAddress(address(1));
         vm.expectRevert();
 
-        registry.deployViaFactory(address(factory), abi.encodeCall(factory.deployFn, ()), "", defaultResolverUID);
+        registry.deployViaFactory(address(factory), abi.encodeCall(factory.deployFn, ()), "", defaultResolverUID, "");
 
         MockModule newModule = new MockModule();
         factory.setReturnAddress(address(newModule));
-        registry.deployViaFactory(address(factory), abi.encodeCall(factory.deployFn, ()), "", defaultResolverUID);
+        registry.deployViaFactory(address(factory), abi.encodeCall(factory.deployFn, ()), "", defaultResolverUID, "");
     }
 
     function test_WhenUsingInvalidFactory() public {
         vm.expectRevert();
-        registry.deployViaFactory(address(0), "", "", defaultResolverUID);
+        registry.deployViaFactory(address(0), "", "", defaultResolverUID, "");
     }
 
     function test_WhenUsingRegistryASFactory() public {
         vm.expectRevert();
-        registry.deployViaFactory(address(registry), "", "", defaultResolverUID);
+        registry.deployViaFactory(address(registry), "", "", defaultResolverUID, "");
     }
 }

@@ -203,12 +203,14 @@ interface IRegistry is IERC7484 {
      * @param metadata The metadata to be stored on the registry.
      *            This field is optional, and might be used by the module developer to store additional
      *            information about the module or facilitate business logic with the Resolver stub
+     * @param resolverContext bytes that will be passed to the resolver contract
      */
     function deployModule(
         bytes32 salt,
         ResolverUID resolverUID,
         bytes calldata initCode,
-        bytes calldata metadata
+        bytes calldata metadata,
+        bytes calldata resolverContext
     )
         external
         payable
@@ -229,7 +231,8 @@ interface IRegistry is IERC7484 {
         address factory,
         bytes calldata callOnFactory,
         bytes calldata metadata,
-        ResolverUID resolverUID
+        ResolverUID resolverUID,
+        bytes calldata resolverContext
     )
         external
         payable
@@ -247,8 +250,15 @@ interface IRegistry is IERC7484 {
      * @param metadata The metadata to be stored on the registry.
      *            This field is optional, and might be used by the module developer to store additional
      *            information about the module or facilitate business logic with the Resolver stub
+     * @param resolverContext bytes that will be passed to the resolver contract
      */
-    function registerModule(ResolverUID resolverUID, address moduleAddress, bytes calldata metadata) external;
+    function registerModule(
+        ResolverUID resolverUID,
+        address moduleAddress,
+        bytes calldata metadata,
+        bytes calldata resolverContext
+    )
+        external;
 
     /**
      * in conjunction with the deployModule() function, this function let's you
