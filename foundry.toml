@@ -3,7 +3,13 @@ solc_version = "0.8.24"
 src = 'src'
 out = 'out'
 libs = ['lib']
-evm_version = 'paris'
+evm_version = 'cancun'
+
+
+# Compile only the production code and the test mocks with via IR
+[profile.optimized]
+  out = "out-optimized"
+  via_ir = true
 
 [fmt]
 bracket_spacing = true
