@@ -6,15 +6,34 @@ import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 
 library AttestationLib {
     // The hash of the data type used to relay calls to the attest function. It's the value of
-    bytes32 internal constant ATTEST_TYPEHASH = keccak256("AttestationRequest(address,uint48,bytes,uint256[])");
+    bytes32 internal constant ATTEST_REQUEST_TYPEHASH = keccak256("AttestationRequest(address,uint48,bytes,uint256[])");
+    bytes32 internal constant ATTEST_TYPEHASH =
+        keccak256("SignedAttestationRequest(AttestationRequest,uint256 nonce)AttestationRequest(address,uint48,bytes,uint256[])");
+    bytes32 internal constant ATTEST_ARRAY_TYPEHASH =
+        keccak256("SignedAttestationRequests(AttestationRequest[],uint256 nonce)AttestationRequest(address,uint48,bytes,uint256[])");
 
     // The hash of the data type used to relay calls to the revoke function. It's the value of
-    bytes32 internal constant REVOKE_TYPEHASH = keccak256("RevocationRequest(address)");
+    bytes32 internal constant REVOKE_REQUEST_TYPEHASH = keccak256("RevocationRequest(address)");
+    bytes32 internal constant REVOKE_TYPEHASH =
+        keccak256("SignedRevocationRequest(RevocationRequest,uint256 nonce)RevocationRequest(address)");
+    bytes32 internal constant REVOKE_ARRAY_TYPEHASH =
+        keccak256("SignedRevocationRequests(RevocationRequest[],uint256 nonce)RevocationRequest(address)");
 
+    /**
+     * Helper function to SSTORE2 read an attestation
+     * @param dataPointer the pointer to the attestation data
+     * @return data attestation data
+     */
     function sload2(AttestationDataRef dataPointer) internal view returns (bytes memory data) {
         data = SSTORE2.read(AttestationDataRef.unwrap(dataPointer));
     }
 
+    /**
+     * Helper function to SSTORE2 write an attestation
+     * @param request the attestation request
+     * @param salt the salt to use for the deterministic address generation
+     * @return dataPointer the pointer to the attestation data
+     */
     function sstore2(AttestationRequest calldata request, bytes32 salt) internal returns (AttestationDataRef dataPointer) {
         /**
          * @dev We are using CREATE2 to deterministically generate the address of the attestation data.
@@ -23,23 +42,58 @@ library AttestationLib {
         dataPointer = AttestationDataRef.wrap(SSTORE2.writeDeterministic(request.data, salt));
     }
 
+    /**
+     * Create salt for SSTORE2.
+     * The salt is constructed out of:
+     *   - attester address
+     *   - module address
+     *   - current timestamp
+     *   - chain id
+     * @param attester the attester address
+     * @param module the module address
+     * @return salt the salt
+     */
     function sstore2Salt(address attester, address module) internal view returns (bytes32 salt) {
         salt = keccak256(abi.encodePacked(attester, module, block.timestamp, block.chainid));
     }
 
-    function hash(AttestationRequest calldata data, uint256 nonce) internal pure returns (bytes32 _hash) {
-        _hash = keccak256(abi.encode(ATTEST_TYPEHASH, keccak256(abi.encode(data)), nonce));
+    /**
+     * generate hash for EIP712 for one attestation request
+     * @param request attestation request
+     * @param nonce the nonce for attestation request
+     * @return _hash the hash
+     */
+    function hash(AttestationRequest calldata request, uint256 nonce) internal pure returns (bytes32 _hash) {
+        _hash = keccak256(abi.encode(ATTEST_TYPEHASH, keccak256(abi.encode(request)), nonce));
     }
 
-    function hash(AttestationRequest[] calldata data, uint256 nonce) internal pure returns (bytes32 _hash) {
-        _hash = keccak256(abi.encode(ATTEST_TYPEHASH, keccak256(abi.encode(data)), nonce));
+    /**
+     * generate hash for EIP712 for multiple attestation requests
+     * @param requests attestation request
+     * @param nonce the nonce for attestation request
+     * @return _hash the hash
+     */
+    function hash(AttestationRequest[] calldata requests, uint256 nonce) internal pure returns (bytes32 _hash) {
+        _hash = keccak256(abi.encode(ATTEST_ARRAY_TYPEHASH, keccak256(abi.encode(requests)), nonce));
     }
 
-    function hash(RevocationRequest calldata data, uint256 nonce) internal pure returns (bytes32 _hash) {
-        _hash = keccak256(abi.encode(REVOKE_TYPEHASH, keccak256(abi.encode(data)), nonce));
+    /**
+     * generate hash for EIP712 for one revocation request
+     * @param request attestation request
+     * @param nonce the nonce for attestation request
+     * @return _hash the hash
+     */
+    function hash(RevocationRequest calldata request, uint256 nonce) internal pure returns (bytes32 _hash) {
+        _hash = keccak256(abi.encode(REVOKE_TYPEHASH, keccak256(abi.encode(request)), nonce));
     }
 
-    function hash(RevocationRequest[] calldata data, uint256 nonce) internal pure returns (bytes32 _hash) {
-        _hash = keccak256(abi.encode(REVOKE_TYPEHASH, keccak256(abi.encode(data)), nonce));
+    /**
+     * generate hash for EIP712 for multiple revocation requests
+     * @param requests attestation request
+     * @param nonce the nonce for attestation request
+     * @return _hash the hash
+     */
+    function hash(RevocationRequest[] calldata requests, uint256 nonce) internal pure returns (bytes32 _hash) {
+        _hash = keccak256(abi.encode(REVOKE_ARRAY_TYPEHASH, keccak256(abi.encode(requests)), nonce));
     }
 }

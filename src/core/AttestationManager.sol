@@ -122,6 +122,11 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         }
         // caching module address.
         address module = request.moduleAddr;
+        AttestationRecord storage $record = $getAttestation({ module: module, attester: attester });
+        // If the attestation was already made for module, but not revoked, revert.
+        if ($record.time != ZERO_TIMESTAMP && $record.revocationTime == ZERO_TIMESTAMP) {
+            revert AlreadyAttested();
+        }
         // SLOAD the resolverUID from the moduleRecord
         resolverUID = $moduleAddrToRecords[module].resolverUID;
         // Ensure that attestation is for module that was registered.

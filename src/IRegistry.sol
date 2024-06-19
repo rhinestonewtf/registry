@@ -13,43 +13,9 @@ import {
     SchemaUID,
     SchemaRecord
 } from "./DataTypes.sol";
-
 import { IExternalSchemaValidator } from "./external/IExternalSchemaValidator.sol";
 import { IExternalResolver } from "./external/IExternalResolver.sol";
-
-interface IERC7484 {
-    event NewTrustedAttesters();
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*          Check with Registry internal attesters            */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-
-    function check(address module) external view;
-
-    function checkForAccount(address smartAccount, address module) external view;
-
-    function check(address module, ModuleType moduleType) external view;
-
-    function checkForAccount(address smartAccount, address module, ModuleType moduleType) external view;
-
-    /**
-     * Allows Smart Accounts - the end users of the registry - to appoint
-     * one or many attesters as trusted.
-     * @dev this function reverts, if address(0), or duplicates are provided in attesters[]
-     *
-     * @param threshold The minimum number of attestations required for a module
-     *                  to be considered secure.
-     * @param attesters The addresses of the attesters to be trusted.
-     */
-    function trustAttesters(uint8 threshold, address[] calldata attesters) external;
-
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*              Check with external attester(s)               */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-
-    function check(address module, address[] calldata attesters, uint256 threshold) external view;
-
-    function check(address module, ModuleType moduleType, address[] calldata attesters, uint256 threshold) external view;
-}
+import { IERC7484 } from "./interfaces/IERC7484.sol";
 
 /**
  * Interface definition of all features of the registry:
@@ -91,6 +57,7 @@ interface IRegistry is IERC7484 {
     event Attested(address indexed moduleAddr, address indexed attester, SchemaUID schemaUID, AttestationDataRef indexed sstore2Pointer);
 
     error AlreadyRevoked();
+    error AlreadyAttested();
     error ModuleNotFoundInRegistry(address module);
     error AccessDenied();
     error InvalidAttestation();
@@ -252,7 +219,9 @@ interface IRegistry is IERC7484 {
     /**
      * In order to make the integration into existing business logics possible,
      * the Registry is able to utilize external factories that can be utilized to deploy the modules.
-     * @dev Registry can use other factories to deploy the module
+     * @dev Registry can use other factories to deploy the module.
+     * @dev Note that this function will call the external factory via the FactoryTrampoline contract.
+     *           Factory MUST not assume that msg.sender == registry
      * @dev This function is used to deploy and register a module using a factory contract.
      *           Since one of the parameters of this function is a unique resolverUID and any
      *           registered module address can only be registered once,
