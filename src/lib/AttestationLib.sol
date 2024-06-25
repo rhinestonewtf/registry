@@ -88,7 +88,23 @@ library AttestationLib {
      * @return _hash the hash
      */
     function hash(AttestationRequest[] calldata requests, uint256 nonce) internal pure returns (bytes32 _hash) {
-        _hash = keccak256(abi.encode(ATTEST_ARRAY_TYPEHASH, keccak256(abi.encode(requests)), nonce));
+        bytes memory concatinatedAttestations;
+
+        uint256 length = requests.length;
+        for (uint256 i; i < length; i++) {
+            concatinatedAttestations = abi.encodePacked(
+                concatinatedAttestations, // concat previous
+                abi.encode(
+                    ATTEST_REQUEST_TYPEHASH,
+                    requests[i].moduleAddr,
+                    requests[i].expirationTime,
+                    keccak256(requests[i].data),
+                    keccak256(abi.encodePacked(requests[i].moduleTypes))
+                )
+            );
+        }
+
+        _hash = keccak256(abi.encode(ATTEST_ARRAY_TYPEHASH, keccak256(concatinatedAttestations), nonce));
     }
 
     /**
