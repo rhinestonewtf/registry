@@ -6,18 +6,19 @@ import { SSTORE2 } from "solady/utils/SSTORE2.sol";
 
 library AttestationLib {
     // The hash of the data type used to relay calls to the attest function. It's the value of
-    bytes32 internal constant ATTEST_REQUEST_TYPEHASH = keccak256("AttestationRequest(address,uint48,bytes,uint256[])");
+    bytes32 internal constant ATTEST_REQUEST_TYPEHASH =
+        keccak256("AttestationRequest(address moduleAddress,uint48 expirationTime,bytes data,uint256[] moduleTypes)");
     bytes32 internal constant ATTEST_TYPEHASH =
-        keccak256("SignedAttestationRequest(AttestationRequest,uint256 nonce)AttestationRequest(address,uint48,bytes,uint256[])");
+        keccak256("SignedAttestationRequest(AttestationRequest,uint256 nonce)AttestationRequest(address moduleAddress,uint48 expirationTime,bytes data,uint256[] moduleTypes)");
     bytes32 internal constant ATTEST_ARRAY_TYPEHASH =
-        keccak256("SignedAttestationRequests(AttestationRequest[],uint256 nonce)AttestationRequest(address,uint48,bytes,uint256[])");
+        keccak256("SignedAttestationRequests(AttestationRequest[],uint256 nonce)AttestationRequest(address moduleAddress,uint48 expirationTimme,bytes data,uint256[] moduleTypes)");
 
     // The hash of the data type used to relay calls to the revoke function. It's the value of
-    bytes32 internal constant REVOKE_REQUEST_TYPEHASH = keccak256("RevocationRequest(address)");
+    bytes32 internal constant REVOKE_REQUEST_TYPEHASH = keccak256("RevocationRequest(address moduleAddress)");
     bytes32 internal constant REVOKE_TYPEHASH =
-        keccak256("SignedRevocationRequest(RevocationRequest,uint256 nonce)RevocationRequest(address)");
+        keccak256("SignedRevocationRequest(RevocationRequest,uint256 nonce)RevocationRequest(address moduleAddress)");
     bytes32 internal constant REVOKE_ARRAY_TYPEHASH =
-        keccak256("SignedRevocationRequests(RevocationRequest[],uint256 nonce)RevocationRequest(address)");
+        keccak256("SignedRevocationRequests(RevocationRequest[],uint256 nonce)RevocationRequest(address moduleAddress)");
 
     /**
      * Helper function to SSTORE2 read an attestation
