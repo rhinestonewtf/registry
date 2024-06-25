@@ -45,11 +45,11 @@ contract ModuleRegistrationTest is BaseTest {
         ResolverUID invalidUID = ResolverUID.wrap(hex"00");
 
         vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidResolverUID.selector, invalidUID));
-        registry.registerModule(invalidUID, address(newModule), "");
+        registry.registerModule(invalidUID, address(newModule), "","");
 
         invalidUID = ResolverUID.wrap("1");
         vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidResolverUID.selector, invalidUID));
-        registry.registerModule(invalidUID, address(newModule), "");
+        registry.registerModule(invalidUID, address(newModule), "","");
     }
 
     function test_WhenRegisteringAModuleOnAValidResolverUID() external prankWithAccount(moduleDev1) {
@@ -65,7 +65,7 @@ contract ModuleRegistrationTest is BaseTest {
         MockModule newModule = new MockModule();
 
         vm.expectRevert(abi.encodeWithSelector(IRegistry.InvalidResolverUID.selector, ResolverUID.wrap(bytes32("foobar"))));
-        registry.registerModule(ResolverUID.wrap(bytes32("foobar")), address(newModule), "");
+        registry.registerModule(ResolverUID.wrap(bytes32("foobar")), address(newModule), "", "");
     }
 
     function test_WhenRegisteringTwoModulesWithTheSameBytecode() external prankWithAccount(moduleDev1) {
