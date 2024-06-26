@@ -8,17 +8,19 @@ library AttestationLib {
     // The hash of the data type used to relay calls to the attest function. It's the value of
     bytes32 internal constant ATTEST_REQUEST_TYPEHASH =
         keccak256("AttestationRequest(address moduleAddress,uint48 expirationTime,bytes data,uint256[] moduleTypes)");
-    bytes32 internal constant ATTEST_TYPEHASH =
-        keccak256("SignedAttestationRequest(AttestationRequest,uint256 nonce)AttestationRequest(address moduleAddress,uint48 expirationTime,bytes data,uint256[] moduleTypes)");
-    bytes32 internal constant ATTEST_ARRAY_TYPEHASH =
-        keccak256("SignedAttestationRequests(AttestationRequest[],uint256 nonce)AttestationRequest(address moduleAddress,uint48 expirationTimme,bytes data,uint256[] moduleTypes)");
+    bytes32 internal constant ATTEST_TYPEHASH = keccak256(
+        "SignedAttestationRequest(AttestationRequest,uint256 nonce)AttestationRequest(address moduleAddress,uint48 expirationTime,bytes data,uint256[] moduleTypes)"
+    );
+    bytes32 internal constant ATTEST_ARRAY_TYPEHASH = keccak256(
+        "SignedAttestationRequests(AttestationRequest[],uint256 nonce)AttestationRequest(address moduleAddress,uint48 expirationTimme,bytes data,uint256[] moduleTypes)"
+    );
 
     // The hash of the data type used to relay calls to the revoke function. It's the value of
     bytes32 internal constant REVOKE_REQUEST_TYPEHASH = keccak256("RevocationRequest(address moduleAddress)");
     bytes32 internal constant REVOKE_TYPEHASH =
         keccak256("SignedRevocationRequest(RevocationRequest,uint256 nonce)RevocationRequest(address moduleAddress)");
     bytes32 internal constant REVOKE_ARRAY_TYPEHASH =
-        keccak256("SignedRevocationRequests(RevocationRequest[],uint256 nonce)RevocationRequest(address moduleAddress)");
+        keccak256("SignedRevocationRequests(RevocationRequest[],uint256 nonce)RevocationRequest(address moduleAddressq)");
 
     /**
      * Helper function to SSTORE2 read an attestation
@@ -95,12 +97,14 @@ library AttestationLib {
         for (uint256 i; i < length; i++) {
             concatinatedAttestations = abi.encodePacked(
                 concatinatedAttestations, // concat previous
-                abi.encode(
-                    ATTEST_REQUEST_TYPEHASH,
-                    requests[i].moduleAddr,
-                    requests[i].expirationTime,
-                    keccak256(requests[i].data),
-                    keccak256(abi.encodePacked(requests[i].moduleTypes))
+                keccak256(
+                    abi.encode(
+                        ATTEST_REQUEST_TYPEHASH,
+                        requests[i].moduleAddr,
+                        requests[i].expirationTime,
+                        keccak256(requests[i].data),
+                        keccak256(abi.encodePacked(requests[i].moduleTypes))
+                    )
                 )
             );
         }
