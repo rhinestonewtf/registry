@@ -119,7 +119,7 @@ library AttestationLib {
      * @return _hash the hash
      */
     function hash(RevocationRequest calldata request, uint256 nonce) internal pure returns (bytes32 _hash) {
-        _hash = keccak256(abi.encode(REVOKE_TYPEHASH, keccak256(abi.encode(request)), nonce));
+        _hash = keccak256(abi.encode(REVOKE_TYPEHASH, keccak256(abi.encode(REVOKE_REQUEST_TYPEHASH, request.moduleAddr)), nonce));
     }
 
     /**
@@ -129,6 +129,16 @@ library AttestationLib {
      * @return _hash the hash
      */
     function hash(RevocationRequest[] calldata requests, uint256 nonce) internal pure returns (bytes32 _hash) {
-        _hash = keccak256(abi.encode(REVOKE_ARRAY_TYPEHASH, keccak256(abi.encode(requests)), nonce));
+        bytes memory concatinatedAttestations;
+
+        uint256 length = requests.length;
+        for (uint256 i; i < length; i++) {
+            concatinatedAttestations = abi.encodePacked(
+                concatinatedAttestations, // concat previous
+                keccak256(abi.encode(REVOKE_REQUEST_TYPEHASH, requests[i].moduleAddr))
+            );
+        }
+
+        _hash = keccak256(abi.encode(REVOKE_ARRAY_TYPEHASH, keccak256(concatinatedAttestations), nonce));
     }
 }
