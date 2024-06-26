@@ -94,11 +94,11 @@ contract BaseTest is Test {
         defaultSchemaUID = registry.registerSchema(defaultSchema, IExternalSchemaValidator(address(schemaValidatorTrue)));
 
         vm.prank(moduleDev1.addr);
-        registry.registerModule(defaultResolverUID, address(module1), "");
+        registry.registerModule(defaultResolverUID, address(module1), "", "");
         vm.prank(moduleDev2.addr);
-        registry.registerModule(defaultResolverUID, address(module2), "");
+        registry.registerModule(defaultResolverUID, address(module2), "", "");
         vm.prank(moduleDev1.addr);
-        registry.registerModule(differentResolverUID, address(module3), "");
+        registry.registerModule(differentResolverUID, address(module3), "", "");
 
         AttestationRequest memory req = AttestationRequest({
             moduleAddr: address(module1),

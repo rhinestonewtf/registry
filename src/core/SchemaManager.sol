@@ -24,6 +24,16 @@ abstract contract SchemaManager is IRegistry {
     mapping(SchemaUID uid => SchemaRecord schemaRecord) internal schemas;
 
     /**
+     * If a validator is not address(0), we check if it supports the IExternalSchemaValidator interface
+     */
+    modifier onlySchemaValidator(IExternalSchemaValidator validator) {
+        if (address(validator) != address(0) && !validator.supportsInterface(type(IExternalSchemaValidator).interfaceId)) {
+            revert InvalidSchemaValidator(validator);
+        }
+        _;
+    }
+
+    /**
      * @inheritdoc IRegistry
      */
     function registerSchema(
@@ -47,16 +57,6 @@ abstract contract SchemaManager is IRegistry {
         schemas[uid] = schemaRecord;
 
         emit SchemaRegistered(uid, msg.sender);
-    }
-
-    /**
-     * If a validator is not address(0), we check if it supports the IExternalSchemaValidator interface
-     */
-    modifier onlySchemaValidator(IExternalSchemaValidator validator) {
-        if (address(validator) != address(0) && !validator.supportsInterface(type(IExternalSchemaValidator).interfaceId)) {
-            revert InvalidSchemaValidator(validator);
-        }
-        _;
     }
 
     /**

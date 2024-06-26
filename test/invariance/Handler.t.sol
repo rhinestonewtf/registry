@@ -66,7 +66,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         vm.etch(moduleAddr, bytecode);
         ResolverUID uid = _pickRandomResolverUID(randomResolverNr);
 
-        REGISTRY.registerModule(uid, moduleAddr, metadata);
+        REGISTRY.registerModule(uid, moduleAddr, metadata, "");
     }
 
     function _pickTypes() private pure returns (ModuleType[] memory ret) {
@@ -117,6 +117,6 @@ contract Handler is CommonBase, StdCheats, StdUtils {
     function handle_registerModuleWithFactory(uint256 randomResolverNr, bytes calldata bytecode, uint256 value) external {
         vm.deal(address(this), value);
         ResolverUID uid = _pickRandomResolverUID(randomResolverNr);
-        REGISTRY.deployViaFactory{ value: value }(address(FACTORY), abi.encodeCall(MockFactory.deploy, (bytecode)), "", uid);
+        REGISTRY.deployViaFactory{ value: value }(address(FACTORY), abi.encodeCall(MockFactory.deploy, (bytecode)), "", uid, "");
     }
 }

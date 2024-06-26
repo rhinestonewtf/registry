@@ -25,7 +25,7 @@ contract FactoryTest is BaseTest {
         vm.startPrank(address(0x05a40beAF368EB6b2bc5665901a885C044C19346));
         address moduleAddr = registry.calcModuleAddress(salt, type(MockModuleFoo).creationCode);
 
-        address deployedAddr = registry.deployModule(salt, defaultResolverUID, type(MockModuleFoo).creationCode, "");
+        address deployedAddr = registry.deployModule(salt, defaultResolverUID, type(MockModuleFoo).creationCode, "", "");
         vm.stopPrank();
         assertTrue(moduleAddr == deployedAddr);
     }

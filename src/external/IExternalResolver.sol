@@ -44,7 +44,8 @@ interface IExternalResolver is IERC165 {
     function resolveModuleRegistration(
         address sender,
         address moduleAddress,
-        ModuleRecord calldata record
+        ModuleRecord calldata record,
+        bytes calldata resolverContext
     )
         external
         payable

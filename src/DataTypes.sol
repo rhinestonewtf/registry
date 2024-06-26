@@ -41,7 +41,7 @@ struct TrustedAttesterRecord {
     uint8 attesterCount; // number of attesters in the linked list
     uint8 threshold; // minimum number of attesters required
     address attester; // first attester in linked list. (packed to save gas)
-    mapping(address attester => address linkedAttester) linkedAttesters; // linked list
+    mapping(address attester => mapping(address account => address linkedAttester)) linkedAttesters;
 }
 
 /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -75,12 +75,12 @@ type SchemaUID is bytes32;
 using { schemaEq as == } for SchemaUID global;
 using { schemaNotEq as != } for SchemaUID global;
 
-function schemaEq(SchemaUID uid1, SchemaUID uid) pure returns (bool) {
-    return SchemaUID.unwrap(uid1) == SchemaUID.unwrap(uid);
+function schemaEq(SchemaUID uid1, SchemaUID uid2) pure returns (bool) {
+    return SchemaUID.unwrap(uid1) == SchemaUID.unwrap(uid2);
 }
 
-function schemaNotEq(SchemaUID uid1, SchemaUID uid) pure returns (bool) {
-    return SchemaUID.unwrap(uid1) != SchemaUID.unwrap(uid);
+function schemaNotEq(SchemaUID uid1, SchemaUID uid2) pure returns (bool) {
+    return SchemaUID.unwrap(uid1) != SchemaUID.unwrap(uid2);
 }
 
 //--------------------- ResolverUID -----------------------------|

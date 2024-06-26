@@ -10,6 +10,32 @@ import { ResolverManager } from "./ResolverManager.sol";
 import { IRegistry } from "../IRegistry.sol";
 
 /**
+ * In order to separate msg.sender context from registry,
+ * interactions with external Factories are done with this Trampoline contract.
+ */
+contract FactoryTrampoline {
+    error FactoryCallFailed(address factory);
+
+    /**
+     * @param factory the address of the factory to call
+     * @param callOnFactory the call data to send to the factory
+     * @return moduleAddress the moduleAddress that was returned by the
+     */
+    function deployViaFactory(address factory, bytes memory callOnFactory) external payable returns (address moduleAddress) {
+        // call external factory to deploy module
+        bool success;
+        /* solhint-disable no-inline-assembly */
+        assembly ("memory-safe") {
+            success := call(gas(), factory, callvalue(), add(callOnFactory, 0x20), mload(callOnFactory), 0, 32)
+            moduleAddress := mload(0)
+        }
+        if (!success) {
+            revert FactoryCallFailed(factory);
+        }
+    }
+}
+
+/**
  * In order for Attesters to be able to make statements about a Module, the Module first needs to be registered on the Registry.
  * This can be done as part of or after Module deployment. On registration, every module is tied to a
  * [ResolverManager](../ModuleManager.sol/abstract.ResolverManager.html) that is triggered on certain registry actions.
@@ -34,6 +60,12 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
 
     mapping(address moduleAddress => ModuleRecord moduleRecord) internal $moduleAddrToRecords;
 
+    FactoryTrampoline private immutable FACTORY_TRAMPOLINE;
+
+    constructor() {
+        FACTORY_TRAMPOLINE = new FactoryTrampoline();
+    }
+
     /**
      * @inheritdoc IRegistry
      */
@@ -41,14 +73,15 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         bytes32 salt,
         ResolverUID resolverUID,
         bytes calldata initCode,
-        bytes calldata metadata
+        bytes calldata metadata,
+        bytes calldata resolverContext
     )
         external
         payable
         returns (address moduleAddress)
     {
         ResolverRecord storage $resolver = $resolvers[resolverUID];
-        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver($resolver.resolver);
+        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
 
         moduleAddress = initCode.deploy(salt);
         // _storeModuleRecord() will check if module is already registered,
@@ -56,7 +89,11 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         ModuleRecord memory record =
             _storeModuleRecord({ moduleAddress: moduleAddress, sender: msg.sender, resolverUID: resolverUID, metadata: metadata });
 
-        record.requireExternalResolverOnModuleRegistration({ moduleAddress: moduleAddress, $resolver: $resolver });
+        record.requireExternalResolverOnModuleRegistration({
+            moduleAddress: moduleAddress,
+            $resolver: $resolver,
+            resolverContext: resolverContext
+        });
     }
 
     /**
@@ -69,11 +106,18 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
     /**
      * @inheritdoc IRegistry
      */
-    function registerModule(ResolverUID resolverUID, address moduleAddress, bytes calldata metadata) external {
+    function registerModule(
+        ResolverUID resolverUID,
+        address moduleAddress,
+        bytes calldata metadata,
+        bytes calldata resolverContext
+    )
+        external
+    {
         ResolverRecord storage $resolver = $resolvers[resolverUID];
 
         // ensure that non-zero resolverUID was provided
-        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolver($resolver.resolver);
+        if ($resolver.resolverOwner == ZERO_ADDRESS) revert InvalidResolverUID(resolverUID);
 
         ModuleRecord memory record = _storeModuleRecord({
             moduleAddress: moduleAddress,
@@ -83,7 +127,11 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         });
 
         // resolve module registration
-        record.requireExternalResolverOnModuleRegistration({ moduleAddress: moduleAddress, $resolver: $resolver });
+        record.requireExternalResolverOnModuleRegistration({
+            moduleAddress: moduleAddress,
+            $resolver: $resolver,
+            resolverContext: resolverContext
+        });
     }
 
     /**
@@ -93,7 +141,8 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         address factory,
         bytes calldata callOnFactory,
         bytes calldata metadata,
-        ResolverUID resolverUID
+        ResolverUID resolverUID,
+        bytes calldata resolverContext
     )
         external
         payable
@@ -105,11 +154,9 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
         // prevent someone from calling a registry function pretending its a factory
         if (factory == address(this)) revert FactoryCallFailed(factory);
 
-        // call external factory to deploy module
-        (bool ok, bytes memory returnData) = factory.call{ value: msg.value }(callOnFactory);
-        if (!ok) revert FactoryCallFailed(factory);
-
-        moduleAddress = abi.decode(returnData, (address));
+        // Call the factory via the trampoline contract. This will make sure that there is msg.sender separation
+        // Making "raw" calls to user supplied addresses could create security issues.
+        moduleAddress = FACTORY_TRAMPOLINE.deployViaFactory{ value: msg.value }({ factory: factory, callOnFactory: callOnFactory });
 
         ModuleRecord memory record = _storeModuleRecord({
             moduleAddress: moduleAddress,
@@ -118,7 +165,11 @@ abstract contract ModuleManager is IRegistry, ResolverManager {
             metadata: metadata
         });
 
-        record.requireExternalResolverOnModuleRegistration({ moduleAddress: moduleAddress, $resolver: $resolver });
+        record.requireExternalResolverOnModuleRegistration({
+            moduleAddress: moduleAddress,
+            $resolver: $resolver,
+            resolverContext: resolverContext
+        });
     }
 
     /**

@@ -25,7 +25,8 @@ contract TokenizedResolver is ResolverBase {
     function resolveModuleRegistration(
         address sender,
         address moduleAddress,
-        ModuleRecord calldata record
+        ModuleRecord calldata record,
+        bytes calldata resolverContext
     )
         external
         payable
