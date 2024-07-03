@@ -13,7 +13,7 @@ struct AttestationRecord {
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     uint48 revocationTime; // The time when the attestation was revoked (Unix timestamp).
     PackedModuleTypes moduleTypes; // bit-wise encoded module types. See ModuleTypeLib
-    address moduleAddr; // The implementation address of the module that is being attested.
+    address moduleAddress; // The implementation address of the module that is being attested.
     address attester; // The attesting account.
     AttestationDataRef dataPointer; // SSTORE2 pointer to the attestation data.
     SchemaUID schemaUID; // The unique identifier of the schema.
@@ -52,7 +52,7 @@ struct TrustedAttesterRecord {
  * @dev A struct representing the arguments of the attestation request.
  */
 struct AttestationRequest {
-    address moduleAddr; // The moduleAddr of the attestation.
+    address moduleAddress; // The moduleAddress of the attestation.
     uint48 expirationTime; // The time when the attestation expires (Unix timestamp).
     bytes data; // Custom attestation data.
     ModuleType[] moduleTypes; // optional: The type(s) of the module.
@@ -62,7 +62,7 @@ struct AttestationRequest {
  * @dev A struct representing the arguments of the revocation request.
  */
 struct RevocationRequest {
-    address moduleAddr; // The module address.
+    address moduleAddress; // The module address.
 }
 
 /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/

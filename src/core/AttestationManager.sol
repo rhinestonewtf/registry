@@ -121,7 +121,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
             revert InvalidExpirationTime();
         }
         // caching module address.
-        address module = request.moduleAddr;
+        address module = request.moduleAddress;
         AttestationRecord storage $record = $getAttestation({ module: module, attester: attester });
         // If the attestation was already made for module, but not revoked, revert.
         if ($record.time != ZERO_TIMESTAMP && $record.revocationTime == ZERO_TIMESTAMP) {
@@ -146,14 +146,14 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
             revocationTime: uint48(ZERO_TIMESTAMP),
             moduleTypes: request.moduleTypes.pack(),
             schemaUID: schemaUID,
-            moduleAddr: module,
+            moduleAddress: module,
             attester: attester,
             dataPointer: sstore2Pointer
         });
         // SSTORE attestation to registry storage
         $moduleToAttesterToAttestations[module][attester] = record;
 
-        emit Attested({ moduleAddr: module, attester: attester, schemaUID: schemaUID, sstore2Pointer: sstore2Pointer });
+        emit Attested({ moduleAddress: module, attester: attester, schemaUID: schemaUID, sstore2Pointer: sstore2Pointer });
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -207,11 +207,11 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         internal
         returns (AttestationRecord memory record, ResolverUID resolverUID)
     {
-        AttestationRecord storage $attestation = $moduleToAttesterToAttestations[request.moduleAddr][revoker];
+        AttestationRecord storage $attestation = $moduleToAttesterToAttestations[request.moduleAddress][revoker];
 
         // SLOAD entire record. This will later be passed to the resolver
         record = $attestation;
-        resolverUID = $moduleAddrToRecords[request.moduleAddr].resolverUID;
+        resolverUID = $moduleAddrToRecords[request.moduleAddress].resolverUID;
 
         // Ensure that we aren't attempting to revoke a non-existing attestation.
         if (record.dataPointer == EMPTY_ATTESTATION_REF) {
@@ -232,7 +232,7 @@ abstract contract AttestationManager is IRegistry, ModuleManager, SchemaManager,
         // set revocation time to NOW
         $attestation.revocationTime = _time();
 
-        emit Revoked({ moduleAddr: request.moduleAddr, revoker: revoker, schema: record.schemaUID });
+        emit Revoked({ moduleAddress: request.moduleAddress, revoker: revoker, schema: record.schemaUID });
     }
 
     /**

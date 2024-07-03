@@ -75,7 +75,7 @@ library AttestationLib {
                 keccak256(
                     abi.encode(
                         ATTEST_REQUEST_TYPEHASH,
-                        request.moduleAddr,
+                        request.moduleAddress,
                         request.expirationTime,
                         keccak256(request.data),
                         keccak256(abi.encodePacked(request.moduleTypes))
@@ -102,7 +102,7 @@ library AttestationLib {
                 keccak256(
                     abi.encode(
                         ATTEST_REQUEST_TYPEHASH,
-                        requests[i].moduleAddr,
+                        requests[i].moduleAddress,
                         requests[i].expirationTime,
                         keccak256(requests[i].data),
                         keccak256(abi.encodePacked(requests[i].moduleTypes))
@@ -121,7 +121,7 @@ library AttestationLib {
      * @return _hash the hash
      */
     function hash(RevocationRequest calldata request, uint256 nonce) internal pure returns (bytes32 _hash) {
-        _hash = keccak256(abi.encode(REVOKE_TYPEHASH, keccak256(abi.encode(REVOKE_REQUEST_TYPEHASH, request.moduleAddr)), nonce));
+        _hash = keccak256(abi.encode(REVOKE_TYPEHASH, keccak256(abi.encode(REVOKE_REQUEST_TYPEHASH, request.moduleAddress)), nonce));
     }
 
     /**
@@ -137,7 +137,7 @@ library AttestationLib {
         for (uint256 i; i < length; i++) {
             concatinatedAttestations = abi.encodePacked(
                 concatinatedAttestations, // concat previous
-                keccak256(abi.encode(REVOKE_REQUEST_TYPEHASH, requests[i].moduleAddr))
+                keccak256(abi.encode(REVOKE_REQUEST_TYPEHASH, requests[i].moduleAddress))
             );
         }
 

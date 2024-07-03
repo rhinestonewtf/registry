@@ -52,7 +52,7 @@ contract ERC7512SchemaValidator is IExternalSchemaValidator, ERC7512 {
 
     function validateSchema(AttestationRecord calldata attestation) public view override returns (bool valid) {
         AuditSummary memory summary = abi.decode(attestation.dataPointer.sload2(), (AuditSummary));
-        if (summary.auditedContract.deployment != attestation.moduleAddr) {
+        if (summary.auditedContract.deployment != attestation.moduleAddress) {
             return false;
         }
         if (summary.issuedAt > attestation.time) {

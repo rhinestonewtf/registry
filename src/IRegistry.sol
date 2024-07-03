@@ -53,8 +53,8 @@ interface IRegistry is IERC7484 {
     /*                       Attestations                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    event Revoked(address indexed moduleAddr, address indexed revoker, SchemaUID schema);
-    event Attested(address indexed moduleAddr, address indexed attester, SchemaUID schemaUID, AttestationDataRef indexed sstore2Pointer);
+    event Revoked(address indexed moduleAddress, address indexed revoker, SchemaUID schema);
+    event Attested(address indexed moduleAddress, address indexed attester, SchemaUID schemaUID, AttestationDataRef indexed sstore2Pointer);
 
     error AlreadyRevoked();
     error AlreadyAttested();
@@ -214,7 +214,7 @@ interface IRegistry is IERC7484 {
     )
         external
         payable
-        returns (address moduleAddr);
+        returns (address moduleAddress);
 
     /**
      * In order to make the integration into existing business logics possible,
