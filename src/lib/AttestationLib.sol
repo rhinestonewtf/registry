@@ -14,7 +14,7 @@ library AttestationLib {
     );
     // solhint-disable max-line-length
     bytes32 internal constant ATTEST_ARRAY_TYPEHASH = keccak256(
-        "SignedAttestationRequests(AttestationRequest[] requests,uint256 nonce)AttestationRequest(address moduleAddress,uint48 expirationTimme,bytes data,uint256[] moduleTypes)"
+        "SignedAttestationRequests(AttestationRequest[] requests,uint256 nonce)AttestationRequest(address moduleAddress,uint48 expirationTime,bytes data,uint256[] moduleTypes)"
     );
 
     // The hash of the data type used to relay calls to the revoke function. It's the value of
