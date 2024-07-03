@@ -8,9 +8,11 @@ library AttestationLib {
     // The hash of the data type used to relay calls to the attest function. It's the value of
     bytes32 internal constant ATTEST_REQUEST_TYPEHASH =
         keccak256("AttestationRequest(address moduleAddress,uint48 expirationTime,bytes data,uint256[] moduleTypes)");
+    // solhint-disable max-line-length
     bytes32 internal constant ATTEST_TYPEHASH = keccak256(
         "SignedAttestationRequest(AttestationRequest request,uint256 nonce)AttestationRequest(address moduleAddress,uint48 expirationTime,bytes data,uint256[] moduleTypes)"
     );
+    // solhint-disable max-line-length
     bytes32 internal constant ATTEST_ARRAY_TYPEHASH = keccak256(
         "SignedAttestationRequests(AttestationRequest[] requests,uint256 nonce)AttestationRequest(address moduleAddress,uint48 expirationTimme,bytes data,uint256[] moduleTypes)"
     );
