@@ -23,32 +23,30 @@ abstract contract TrustManager is IRegistry {
     using TrustLib for AttestationRecord;
     using LibSort for address[];
 
+    error InvalidThreshold();
+
     mapping(address account => TrustedAttesterRecord attesters) internal $accountToAttester;
 
     /**
      * @inheritdoc IERC7484
      */
-    function trustAttesters(
-        uint8 threshold,
-        address[] memory attesters // deliberately using memory to allow sorting and uniquifying
-    )
-        external
-    {
+    function trustAttesters(uint8 threshold, address[] calldata attesters) external {
         uint256 attestersLength = attesters.length;
 
-        // sort attesters and remove duplicates
-        attesters.sort();
-        attesters.uniquifySorted();
+        if (!attesters.isSortedAndUniquified()) revert InvalidTrustedAttesterInput();
 
-        // if attesters array has duplicates, revert
-        if (attestersLength == 0) revert InvalidTrustedAttesterInput();
+        // if attesters array has duplicates or is too large revert
+        if (attestersLength == 0 || attestersLength > type(uint8).max) revert InvalidTrustedAttesterInput();
         if (attesters.length != attestersLength) revert InvalidTrustedAttesterInput();
+        // revert if the first attester is the zero address
+        // other attesters can not be zero address, as the array was sorted
+        if (attesters[0] == ZERO_ADDRESS) revert InvalidTrustedAttesterInput();
 
         TrustedAttesterRecord storage $trustedAttester = $accountToAttester[msg.sender];
 
         // threshold cannot be greater than the number of attesters
         if (threshold > attestersLength) {
-            threshold = uint8(attestersLength);
+            revert InvalidThreshold();
         }
 
         $trustedAttester.attesterCount = uint8(attestersLength);
@@ -60,12 +58,10 @@ abstract contract TrustManager is IRegistry {
         // setup the linked list of trusted attesters
         for (uint256 i; i < attestersLength; i++) {
             address _attester = attesters[i];
-            // user could have set attester to address(0)
-            if (_attester == ZERO_ADDRESS) revert InvalidTrustedAttesterInput();
-            $trustedAttester.linkedAttesters[_attester] = attesters[i + 1];
+            $trustedAttester.linkedAttesters[_attester][msg.sender] = attesters[i + 1];
         }
 
-        emit NewTrustedAttesters();
+        emit NewTrustedAttesters(msg.sender);
     }
 
     /**
@@ -119,7 +115,17 @@ abstract contract TrustManager is IRegistry {
         // use this condition to save gas
         else if (threshold == 1) {
             AttestationRecord storage $attestation = $getAttestation({ module: module, attester: attester });
-            $attestation.enforceValid(moduleType);
+            if ($attestation.checkValid(moduleType)) return;
+
+            // if first attestation is not valid, iterate over the linked list of attesters
+            // and check if the attestation is valid
+            for (uint256 i; i < attesterCount; i++) {
+                attester = $trustedAttesters.linkedAttesters[attester][smartAccount];
+                $attestation = $getAttestation({ module: module, attester: attester });
+                if ($attestation.checkValid(moduleType)) return;
+            }
+            // if no valid attestations were found in the for loop. the module is not valid
+            revert InsufficientAttestations();
         }
         // smart account has more than one trusted attester
         else {
@@ -129,7 +135,7 @@ abstract contract TrustManager is IRegistry {
 
             for (uint256 i = 1; i < attesterCount; i++) {
                 // get next attester from linked List
-                attester = $trustedAttesters.linkedAttesters[attester];
+                attester = $trustedAttesters.linkedAttesters[attester][smartAccount];
                 $attestation = $getAttestation({ module: module, attester: attester });
                 if ($attestation.checkValid(moduleType)) threshold--;
 
@@ -149,12 +155,15 @@ abstract contract TrustManager is IRegistry {
         uint256 count = $trustedAttesters.attesterCount;
         address attester0 = $trustedAttesters.attester;
 
+        // return if no trusted attesters are set
+        if (count == 0) return attesters;
+
         attesters = new address[](count);
         attesters[0] = attester0;
 
         for (uint256 i = 1; i < count; i++) {
             // get next attester from linked List
-            attesters[i] = $trustedAttesters.linkedAttesters[attesters[i - 1]];
+            attesters[i] = $trustedAttesters.linkedAttesters[attesters[i - 1]][smartAccount];
         }
     }
 
