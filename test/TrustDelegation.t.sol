@@ -46,6 +46,7 @@ contract TrustTest is AttestationTest {
         }
         attesters.sort();
         attesters.uniquifySorted();
+        vm.assume(threshold <= attesters.length);
         registry.trustAttesters(threshold, attesters);
         // It should set.
         // It should emit event.
