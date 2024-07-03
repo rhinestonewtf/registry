@@ -23,11 +23,11 @@ contract AttestationTest is BaseTest {
         for (uint256 i; i < types.length; i++) {
             typesEnc[i] = ModuleType.wrap(types[i]);
         }
-        request = AttestationRequest({ moduleAddr: module, expirationTime: expirationTime, data: data, moduleTypes: typesEnc });
+        request = AttestationRequest({ moduleAddress: module, expirationTime: expirationTime, data: data, moduleTypes: typesEnc });
     }
 
     function mockRevocation(address module) internal pure returns (RevocationRequest memory request) {
-        request = RevocationRequest({ moduleAddr: module });
+        request = RevocationRequest({ moduleAddress: module });
     }
 
     function test_WhenAttestingWithNoAttestationData() public prankWithAccount(attester1) {
@@ -41,7 +41,7 @@ contract AttestationTest is BaseTest {
 
         assertEq(record.time, block.timestamp);
         assertEq(record.expirationTime, request.expirationTime);
-        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.moduleAddress, request.moduleAddress);
         assertEq(record.attester, attester1.addr);
     }
 
@@ -59,7 +59,7 @@ contract AttestationTest is BaseTest {
 
         assertEq(record.time, block.timestamp);
         assertEq(record.expirationTime, requests[0].expirationTime);
-        assertEq(record.moduleAddr, requests[0].moduleAddr);
+        assertEq(record.moduleAddress, requests[0].moduleAddress);
         assertEq(record.attester, attester1.addr);
     }
 
@@ -143,12 +143,12 @@ contract AttestationTest is BaseTest {
 
         assertEq(record[0].time, block.timestamp);
         assertEq(record[0].expirationTime, requests[0].expirationTime);
-        assertEq(record[0].moduleAddr, requests[0].moduleAddr);
+        assertEq(record[0].moduleAddress, requests[0].moduleAddress);
         assertEq(record[0].attester, attester1.addr);
 
         assertEq(record[1].time, block.timestamp);
         assertEq(record[1].expirationTime, requests[0].expirationTime);
-        assertEq(record[1].moduleAddr, requests[0].moduleAddr);
+        assertEq(record[1].moduleAddress, requests[0].moduleAddress);
         assertEq(record[1].attester, attester2.addr);
     }
 
@@ -164,10 +164,10 @@ contract AttestationTest is BaseTest {
         assertEq(record.time, block.timestamp);
         assertEq(record.expirationTime, request.expirationTime);
         assertEq(record.revocationTime, 0);
-        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.moduleAddress, request.moduleAddress);
         assertEq(record.attester, attester1.addr);
 
-        RevocationRequest memory revocation = RevocationRequest({ moduleAddr: module });
+        RevocationRequest memory revocation = RevocationRequest({ moduleAddress: module });
 
         vm.warp(block.timestamp + 100);
         registry.revoke(revocation);
@@ -183,7 +183,7 @@ contract AttestationTest is BaseTest {
         assertEq(record.expirationTime, request.expirationTime);
         // ensure revocation time is reset
         assertEq(record.revocationTime, 0);
-        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.moduleAddress, request.moduleAddress);
         assertEq(record.attester, attester1.addr);
     }
 
@@ -303,7 +303,7 @@ contract AttestationTest is BaseTest {
 
         assertEq(record.time, block.timestamp);
         assertEq(record.expirationTime, request.expirationTime);
-        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.moduleAddress, request.moduleAddress);
         assertEq(record.attester, attester.addr);
         assertEq(nonceAfter, nonceBefore + 1);
         assertEq(PackedModuleTypes.unwrap(record.moduleTypes), 2 ** 1 + 2 ** 2);
@@ -347,7 +347,7 @@ contract AttestationTest is BaseTest {
 
         assertEq(record.time, block.timestamp);
         assertEq(record.expirationTime, requests[0].expirationTime);
-        assertEq(record.moduleAddr, requests[0].moduleAddr);
+        assertEq(record.moduleAddress, requests[0].moduleAddress);
         assertEq(record.attester, attester1.addr);
         assertEq(nonceAfter, nonceBefore + 1);
     }
@@ -389,7 +389,7 @@ contract AttestationTest is BaseTest {
 
         assertEq(record.time, block.timestamp);
         assertEq(record.expirationTime, request.expirationTime);
-        assertEq(record.moduleAddr, request.moduleAddr);
+        assertEq(record.moduleAddress, request.moduleAddress);
         assertEq(record.attester, address(erc1271AttesterTrue));
     }
 
@@ -406,7 +406,7 @@ contract AttestationTest is BaseTest {
 
         assertEq(record.time, block.timestamp);
         assertEq(record.expirationTime, requests[0].expirationTime);
-        assertEq(record.moduleAddr, requests[0].moduleAddr);
+        assertEq(record.moduleAddress, requests[0].moduleAddress);
         assertEq(record.attester, address(erc1271AttesterTrue));
     }
 

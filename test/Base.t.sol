@@ -101,7 +101,7 @@ contract BaseTest is Test {
         registry.registerModule(differentResolverUID, address(module3), "", "");
 
         AttestationRequest memory req = AttestationRequest({
-            moduleAddr: address(module1),
+            moduleAddress: address(module1),
             expirationTime: uint48(block.timestamp + 100_000),
             data: "0x",
             moduleTypes: new ModuleType[](0)

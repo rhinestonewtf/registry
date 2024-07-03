@@ -22,8 +22,8 @@ contract ModuleRegistrationTest is BaseTest {
 
         bytes memory bytecode = type(MockModule).creationCode;
 
-        address moduleAddr = registry.deployModule(salt, defaultResolverUID, bytecode, "", "");
-        ModuleRecord memory record = registry.findModule(moduleAddr);
+        address moduleAddress = registry.deployModule(salt, defaultResolverUID, bytecode, "", "");
+        ModuleRecord memory record = registry.findModule(moduleAddress);
         assertTrue(record.resolverUID == defaultResolverUID);
     }
 
@@ -33,10 +33,10 @@ contract ModuleRegistrationTest is BaseTest {
         bytes memory bytecode = type(MockModuleWithArgs).creationCode;
         bytes memory initCode = abi.encodePacked(bytecode, abi.encode(313_131));
 
-        address moduleAddr = registry.deployModule(salt, defaultResolverUID, initCode, "", "");
+        address moduleAddress = registry.deployModule(salt, defaultResolverUID, initCode, "", "");
 
         address moduleAddrCalc = registry.calcModuleAddress(salt, initCode);
-        assertTrue(moduleAddr == moduleAddrCalc);
+        assertTrue(moduleAddress == moduleAddrCalc);
     }
 
     function test_WhenRegisteringAModuleOnAnInvalidResolverUID() external prankWithAccount(moduleDev1) {

@@ -37,7 +37,7 @@ contract ImmutableData is BaseTest {
     function invariant_attestation_immutable() public {
         AttestationRecord memory record = registry.findAttestation(address(module1), invarAttester.addr);
         assertTrue(record.dataPointer == defaultDataRef);
-        assertEq(record.moduleAddr, address(module1));
+        assertEq(record.moduleAddress, address(module1));
         assertEq(record.attester, invarAttester.addr);
         assertTrue(record.attester != address(0));
     }
