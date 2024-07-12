@@ -16,11 +16,15 @@ mkdir $artifacts \
 FOUNDRY_PROFILE=optimized forge build
 
 cp out-optimized/Registry.sol/Registry.json $artifacts
+cp out-optimized/MockERC1271Attester.sol/MockERC1271Attester.json $artifacts
+cp out-optimized/MockResolver.sol/MockResolver.json $artifacts
+cp out-optimized/MockSchemaValidator.sol/MockSchemaValidator.json $artifacts
+
 
 
 interfaces=./artifacts/interfaces
 
-cp out-optimized/IRegistry.sol/IERC7484.json $interfaces
+cp out-optimized/IERC7484.sol/IERC7484.json $interfaces
 cp out-optimized/IRegistry.sol/IRegistry.json $interfaces
 cp out-optimized/IExternalResolver.sol/IExternalResolver.json $interfaces
 cp out-optimized/IExternalSchemaValidator.sol/IExternalSchemaValidator.json $interfaces

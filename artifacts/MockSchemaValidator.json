@@ -1,0 +1,347 @@
+{
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [{ "name": "ret", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "supportsInterface",
+      "inputs": [
+        { "name": "interfaceId", "type": "bytes4", "internalType": "bytes4" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "validateSchema",
+      "inputs": [
+        {
+          "name": "attestation",
+          "type": "tuple",
+          "internalType": "struct AttestationRecord",
+          "components": [
+            { "name": "time", "type": "uint48", "internalType": "uint48" },
+            {
+              "name": "expirationTime",
+              "type": "uint48",
+              "internalType": "uint48"
+            },
+            {
+              "name": "revocationTime",
+              "type": "uint48",
+              "internalType": "uint48"
+            },
+            {
+              "name": "moduleTypes",
+              "type": "uint32",
+              "internalType": "PackedModuleTypes"
+            },
+            {
+              "name": "moduleAddress",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "attester",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "dataPointer",
+              "type": "address",
+              "internalType": "AttestationDataRef"
+            },
+            {
+              "name": "schemaUID",
+              "type": "bytes32",
+              "internalType": "SchemaUID"
+            }
+          ]
+        }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "validateSchema",
+      "inputs": [
+        {
+          "name": "attestations",
+          "type": "tuple[]",
+          "internalType": "struct AttestationRecord[]",
+          "components": [
+            { "name": "time", "type": "uint48", "internalType": "uint48" },
+            {
+              "name": "expirationTime",
+              "type": "uint48",
+              "internalType": "uint48"
+            },
+            {
+              "name": "revocationTime",
+              "type": "uint48",
+              "internalType": "uint48"
+            },
+            {
+              "name": "moduleTypes",
+              "type": "uint32",
+              "internalType": "PackedModuleTypes"
+            },
+            {
+              "name": "moduleAddress",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "attester",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "dataPointer",
+              "type": "address",
+              "internalType": "AttestationDataRef"
+            },
+            {
+              "name": "schemaUID",
+              "type": "bytes32",
+              "internalType": "SchemaUID"
+            }
+          ]
+        }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    }
+  ],
+  "bytecode": {
+    "object": "0x60a03461006857601f61020538819003918201601f19168301916001600160401b0383118484101761006c57808492602094604052833981010312610068575180151581036100685760805260405161018490816100818239608051818181608e015260d00152f35b5f80fd5b634e487b7160e01b5f52604160045260245ffdfe6080806040526004361015610012575f80fd5b5f3560e01c90816301ffc9a7146100f5575080637949978f146100b75763cb6ec8261461003d575f80fd5b346100b35760203660031901126100b35767ffffffffffffffff6004358181116100b357366023820112156100b35780600401359182116100b357602490369260081b0101116100b35760206040517f000000000000000000000000000000000000000000000000000000000000000015158152f35b5f80fd5b346100b3576101003660031901126100b35760206040517f000000000000000000000000000000000000000000000000000000000000000015158152f35b346100b35760203660031901126100b357600435906001600160e01b0319821682036100b35761012660209261012c565b15158152f35b5f91906001600160e01b03191663b2275fa960e01b1461014857565b6001915056fea26469706673582212207f633ed5f5d4fa6a13c86c925a26fdc121759b380b51b382b0767acc470794b264736f6c63430008180033",
+    "sourceMap": "117:615:97:-:0;;;;;;;;;;;;;-1:-1:-1;;117:615:97;;;;-1:-1:-1;;;;;117:615:97;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;243:15;;117:615;;;;;;;;243:15;117:615;;;;;;;;;;;;-1:-1:-1;117:615:97;;;;;;-1:-1:-1;117:615:97;;;;;-1:-1:-1;117:615:97",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x6080806040526004361015610012575f80fd5b5f3560e01c90816301ffc9a7146100f5575080637949978f146100b75763cb6ec8261461003d575f80fd5b346100b35760203660031901126100b35767ffffffffffffffff6004358181116100b357366023820112156100b35780600401359182116100b357602490369260081b0101116100b35760206040517f000000000000000000000000000000000000000000000000000000000000000015158152f35b5f80fd5b346100b3576101003660031901126100b35760206040517f000000000000000000000000000000000000000000000000000000000000000015158152f35b346100b35760203660031901126100b357600435906001600160e01b0319821682036100b35761012660209261012c565b15158152f35b5f91906001600160e01b03191663b2275fa960e01b1461014857565b6001915056fea26469706673582212207f633ed5f5d4fa6a13c86c925a26fdc121759b380b51b382b0767acc470794b264736f6c63430008180033",
+    "sourceMap": "117:615:97:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;117:615:97;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;714:9;117:615;;;;;;;;;;;;;;;-1:-1:-1;;117:615:97;;;;;;;570:9;117:615;;;;;;;;;;;-1:-1:-1;;117:615:97;;;;;;;-1:-1:-1;;;;;;117:615:97;;;;;;;;;;:::i;:::-;;;;;;271:174;117:615;;271:174;-1:-1:-1;;;;;;117:615:97;-1:-1:-1;;;368:57:97;364:74;;271:174::o;364:74::-;434:4;;-1:-1:-1;427:11:97:o",
+    "linkReferences": {},
+    "immutableReferences": {
+      "64046": [
+        { "start": 142, "length": 32 },
+        { "start": 208, "length": 32 }
+      ]
+    }
+  },
+  "methodIdentifiers": {
+    "supportsInterface(bytes4)": "01ffc9a7",
+    "validateSchema((uint48,uint48,uint48,uint32,address,address,address,bytes32))": "7949978f",
+    "validateSchema((uint48,uint48,uint48,uint32,address,address,address,bytes32)[])": "cb6ec826"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.24+commit.e11b9ed9\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"ret\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint48\",\"name\":\"time\",\"type\":\"uint48\"},{\"internalType\":\"uint48\",\"name\":\"expirationTime\",\"type\":\"uint48\"},{\"internalType\":\"uint48\",\"name\":\"revocationTime\",\"type\":\"uint48\"},{\"internalType\":\"PackedModuleTypes\",\"name\":\"moduleTypes\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"moduleAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"attester\",\"type\":\"address\"},{\"internalType\":\"AttestationDataRef\",\"name\":\"dataPointer\",\"type\":\"address\"},{\"internalType\":\"SchemaUID\",\"name\":\"schemaUID\",\"type\":\"bytes32\"}],\"internalType\":\"struct AttestationRecord\",\"name\":\"attestation\",\"type\":\"tuple\"}],\"name\":\"validateSchema\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint48\",\"name\":\"time\",\"type\":\"uint48\"},{\"internalType\":\"uint48\",\"name\":\"expirationTime\",\"type\":\"uint48\"},{\"internalType\":\"uint48\",\"name\":\"revocationTime\",\"type\":\"uint48\"},{\"internalType\":\"PackedModuleTypes\",\"name\":\"moduleTypes\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"moduleAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"attester\",\"type\":\"address\"},{\"internalType\":\"AttestationDataRef\",\"name\":\"dataPointer\",\"type\":\"address\"},{\"internalType\":\"SchemaUID\",\"name\":\"schemaUID\",\"type\":\"bytes32\"}],\"internalType\":\"struct AttestationRecord[]\",\"name\":\"attestations\",\"type\":\"tuple[]\"}],\"name\":\"validateSchema\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"validateSchema((uint48,uint48,uint48,uint32,address,address,address,bytes32))\":{\"notice\":\"Validates an attestation request.\"},\"validateSchema((uint48,uint48,uint48,uint32,address,address,address,bytes32)[])\":{\"notice\":\"Validates an array of attestation requests.\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"test/mocks/MockSchemaValidator.sol\":\"MockSchemaValidator\"},\"evmVersion\":\"cancun\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@openzeppelin/=node_modules/@openzeppelin/\",\":account-abstraction-v0.6/=node_modules/account-abstraction-v0.6/contracts/\",\":account-abstraction/=node_modules/account-abstraction/contracts/\",\":ds-test/=node_modules/ds-test/src/\",\":erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/\",\":forge-std/=node_modules/forge-std/src/\",\":solady/=node_modules/solady/src/\",\":solmate/=node_modules/solmate/src/\"],\"viaIR\":true},\"sources\":{\"node_modules/forge-std/src/interfaces/IERC165.sol\":{\"keccak256\":\"0x414b2861b1acbf816ccb7346d3f16cf6c1e002e9e5e40d2f1f26fa5ddc2ea600\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://698352fb240868ea8f1d1fe389993035eeab930f10d06934f80ccfb2b6ccbfbc\",\"dweb:/ipfs/QmT6WLHAgXxFhh12kWym895oTzXid1326iZiwT3pyfggoT\"]},\"src/DataTypes.sol\":{\"keccak256\":\"0x17a21d96dbda1704f888f46565731cc676d5fd4d989ea6819a87a8fb0895c47b\",\"license\":\"AGPL-3.0-only\",\"urls\":[\"bzz-raw://91c12e4dc5254821d3ac965369b40656242d90e098a6ecc1e721d6dcf61e64fc\",\"dweb:/ipfs/Qma78sqHvpP7AFj2gKAQe2z4Na3nxT5NRtaSuEJGezDyN8\"]},\"src/external/IExternalResolver.sol\":{\"keccak256\":\"0x258211aa342cdcde51952e0f523136b71d320a2208a7873b03d0c6c210776d5f\",\"license\":\"AGPL-3.0-only\",\"urls\":[\"bzz-raw://3406f08574205e786e228c0126d06d78ffb3d8724efa6344a18675eef61e9077\",\"dweb:/ipfs/QmZTZEY5eWmBq6ho6F75UGJ7VYuh2JwJiuQfUXGPrJD7JK\"]},\"src/external/IExternalSchemaValidator.sol\":{\"keccak256\":\"0xeaefb6118769085ca0de5b3048e5b4a8f860f99d4361008b4220195f603e4bd2\",\"license\":\"AGPL-3.0-only\",\"urls\":[\"bzz-raw://d8a12afbc6a3a453d5810b67d775d9cb24bc52d1fc2843625910576285257526\",\"dweb:/ipfs/QmXDcULeqy7VSXitbyrYcr32Bt7msuv7krG7g5u1nuCJx2\"]},\"test/mocks/MockSchemaValidator.sol\":{\"keccak256\":\"0xcd52f3bc690bca76cbf8f810d5f236f91953a18d35f1a9d902100fcfee63b01f\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://13d824cf7b33c51f6c6055a00993ec56b960201fc4abb37d6dd68041090ee88d\",\"dweb:/ipfs/QmVe4hYRgCpTSYTdqVDVo5TXGFTyLUSX3sbms8E4AK966v\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": { "version": "0.8.24+commit.e11b9ed9" },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [{ "internalType": "bool", "name": "ret", "type": "bool" }],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes4",
+              "name": "interfaceId",
+              "type": "bytes4"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function",
+          "name": "supportsInterface",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "struct AttestationRecord",
+              "name": "attestation",
+              "type": "tuple",
+              "components": [
+                { "internalType": "uint48", "name": "time", "type": "uint48" },
+                {
+                  "internalType": "uint48",
+                  "name": "expirationTime",
+                  "type": "uint48"
+                },
+                {
+                  "internalType": "uint48",
+                  "name": "revocationTime",
+                  "type": "uint48"
+                },
+                {
+                  "internalType": "PackedModuleTypes",
+                  "name": "moduleTypes",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "address",
+                  "name": "moduleAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "attester",
+                  "type": "address"
+                },
+                {
+                  "internalType": "AttestationDataRef",
+                  "name": "dataPointer",
+                  "type": "address"
+                },
+                {
+                  "internalType": "SchemaUID",
+                  "name": "schemaUID",
+                  "type": "bytes32"
+                }
+              ]
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "validateSchema",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "struct AttestationRecord[]",
+              "name": "attestations",
+              "type": "tuple[]",
+              "components": [
+                { "internalType": "uint48", "name": "time", "type": "uint48" },
+                {
+                  "internalType": "uint48",
+                  "name": "expirationTime",
+                  "type": "uint48"
+                },
+                {
+                  "internalType": "uint48",
+                  "name": "revocationTime",
+                  "type": "uint48"
+                },
+                {
+                  "internalType": "PackedModuleTypes",
+                  "name": "moduleTypes",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "address",
+                  "name": "moduleAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "attester",
+                  "type": "address"
+                },
+                {
+                  "internalType": "AttestationDataRef",
+                  "name": "dataPointer",
+                  "type": "address"
+                },
+                {
+                  "internalType": "SchemaUID",
+                  "name": "schemaUID",
+                  "type": "bytes32"
+                }
+              ]
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "validateSchema",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        }
+      ],
+      "devdoc": { "kind": "dev", "methods": {}, "version": 1 },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "validateSchema((uint48,uint48,uint48,uint32,address,address,address,bytes32))": {
+            "notice": "Validates an attestation request."
+          },
+          "validateSchema((uint48,uint48,uint48,uint32,address,address,address,bytes32)[])": {
+            "notice": "Validates an array of attestation requests."
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        "@openzeppelin/=node_modules/@openzeppelin/",
+        "account-abstraction-v0.6/=node_modules/account-abstraction-v0.6/contracts/",
+        "account-abstraction/=node_modules/account-abstraction/contracts/",
+        "ds-test/=node_modules/ds-test/src/",
+        "erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/",
+        "forge-std/=node_modules/forge-std/src/",
+        "solady/=node_modules/solady/src/",
+        "solmate/=node_modules/solmate/src/"
+      ],
+      "optimizer": { "enabled": true, "runs": 200 },
+      "metadata": { "bytecodeHash": "ipfs" },
+      "compilationTarget": {
+        "test/mocks/MockSchemaValidator.sol": "MockSchemaValidator"
+      },
+      "evmVersion": "cancun",
+      "libraries": {},
+      "viaIR": true
+    },
+    "sources": {
+      "node_modules/forge-std/src/interfaces/IERC165.sol": {
+        "keccak256": "0x414b2861b1acbf816ccb7346d3f16cf6c1e002e9e5e40d2f1f26fa5ddc2ea600",
+        "urls": [
+          "bzz-raw://698352fb240868ea8f1d1fe389993035eeab930f10d06934f80ccfb2b6ccbfbc",
+          "dweb:/ipfs/QmT6WLHAgXxFhh12kWym895oTzXid1326iZiwT3pyfggoT"
+        ],
+        "license": "MIT"
+      },
+      "src/DataTypes.sol": {
+        "keccak256": "0x17a21d96dbda1704f888f46565731cc676d5fd4d989ea6819a87a8fb0895c47b",
+        "urls": [
+          "bzz-raw://91c12e4dc5254821d3ac965369b40656242d90e098a6ecc1e721d6dcf61e64fc",
+          "dweb:/ipfs/Qma78sqHvpP7AFj2gKAQe2z4Na3nxT5NRtaSuEJGezDyN8"
+        ],
+        "license": "AGPL-3.0-only"
+      },
+      "src/external/IExternalResolver.sol": {
+        "keccak256": "0x258211aa342cdcde51952e0f523136b71d320a2208a7873b03d0c6c210776d5f",
+        "urls": [
+          "bzz-raw://3406f08574205e786e228c0126d06d78ffb3d8724efa6344a18675eef61e9077",
+          "dweb:/ipfs/QmZTZEY5eWmBq6ho6F75UGJ7VYuh2JwJiuQfUXGPrJD7JK"
+        ],
+        "license": "AGPL-3.0-only"
+      },
+      "src/external/IExternalSchemaValidator.sol": {
+        "keccak256": "0xeaefb6118769085ca0de5b3048e5b4a8f860f99d4361008b4220195f603e4bd2",
+        "urls": [
+          "bzz-raw://d8a12afbc6a3a453d5810b67d775d9cb24bc52d1fc2843625910576285257526",
+          "dweb:/ipfs/QmXDcULeqy7VSXitbyrYcr32Bt7msuv7krG7g5u1nuCJx2"
+        ],
+        "license": "AGPL-3.0-only"
+      },
+      "test/mocks/MockSchemaValidator.sol": {
+        "keccak256": "0xcd52f3bc690bca76cbf8f810d5f236f91953a18d35f1a9d902100fcfee63b01f",
+        "urls": [
+          "bzz-raw://13d824cf7b33c51f6c6055a00993ec56b960201fc4abb37d6dd68041090ee88d",
+          "dweb:/ipfs/QmVe4hYRgCpTSYTdqVDVo5TXGFTyLUSX3sbms8E4AK966v"
+        ],
+        "license": "UNLICENSED"
+      }
+    },
+    "version": 1
+  },
+  "id": 97
+}
