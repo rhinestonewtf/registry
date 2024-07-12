@@ -39,6 +39,7 @@
   },
   "files": [
     "src",
+    "artifacts",
     "foundry.toml",
     "remappings.txt"
   ],
