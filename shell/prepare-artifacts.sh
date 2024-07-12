@@ -13,7 +13,7 @@ rm -rf $artifacts
 mkdir $artifacts \
   "$artifacts/interfaces" 
 
-forge build
+FOUNDRY_PROFILE=optimized forge build
 
 cp out-optimized/Registry.sol/Registry.json $artifacts
 cp out-optimized/MockERC1271Attester.sol/MockERC1271Attester.json $artifacts
