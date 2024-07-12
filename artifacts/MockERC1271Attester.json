@@ -1,0 +1,91 @@
+{
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [{ "name": "ret", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "isValidSignature",
+      "inputs": [
+        { "name": "hash", "type": "bytes32", "internalType": "bytes32" },
+        { "name": "signature", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [{ "name": "", "type": "bytes4", "internalType": "bytes4" }],
+      "stateMutability": "view"
+    }
+  ],
+  "bytecode": {
+    "object": "0x60a03461006257601f6101b538819003918201601f19168301916001600160401b0383118484101761006657808492602094604052833981010312610062575180151581036100625760805260405161013a908161007b82396080518160d10152f35b5f80fd5b634e487b7160e01b5f52604160045260245ffdfe6080600436101561000e575f80fd5b5f3560e01c631626ba7e14610021575f80fd5b346100b75760403660031901126100b75760243567ffffffffffffffff8082116100b757366023830112156100b7578160040135908082116100bb57601f8201601f19908116603f01168401908111848210176100bb5760405280835236602482840101116100b7575f92816024602094018483013701015260206100a46100cf565b6040516001600160e01b03199091168152f35b5f80fd5b634e487b7160e01b5f52604160045260245ffd5b7f00000000000000000000000000000000000000000000000000000000000000001561010057630b135d3f60e11b90565b5f9056fea2646970667358221220e546ad1a129b59fab18fda3173d544dac25aa344866952f4c46e2c28d8b7503e64736f6c63430008180033",
+    "sourceMap": "0:321:93:-:0;;;;;;;;;;;;;-1:-1:-1;;0:321:93;;;;-1:-1:-1;;;;;0:321:93;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;98:15;;0:321;;;;;;;;98:15;0:321;;;;;;;-1:-1:-1;0:321:93;;;;;;-1:-1:-1;0:321:93;;;;;-1:-1:-1;0:321:93",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x6080600436101561000e575f80fd5b5f3560e01c631626ba7e14610021575f80fd5b346100b75760403660031901126100b75760243567ffffffffffffffff8082116100b757366023830112156100b7578160040135908082116100bb57601f8201601f19908116603f01168401908111848210176100bb5760405280835236602482840101116100b7575f92816024602094018483013701015260206100a46100cf565b6040516001600160e01b03199091168152f35b5f80fd5b634e487b7160e01b5f52604160045260245ffd5b7f00000000000000000000000000000000000000000000000000000000000000001561010057630b135d3f60e11b90565b5f9056fea2646970667358221220e546ad1a129b59fab18fda3173d544dac25aa344866952f4c46e2c28d8b7503e64736f6c63430008180033",
+    "sourceMap": "0:321:93:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;0:321:93;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;0:321:93;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;-1:-1:-1;;;;;;0:321:93;;;;;;;;;;;;;;;;;;;;;;126:193;233:9;;;;-1:-1:-1;;;0:321:93;244:37::o;229:83::-;303:9;296:16;:::o",
+    "linkReferences": {},
+    "immutableReferences": { "63814": [{ "start": 209, "length": 32 }] }
+  },
+  "methodIdentifiers": { "isValidSignature(bytes32,bytes)": "1626ba7e" },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.24+commit.e11b9ed9\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"ret\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"isValidSignature\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"test/mocks/MockERC1271Attester.sol\":\"MockERC1271Attester\"},\"evmVersion\":\"cancun\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@openzeppelin/=node_modules/@openzeppelin/\",\":account-abstraction-v0.6/=node_modules/account-abstraction-v0.6/contracts/\",\":account-abstraction/=node_modules/account-abstraction/contracts/\",\":ds-test/=node_modules/ds-test/src/\",\":erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/\",\":forge-std/=node_modules/forge-std/src/\",\":solady/=node_modules/solady/src/\",\":solmate/=node_modules/solmate/src/\"],\"viaIR\":true},\"sources\":{\"test/mocks/MockERC1271Attester.sol\":{\"keccak256\":\"0x0bdfe82696ac220027ededa7f030148787f9fea7b71f9cf1cff67962f1ffef61\",\"urls\":[\"bzz-raw://d555bc8d5cd81d6cdf9bc5150fc66d1e0c9ed70b73759b4b089ea459dcff6553\",\"dweb:/ipfs/QmbLC9ST74f5nBSkvvrmcWHQJikY72yJn5ezKErwMtHCVT\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": { "version": "0.8.24+commit.e11b9ed9" },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [{ "internalType": "bool", "name": "ret", "type": "bool" }],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [
+            { "internalType": "bytes32", "name": "hash", "type": "bytes32" },
+            { "internalType": "bytes", "name": "signature", "type": "bytes" }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isValidSignature",
+          "outputs": [
+            { "internalType": "bytes4", "name": "", "type": "bytes4" }
+          ]
+        }
+      ],
+      "devdoc": { "kind": "dev", "methods": {}, "version": 1 },
+      "userdoc": { "kind": "user", "methods": {}, "version": 1 }
+    },
+    "settings": {
+      "remappings": [
+        "@openzeppelin/=node_modules/@openzeppelin/",
+        "account-abstraction-v0.6/=node_modules/account-abstraction-v0.6/contracts/",
+        "account-abstraction/=node_modules/account-abstraction/contracts/",
+        "ds-test/=node_modules/ds-test/src/",
+        "erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/",
+        "forge-std/=node_modules/forge-std/src/",
+        "solady/=node_modules/solady/src/",
+        "solmate/=node_modules/solmate/src/"
+      ],
+      "optimizer": { "enabled": true, "runs": 200 },
+      "metadata": { "bytecodeHash": "ipfs" },
+      "compilationTarget": {
+        "test/mocks/MockERC1271Attester.sol": "MockERC1271Attester"
+      },
+      "evmVersion": "cancun",
+      "libraries": {},
+      "viaIR": true
+    },
+    "sources": {
+      "test/mocks/MockERC1271Attester.sol": {
+        "keccak256": "0x0bdfe82696ac220027ededa7f030148787f9fea7b71f9cf1cff67962f1ffef61",
+        "urls": [
+          "bzz-raw://d555bc8d5cd81d6cdf9bc5150fc66d1e0c9ed70b73759b4b089ea459dcff6553",
+          "dweb:/ipfs/QmbLC9ST74f5nBSkvvrmcWHQJikY72yJn5ezKErwMtHCVT"
+        ],
+        "license": null
+      }
+    },
+    "version": 1
+  },
+  "id": 93
+}
