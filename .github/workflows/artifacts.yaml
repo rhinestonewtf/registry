@@ -4,7 +4,8 @@ on:
     tags:
       - "*"
     branches:
-      - "main"
+      - "deployment"
+
   pull_request:
 
 jobs:
