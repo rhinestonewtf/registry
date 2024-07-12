@@ -1,0 +1,90 @@
+{
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [{ "name": "ret", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "isValidSignature",
+      "inputs": [
+        { "name": "hash", "type": "bytes32", "internalType": "bytes32" },
+        { "name": "signature", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [{ "name": "", "type": "bytes4", "internalType": "bytes4" }],
+      "stateMutability": "view"
+    }
+  ],
+  "bytecode": {
+    "object": "0x60a060405234801561000f575f80fd5b5060405161020f38038061020f83398101604081905261002e91610038565b151560805261005e565b5f60208284031215610048575f80fd5b81518015158114610057575f80fd5b9392505050565b60805161019a6100755f395f6060015261019a5ff3fe608060405234801561000f575f80fd5b5060043610610029575f3560e01c80631626ba7e1461002d575b5f80fd5b61004061003b3660046100af565b61005d565b6040516001600160e01b0319909116815260200160405180910390f35b5f7f0000000000000000000000000000000000000000000000000000000000000000156100925750630b135d3f60e11b610095565b505f5b92915050565b634e487b7160e01b5f52604160045260245ffd5b5f80604083850312156100c0575f80fd5b82359150602083013567ffffffffffffffff808211156100de575f80fd5b818501915085601f8301126100f1575f80fd5b8135818111156101035761010361009b565b604051601f8201601f19908116603f0116810190838211818310171561012b5761012b61009b565b81604052828152886020848701011115610143575f80fd5b826020860160208301375f602084830101528095505050505050925092905056fea26469706673582212209ff36d6fd615764b6a10de4832b67f5a83fb74d184c7903bc9376ea53e75dd9664736f6c63430008180033",
+    "sourceMap": "0:321:93:-:0;;;66:54;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;98:15;;;;0:321;;14:277:98;81:6;134:2;122:9;113:7;109:23;105:32;102:52;;;150:1;147;140:12;102:52;182:9;176:16;235:5;228:13;221:21;214:5;211:32;201:60;;257:1;254;247:12;201:60;280:5;14:277;-1:-1:-1;;;14:277:98:o;:::-;0:321:93;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x608060405234801561000f575f80fd5b5060043610610029575f3560e01c80631626ba7e1461002d575b5f80fd5b61004061003b3660046100af565b61005d565b6040516001600160e01b0319909116815260200160405180910390f35b5f7f0000000000000000000000000000000000000000000000000000000000000000156100925750630b135d3f60e11b610095565b505f5b92915050565b634e487b7160e01b5f52604160045260245ffd5b5f80604083850312156100c0575f80fd5b82359150602083013567ffffffffffffffff808211156100de575f80fd5b818501915085601f8301126100f1575f80fd5b8135818111156101035761010361009b565b604051601f8201601f19908116603f0116810190838211818310171561012b5761012b61009b565b81604052828152886020848701011115610143575f80fd5b826020860160208301375f602084830101528095505050505050925092905056fea26469706673582212209ff36d6fd615764b6a10de4832b67f5a83fb74d184c7903bc9376ea53e75dd9664736f6c63430008180033",
+    "sourceMap": "0:321:93:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;126:193;;;;;;:::i;:::-;;:::i;:::-;;;-1:-1:-1;;;;;;1302:33:98;;;1284:52;;1272:2;1257:18;126:193:93;;;;;;;;211:6;233:9;229:83;;;-1:-1:-1;;;;244:37:93;;229:83;-1:-1:-1;303:9:93;229:83;126:193;;;;:::o;14:127:98:-;75:10;70:3;66:20;63:1;56:31;106:4;103:1;96:15;130:4;127:1;120:15;146:989;223:6;231;284:2;272:9;263:7;259:23;255:32;252:52;;;300:1;297;290:12;252:52;336:9;323:23;313:33;;397:2;386:9;382:18;369:32;420:18;461:2;453:6;450:14;447:34;;;477:1;474;467:12;447:34;515:6;504:9;500:22;490:32;;560:7;553:4;549:2;545:13;541:27;531:55;;582:1;579;572:12;531:55;618:2;605:16;640:2;636;633:10;630:36;;;646:18;;:::i;:::-;721:2;715:9;689:2;775:13;;-1:-1:-1;;771:22:98;;;795:2;767:31;763:40;751:53;;;819:18;;;839:22;;;816:46;813:72;;;865:18;;:::i;:::-;905:10;901:2;894:22;940:2;932:6;925:18;980:7;975:2;970;966;962:11;958:20;955:33;952:53;;;1001:1;998;991:12;952:53;1057:2;1052;1048;1044:11;1039:2;1031:6;1027:15;1014:46;1102:1;1097:2;1092;1084:6;1080:15;1076:24;1069:35;1123:6;1113:16;;;;;;;146:989;;;;;:::o",
+    "linkReferences": {},
+    "immutableReferences": { "63814": [{ "start": 96, "length": 32 }] }
+  },
+  "methodIdentifiers": { "isValidSignature(bytes32,bytes)": "1626ba7e" },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.24+commit.e11b9ed9\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"ret\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"isValidSignature\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"test/mocks/MockERC1271Attester.sol\":\"MockERC1271Attester\"},\"evmVersion\":\"cancun\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@openzeppelin/=node_modules/@openzeppelin/\",\":account-abstraction-v0.6/=node_modules/account-abstraction-v0.6/contracts/\",\":account-abstraction/=node_modules/account-abstraction/contracts/\",\":ds-test/=node_modules/ds-test/src/\",\":erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/\",\":forge-std/=node_modules/forge-std/src/\",\":solady/=node_modules/solady/src/\",\":solmate/=node_modules/solmate/src/\"]},\"sources\":{\"test/mocks/MockERC1271Attester.sol\":{\"keccak256\":\"0x0bdfe82696ac220027ededa7f030148787f9fea7b71f9cf1cff67962f1ffef61\",\"urls\":[\"bzz-raw://d555bc8d5cd81d6cdf9bc5150fc66d1e0c9ed70b73759b4b089ea459dcff6553\",\"dweb:/ipfs/QmbLC9ST74f5nBSkvvrmcWHQJikY72yJn5ezKErwMtHCVT\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": { "version": "0.8.24+commit.e11b9ed9" },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [{ "internalType": "bool", "name": "ret", "type": "bool" }],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [
+            { "internalType": "bytes32", "name": "hash", "type": "bytes32" },
+            { "internalType": "bytes", "name": "signature", "type": "bytes" }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isValidSignature",
+          "outputs": [
+            { "internalType": "bytes4", "name": "", "type": "bytes4" }
+          ]
+        }
+      ],
+      "devdoc": { "kind": "dev", "methods": {}, "version": 1 },
+      "userdoc": { "kind": "user", "methods": {}, "version": 1 }
+    },
+    "settings": {
+      "remappings": [
+        "@openzeppelin/=node_modules/@openzeppelin/",
+        "account-abstraction-v0.6/=node_modules/account-abstraction-v0.6/contracts/",
+        "account-abstraction/=node_modules/account-abstraction/contracts/",
+        "ds-test/=node_modules/ds-test/src/",
+        "erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/",
+        "forge-std/=node_modules/forge-std/src/",
+        "solady/=node_modules/solady/src/",
+        "solmate/=node_modules/solmate/src/"
+      ],
+      "optimizer": { "enabled": true, "runs": 200 },
+      "metadata": { "bytecodeHash": "ipfs" },
+      "compilationTarget": {
+        "test/mocks/MockERC1271Attester.sol": "MockERC1271Attester"
+      },
+      "evmVersion": "cancun",
+      "libraries": {}
+    },
+    "sources": {
+      "test/mocks/MockERC1271Attester.sol": {
+        "keccak256": "0x0bdfe82696ac220027ededa7f030148787f9fea7b71f9cf1cff67962f1ffef61",
+        "urls": [
+          "bzz-raw://d555bc8d5cd81d6cdf9bc5150fc66d1e0c9ed70b73759b4b089ea459dcff6553",
+          "dweb:/ipfs/QmbLC9ST74f5nBSkvvrmcWHQJikY72yJn5ezKErwMtHCVT"
+        ],
+        "license": null
+      }
+    },
+    "version": 1
+  },
+  "id": 93
+}
