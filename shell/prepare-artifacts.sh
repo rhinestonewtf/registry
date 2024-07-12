@@ -13,20 +13,20 @@ rm -rf $artifacts
 mkdir $artifacts \
   "$artifacts/interfaces" 
 
-FOUNDRY_PROFILE=optimized forge build
+forge build
 
-cp out-optimized/Registry.sol/Registry.json $artifacts
-cp out-optimized/MockERC1271Attester.sol/MockERC1271Attester.json $artifacts
-cp out-optimized/MockResolver.sol/MockResolver.json $artifacts
-cp out-optimized/MockSchemaValidator.sol/MockSchemaValidator.json $artifacts
+cp out/Registry.sol/Registry.json $artifacts
+cp out/MockERC1271Attester.sol/MockERC1271Attester.json $artifacts
+cp out/MockResolver.sol/MockResolver.json $artifacts
+cp out/MockSchemaValidator.sol/MockSchemaValidator.json $artifacts
 
 
 
 interfaces=./artifacts/interfaces
 
-cp out-optimized/IERC7484.sol/IERC7484.json $interfaces
-cp out-optimized/IRegistry.sol/IRegistry.json $interfaces
-cp out-optimized/IExternalResolver.sol/IExternalResolver.json $interfaces
-cp out-optimized/IExternalSchemaValidator.sol/IExternalSchemaValidator.json $interfaces
+cp out/IERC7484.sol/IERC7484.json $interfaces
+cp out/IRegistry.sol/IRegistry.json $interfaces
+cp out/IExternalResolver.sol/IExternalResolver.json $interfaces
+cp out/IExternalSchemaValidator.sol/IExternalSchemaValidator.json $interfaces
 
 pnpm prettier --write ./artifacts
