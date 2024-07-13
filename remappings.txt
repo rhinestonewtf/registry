@@ -7,3 +7,4 @@ erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/
 account-abstraction/=node_modules/account-abstraction/contracts/
 account-abstraction-v0.6/=node_modules/account-abstraction-v0.6/contracts/
 @openzeppelin/=node_modules/@openzeppelin/
+safe-singleton-deployer/=node_modules/safe-singleton-deployer/src/
