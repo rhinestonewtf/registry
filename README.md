@@ -9,7 +9,9 @@
 [foundry]: https://getfoundry.sh
 [foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
 
-This Contract is in active development. Do not use this in Prod!
+**Attestation Registry for securely using Smart Account Modules**
+
+The Registry is deployed at [0x0000000000E23E0033C3e93D9D4eBc2FF2AB2AEF](https://contractscan.xyz/contract/0x0000000000E23E0033C3e93D9D4eBc2FF2AB2AEF)
 
 ## Overview
 
@@ -21,20 +23,6 @@ could drastically undermine the objective by opening up a plethora of new attack
 The Registry aims to solve this concern by providing a means of verifying the legitimacy and
 security of independently built smart account modules for installation and use across any integrated
 smart account. It allows entities to attest to statements about modules and smart accounts to query these at module installation and/or execution time. The Registry is a Singleton that is free, open and permissionless. It also serves as the reference implementation for [ERC-7484](https://eips.ethereum.org/EIPS/eip-7484).
-
-## Usage
-
-## Installation
-
-```bash
-pnpm install
-```
-
-## Testing
-
-```bash
-pnpm test
-```
 
 ## Core Concepts
 
@@ -96,13 +84,35 @@ _Note:_ The gas calculation numbers include the gas cost for `CALL`
 | 3                 | 20823        | 23124               | -2301      |
 | n (approximation) | 5299n + 4901 | 7709n               |            |
 
-## Deployments
+## Using this repo
 
-Current address: [0x500684cBaa280aDf80d5ACf7A32Daebb23162e63](https://blockscan.com/address/0x500684cBaa280aDf80d5ACf7A32Daebb23162e63)
+To install dependencies, run:
 
-## Contribute
+```bash
+pnpm install
+```
 
-For feature or change requests, feel free to open a PR or get in touch with us.
+To build the project, run:
+
+```bash
+pnpm build
+```
+
+To run tests, run:
+
+```bash
+pnpm test
+```
+
+To run the linter, run:
+
+```bash
+pnpm lint:sol
+```
+
+## Contributing
+
+For feature or change requests, feel free to open a PR, start a discussion or get in touch with us.
 
 ## Credits & Special Thanks
 
@@ -114,16 +124,3 @@ For the continuous support and constructive feedback, we would like to thank:
 - Taek @taek.eth
 - Biconomy
 - Heavily inspired by EAS
-
-## Authors ✨
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tr>
-    <td align="center"><a href="http://twitter.com/zeroknotsETH/"><img src="https://pbs.twimg.com/profile_images/1639062011387715590/bNmZ5Gpf_400x400.jpg" width="100px;" alt=""/><br /><sub><b>zeroknots</b></sub></a><br /><a href="https://github.com/rhinestonewtf/registry/commits?author=zeroknots" title="Code">💻</a></td>
-    <td align="center"><a href="https://twitter.com/abstractooor"><img src="https://avatars.githubusercontent.com/u/26718079" width="100px;" alt=""/><br /><sub><b>Konrad</b></sub></a><br /><a href="https://github.com/rhinestonewtf/registry/commits?author=kopy-kat" title="Code">💻</a> </td>
-    
-  </tr>
-</table>
