@@ -1,7 +1,7 @@
 {
   "name": "@rhinestone/registry",
   "version": "1.0.0",
-  "description": "Attestation Registry for securely using Smart Account Modules",
+  "description": "An Attestation Registry for securely using Smart Account Modules",
   "license": "GPL-3.0",
   "author": {
     "name": "Rhinestone",

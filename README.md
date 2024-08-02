@@ -9,7 +9,7 @@
 [foundry]: https://getfoundry.sh
 [foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
 
-**Attestation Registry for securely using Smart Account Modules**
+**An Attestation Registry for securely using Smart Account Modules**
 
 The Registry is deployed at [0x0000000000E23E0033C3e93D9D4eBc2FF2AB2AEF](https://contractscan.xyz/contract/0x0000000000E23E0033C3e93D9D4eBc2FF2AB2AEF)
 
