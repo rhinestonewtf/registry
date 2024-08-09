@@ -27,6 +27,20 @@ abstract contract TrustManager is IRegistry {
 
     mapping(address account => TrustedAttesterRecord attesters) internal $accountToAttester;
 
+    function _requireEmptyList(TrustedAttesterRecord storage $trustedAttester) internal view {
+        address _tmp = $trustedAttester.attester;
+
+        // if the first entry is zero, the trusted list was not previously initialized, and can thus be safely set.
+        if (_tmp == ZERO_ADDRESS) return;
+
+        // otherwise, loop over the linked list to check if it is empty
+        // find the last entry in the linked list.
+        for (uint256 i; i <= type(uint8).max; i++) {
+            _tmp = $trustedAttester.linkedAttesters[_tmp][msg.sender];
+            if (_tmp == ZERO_ADDRESS) return;
+        }
+    }
+
     /**
      * @inheritdoc IERC7484
      */
@@ -48,6 +62,9 @@ abstract contract TrustManager is IRegistry {
         if (threshold > attestersLength) {
             revert InvalidThreshold();
         }
+
+        // ensure that the trusted attester list is cleared before re-initializing it.
+        _requireEmptyList($trustedAttester);
 
         $trustedAttester.attesterCount = uint8(attestersLength);
         $trustedAttester.threshold = threshold;
