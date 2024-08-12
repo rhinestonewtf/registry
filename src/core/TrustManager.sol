@@ -119,7 +119,7 @@ abstract contract TrustManager is IRegistry {
 
             // if first attestation is not valid, iterate over the linked list of attesters
             // and check if the attestation is valid
-            for (uint256 i; i < attesterCount; i++) {
+            for (uint256 i = 1; i < attesterCount; i++) {
                 attester = $trustedAttesters.linkedAttesters[attester][smartAccount];
                 $attestation = $getAttestation({ module: module, attester: attester });
                 if ($attestation.checkValid(moduleType)) return;
