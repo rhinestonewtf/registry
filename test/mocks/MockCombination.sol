@@ -8,6 +8,10 @@ import { IRegistry, SchemaUID, AttestationRequest } from "src/IRegistry.sol";
 contract MockCombination is IExternalResolver, IExternalSchemaValidator {
     bool immutable returnVal;
 
+    event AttestationCalled();
+    event RevokeCalled();
+    event ModuleCalled();
+
     bool public onAttestCalled;
     bool public onRevokeCalled;
     bool public onModuleCalled;
@@ -32,23 +36,25 @@ contract MockCombination is IExternalResolver, IExternalSchemaValidator {
 
     function resolveAttestation(AttestationRecord calldata attestation) external payable override returns (bool) {
         onAttestCalled = true;
+        emit AttestationCalled();
         return returnVal;
     }
 
     function resolveAttestation(AttestationRecord[] calldata attestation) external payable override returns (bool) {
         onAttestCalled = true;
+        emit AttestationCalled();
         return returnVal;
     }
 
     function resolveRevocation(AttestationRecord calldata attestation) external payable override returns (bool) {
-        revert();
         onRevokeCalled = true;
+        emit RevokeCalled();
         return returnVal;
     }
 
     function resolveRevocation(AttestationRecord[] calldata attestation) external payable override returns (bool) {
-        revert();
         onRevokeCalled = true;
+        emit RevokeCalled();
         return returnVal;
     }
 
@@ -64,6 +70,7 @@ contract MockCombination is IExternalResolver, IExternalSchemaValidator {
         returns (bool)
     {
         onModuleCalled = true;
+        emit ModuleCalled();
         return returnVal;
     }
 
