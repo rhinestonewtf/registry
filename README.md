@@ -11,7 +11,7 @@
 
 **An attestation registry for securely using smart account modules**
 
-The Registry is deployed at [0x000000000069E2a187AEFFb852bF3cCdC95151B2](https://contractscan.xyz/contract/0x0000000000E23E0033C3e93D9D4eBc2FF2AB2AEF)
+The Registry is deployed at [0x000000000069E2a187AEFFb852bF3cCdC95151B2](https://contractscan.xyz/contract/0x000000000069E2a187AEFFb852bF3cCdC95151B2)
 
 ## Overview
 
