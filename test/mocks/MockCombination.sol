@@ -12,10 +12,6 @@ contract MockCombination is IExternalResolver, IExternalSchemaValidator {
     event RevokeCalled();
     event ModuleCalled();
 
-    bool public onAttestCalled;
-    bool public onRevokeCalled;
-    bool public onModuleCalled;
-
     constructor(bool ret) {
         returnVal = ret;
     }
@@ -24,36 +20,26 @@ contract MockCombination is IExternalResolver, IExternalSchemaValidator {
                                      RESOLVER
     //////////////////////////////////////////////////////////////////////////*/
 
-    function reset() public {
-        onAttestCalled = false;
-        onRevokeCalled = false;
-        onModuleCalled = false;
-    }
-
     function supportsInterface(bytes4 interfaceId) public pure override returns (bool) {
         if (interfaceId == type(IExternalResolver).interfaceId || interfaceId == type(IExternalSchemaValidator).interfaceId) return true;
     }
 
     function resolveAttestation(AttestationRecord calldata attestation) external payable override returns (bool) {
-        onAttestCalled = true;
         emit AttestationCalled();
         return returnVal;
     }
 
     function resolveAttestation(AttestationRecord[] calldata attestation) external payable override returns (bool) {
-        onAttestCalled = true;
         emit AttestationCalled();
         return returnVal;
     }
 
     function resolveRevocation(AttestationRecord calldata attestation) external payable override returns (bool) {
-        onRevokeCalled = true;
         emit RevokeCalled();
         return returnVal;
     }
 
     function resolveRevocation(AttestationRecord[] calldata attestation) external payable override returns (bool) {
-        onRevokeCalled = true;
         emit RevokeCalled();
         return returnVal;
     }
@@ -69,7 +55,6 @@ contract MockCombination is IExternalResolver, IExternalSchemaValidator {
         override
         returns (bool)
     {
-        onModuleCalled = true;
         emit ModuleCalled();
         return returnVal;
     }
