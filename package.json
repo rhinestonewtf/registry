@@ -35,7 +35,7 @@
     "ds-test": "github:dapphub/ds-test#e282159d5170298eb2455a6c05280ab5a73a4ef0",
     "solhint": "^4.5.2",
     "solmate": "github:transmissions11/solmate#c892309933b25c03d32b1b0d674df7ae292ba925",
-    "@rhinestone/erc4337-validation": "github:rhinestonewtf/erc4337-validation"
+    "@rhinestone/erc4337-validation": "github:rhinestonewtf/erc4337-validation#v0.0.1-alpha.5"
   },
   "files": [
     "src",
