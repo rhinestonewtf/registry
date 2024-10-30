@@ -28,7 +28,7 @@ smart account. It allows entities to attest to statements about modules and smar
 
 ### Attestations
 
-Attestations on the Registry represent statements about Modules. An Attestation is made using a particular [Schema](./Schemas.md) that is used to encode and decode the Attestation data. The most important usecase for Attestations is to make statements about the security of a Module.
+Attestations on the Registry represent statements about Modules. An Attestation is made using a particular Schema that is used to encode and decode the Attestation data. The most important usecase for Attestations is to make statements about the security of a Module.
 
 An attestation consists of two primary elements: the Schema and the
 Attestation data. The Schema acts as a standardized structure for
@@ -36,7 +36,7 @@ creating and validating Attestations, defining how the Attestation data is encod
 
 ### Schemas
 
-[Schemas](./docs/Schema.md) represent predefined structures utilized for the formation and
+Schemas represent predefined structures utilized for the formation and
 verification of Attestation data. Using flexible Schemas rather than a single, fixed Schema allows Attesters to encode their data in a custom way, providing flexibility when creating Attestations. For example, the data of an Attestation about the outcome of the formal verification on a Module will have a very format than the data of an Attestation about what interfaces a Module supports.
 
 ### Resolvers
