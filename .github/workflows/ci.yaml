@@ -39,6 +39,7 @@ jobs:
             "RSResolver",
             "RSSchemaValidator",
             "TransparentUpgradeableProxy",
+            "MockCombination",
           ]
     with:
       contract-name: ${{ matrix.contract-name }}
