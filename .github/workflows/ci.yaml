@@ -27,3 +27,19 @@ jobs:
     with:
       match-path: "test/**/*.sol"
       codecov-slug: zeroknots/registry
+
+  release-artifacts:
+    needs: ["build"]
+    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-release.yaml@main"
+    strategy:
+      matrix:
+        contract-name:
+          [
+            "Registry",
+            "RSResolver",
+            "RSSchemaValidator",
+            "TransparentUpgradeableProxy ",
+          ]
+    with:
+      contract-name: ${{ matrix.contract-name }}
+      store-artifacts: true
