@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./Base.t.sol";
-import "../script/Create2Factory.sol";
+import "./mocks/Create2Factory.sol";
 
 contract MockModuleFoo {
     uint256 public value;
